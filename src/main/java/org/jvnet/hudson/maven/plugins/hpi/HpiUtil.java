@@ -43,7 +43,7 @@ class HpiUtil {
 
     static String findHudsonVersion(MavenProject project) {
         for(Artifact a : (Set<Artifact>)project.getArtifacts()) {
-            if(a.getGroupId().equals("org.jvnet.hudson.main") && a.getArtifactId().equals("hudson-core")) {
+            if(a.getGroupId().equals("org.jenkins-ci.main") && a.getArtifactId().equals("hudson-core")) {
                 return a.getVersion();
             }
         }

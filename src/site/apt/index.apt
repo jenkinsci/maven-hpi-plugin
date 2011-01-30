@@ -1,11 +1,11 @@
   ------
-  Maven Hudson Plugin
+  Maven Jenkins Plugin
   ------
   ------
 
-Maven Hudson Plugin
+Maven Jenkins Plugin
 
-  This maven2 plugin provides various goals for developing Hudson plugins.
+  This maven2 plugin provides various goals for developing Jenkins plugins.
 
 
 * Goals Overview
@@ -16,9 +16,9 @@ Maven Hudson Plugin
 
   * {{{hpl-mojo.html}hpi:hpl}} Generates the .hpl file
 
-  * {{{run-mojo.html}hpi:run}} Runs Hudson with the current plugin project
+  * {{{run-mojo.html}hpi:run}} Runs Jenkins with the current plugin project
 
   * {{{upload-mojo.html}hpi:upload}} Posts the hpi file to java.net. Used during the release.
 
 
-  For more information about how to develop Hudson plugins, refer to {{{http://hudson.gotdns.com/wiki/display/HUDSON/Extend+Hudson}Wiki}}
+  For more information about how to develop Jenkins plugins, refer to {{{http://wiki.jenkins-ci.org/wiki/display/JENKINS/Extend+Hudson}Wiki}}
