@@ -19,7 +19,6 @@ package org.jvnet.hudson.maven.plugins.hpi;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.model.Resource;
-import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Developer;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -881,7 +880,7 @@ public abstract class AbstractHpiMojo extends AbstractMojo {
             v += " (private-"+dt+"-"+System.getProperty("user.name")+")";
         }
         mainSection.addAttributeAndCheck(new Attribute("Plugin-Version",v));
-        mainSection.addAttributeAndCheck(new Attribute("Hudson-Version",HpiUtil.findHudsonVersion(project)));
+        mainSection.addAttributeAndCheck(new Attribute("Hudson-Version",HpiUtil.findJenkinsVersion(project)));
 
         if(maskClasses!=null)
             mainSection.addAttributeAndCheck(new Attribute("Mask-Classes",maskClasses));
