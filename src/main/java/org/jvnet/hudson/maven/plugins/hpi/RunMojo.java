@@ -142,10 +142,10 @@ public class RunMojo extends AbstractJetty6Mojo {
 
         // look for hudson.war
         for( Artifact a : (Set<Artifact>)getProject().getArtifacts() ) {
-            if(a.getArtifactId().equals("hudson-war") && a.getType().equals("war")) {
+            if((a.getArtifactId().equals("hudson-war") || a.getArtifactId().equals("jenkins-war")) && a.getType().equals("war")) {
                 webApp = a.getFile();
             }
-            if(a.getGroupId().equals("org.jvnet.hudson.main"))
+            if(a.getGroupId().equals("org.jenkins-ci.main") || a.getGroupId().equals("org.jvnet.hudson.main"))
                 hudsonArtifacts.add(a);
         }
 
