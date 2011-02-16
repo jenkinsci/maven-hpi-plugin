@@ -77,7 +77,7 @@ public class HelloWorldBuilder extends Builder {
      * See <tt>views/hudson/plugins/hello_world/HelloWorldBuilder/*.jelly</tt>
      * for the actual HTML fragment for the configuration screen.
      */
-    @Extension // this marker indicates Hudson that this is an implementation of an extension point.
+    @Extension // this marker indicates to Jenkins that this is an implementation of an extension point.
     public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
         /**
          * To persist global configuration information,
