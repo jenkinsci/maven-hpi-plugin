@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.10</version>
+    <version>1.13</version>
   </parent>
   
   <groupId>org.jenkins-ci.tools</groupId>
@@ -146,15 +146,15 @@
   </reporting>
   
   <scm>
-    <connection>scm:git:git://github.com/hudson/maven-hpi-plugin.git</connection>
-    <developerConnection>scm:git:ssh://git@github.com/hudson/maven-hpi-plugin.git</developerConnection>
-    <url>https://github.com/hudson/maven-hpi-plugin</url>
+    <connection>scm:git:git://github.com/jenkins/maven-hpi-plugin.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/jenkins/maven-hpi-plugin.git</developerConnection>
+    <url>https://github.com/jenkins/maven-hpi-plugin</url>
   </scm>
 
   <distributionManagement>
     <site>
-      <id>hudson-labs.org</id>
-      <url>scp://jenkins-ci.org/var/www/hudson-labs.org/maven-hpi-plugin/</url>
+      <id>jenkins-ci.org</id>
+      <url>scp://jenkins-ci.org/var/www/jenkins-ci.org/maven-hpi-plugin/</url>
     </site>
   </distributionManagement>
 </project>
