@@ -2,11 +2,12 @@ package org.jvnet.hudson.maven.plugins.hpi;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Set;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import java.util.List;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.model.Dependency;
 import org.apache.maven.project.MavenProject;
 import org.kohsuke.stapler.framework.io.IOException2;
 
@@ -42,7 +43,7 @@ class HpiUtil {
     }
 
     static String findJenkinsVersion(MavenProject project) {
-        for(Artifact a : (Set<Artifact>)project.getArtifacts()) {
+        for(Dependency a : (List<Dependency>)project.getDependencies()) {
             if((a.getGroupId().equals("org.jenkins-ci.main") || a.getGroupId().equals("org.jvnet.hudson.main"))
             && (a.getArtifactId().equals("hudson-core") || a.getArtifactId().equals("jenkins-core"))) {
                 return a.getVersion();
