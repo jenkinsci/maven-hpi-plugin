@@ -74,7 +74,7 @@ public class HelloWorldBuilder extends Builder {
      * The class is marked as public so that it can be accessed from views.
      *
      * <p>
-     * See <tt>views/hudson/plugins/hello_world/HelloWorldBuilder/*.jelly</tt>
+     * See <tt>src/main/resources/hudson/plugins/hello_world/HelloWorldBuilder/*.jelly</tt>
      * for the actual HTML fragment for the configuration screen.
      */
     @Extension // this marker indicates to Jenkins that this is an implementation of an extension point.

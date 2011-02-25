@@ -42,9 +42,9 @@ public class TestInsertionMojo extends AbstractMojo {
             return;
         }
         
-        String target = HpiUtil.findHudsonVersion(project);	
+        String target = HpiUtil.findJenkinsVersion(project);	
         if (new VersionNumber(target).compareTo(new VersionNumber("1.327"))<0) {
-            getLog().info("Skipping auto-test generation because we are targeting Hudson "+target+" (at least 1.327 is required).");
+            getLog().info("Skipping auto-test generation because we are targeting Jenkins "+target+" (at least 1.327 is required).");
             return;
         }
                 

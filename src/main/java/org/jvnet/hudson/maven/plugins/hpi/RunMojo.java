@@ -39,7 +39,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Runs Hudson with the current plugin project.
+ * Runs Jenkins with the current plugin project.
  *
  * <p>
  * This only needs the source files to be compiled, so run in the compile phase.
@@ -52,7 +52,7 @@ import java.util.Set;
  * @goal run
  * @requiresDependencyResolution test
  * @execute phase=compile
- * @description Runs Hudson with the current plugin
+ * @description Runs Jenkins with the current plugin
  * @author Kohsuke Kawaguchi
  */
 public class RunMojo extends AbstractJetty6Mojo {
@@ -70,7 +70,7 @@ public class RunMojo extends AbstractJetty6Mojo {
     private File webApp;
 
     /**
-     * Path to <tt>$HUDSON_HOME</tt>. The launched hudson will use this directory as the workspace.
+     * Path to <tt>$JENKINS_HOME</tt>. The launched Jenkins will use this directory as the workspace.
      *
      * @parameter expression="${HUDSON_HOME}"
      */
@@ -133,16 +133,16 @@ public class RunMojo extends AbstractJetty6Mojo {
         setSystemPropertyIfEmpty("debug.YUI","true");
         // allow Jetty to accept a bigger form so that it can handle update center JSON post
         setSystemPropertyIfEmpty("org.mortbay.jetty.Request.maxFormContentSize","-1");
-        // general-purpose system property so that we can tell from Hudson if we are running in the hpi:run mode.
+        // general-purpose system property so that we can tell from Jenkins if we are running in the hpi:run mode.
         setSystemPropertyIfEmpty("hudson.hpi.run","true");
         // this adds 3 secs to the shutdown time. Skip it.
         setSystemPropertyIfEmpty("hudson.DNSMultiCast.disabled","true");
 
         List<Artifact> hudsonArtifacts = new ArrayList<Artifact>();
 
-        // look for hudson.war
+        // look for jenkins.war
         for( Artifact a : (Set<Artifact>)getProject().getArtifacts() ) {
-            if((a.getArtifactId().equals("hudson-war") || a.getArtifactId().equals("jenkins-war")) && a.getType().equals("war")) {
+            if((a.getArtifactId().equals("jenkins-war") || a.getArtifactId().equals("hudson-war")) && a.getType().equals("war")) {
                 webApp = a.getFile();
             }
             if(a.getGroupId().equals("org.jenkins-ci.main") || a.getGroupId().equals("org.jvnet.hudson.main"))
@@ -151,20 +151,20 @@ public class RunMojo extends AbstractJetty6Mojo {
 
         if(webApp==null) {
             getLog().error(
-                "Unable to locate hudson.war. Add the following dependency in your POM:\n" +
+                "Unable to locate jenkins.war. Add the following dependency in your POM:\n" +
                 "\n" +
                 "<dependency>\n" +
-                "  <groupId>org.jvnet.hudson.main</groupId>\n" +
-                "  <artifactId>hudson-war</artifactId>\n" +
+                "  <groupId>org.jenkins-ci.main</groupId>\n" +
+                "  <artifactId>jenkins-war</artifactId>\n" +
                 "  <type>war</type>\n" +
-                "  <version>1.293<!-- replace this with the version you want--></version>\n" +
+                "  <version>1.396<!-- replace this with the version you want--></version>\n" +
                 "  <scope>test</scope>\n" +
                 "</dependency>"
             );
-            throw new MojoExecutionException("Unable to find hudson.war");
+            throw new MojoExecutionException("Unable to find jenkins.war");
         }
 
-        // make sure all the relevant Hudson artifacts have the same version
+        // make sure all the relevant Jenkins artifacts have the same version
         for (Artifact a : hudsonArtifacts) {
             Artifact ba = hudsonArtifacts.get(0);
             if(!a.getVersion().equals(ba.getVersion()))
@@ -198,19 +198,19 @@ public class RunMojo extends AbstractJetty6Mojo {
 
         generateHpl();
 
-        // copy other dependency hudson plugins
+        // copy other dependency Jenkins plugins
         try {
             for( Artifact a : (Set<Artifact>)getProject().getArtifacts() ) {
                 if(!HpiUtil.isPlugin(a))
                     continue;
-                getLog().info("Copying dependency hudson plugin "+a.getFile());
+                getLog().info("Copying dependency Jenkins plugin "+a.getFile());
 
                 // find corresponding .hpi file
                 Artifact hpi = artifactFactory.createArtifact(a.getGroupId(),a.getArtifactId(),a.getVersion(),null,"hpi");
                 artifactResolver.resolve(hpi,getProject().getRemoteArtifactRepositories(), localRepository);
 
                 copyFile(hpi.getFile(),new File(pluginsDir,a.getArtifactId()+".hpi"));
-                // pin the dependency plugin, so that even if a different version of the same plugin is bundled to Hudson,
+                // pin the dependency plugin, so that even if a different version of the same plugin is bundled to Jenkins,
                 // we still use the plugin as specified by the POM of the plugin.
                 FileUtils.writeStringToFile(new File(pluginsDir,a.getArtifactId()+".hpi.pinned"),"pinned");
             }

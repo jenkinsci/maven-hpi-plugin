@@ -26,7 +26,7 @@ import java.util.Set;
  */
 public class HplMojo extends AbstractHpiMojo {
     /**
-     * Path to <tt>$HUDSON_HOME</tt>. A .hpl file will be generated to this location.
+     * Path to <tt>$JENKINS_HOME</tt>. A .hpl file will be generated to this location.
      *
      * @parameter expression="${hudsonHome}
      */

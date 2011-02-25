@@ -85,7 +85,7 @@ public abstract class AbstractHpiMojo extends AbstractMojo {
     private File classesDirectory;
 
     /**
-     * Name of the plugin that Hudson uses for display purpose.
+     * Name of the plugin that Jenkins uses for display purpose.
      * It should be one line text.
      *
      * @parameter expression="${project.name}"
@@ -455,17 +455,17 @@ public abstract class AbstractHpiMojo extends AbstractMojo {
 
         List<File> dependentWarDirectories = new ArrayList<File>();
 
-        // list up IDs of hudson plugin dependencies
-        Set<String> hudsonPlugins = new HashSet<String>();
+        // List up IDs of Jenkins plugin dependencies
+        Set<String> jenkinsPlugins = new HashSet<String>();
         for (Artifact artifact : artifacts) {
             if(HpiUtil.isPlugin(artifact))
-                hudsonPlugins.add(artifact.getId());
+                jenkinsPlugins.add(artifact.getId());
         }
 
         for (Artifact artifact : artifacts) {
-            if(hudsonPlugins.contains(artifact.getId()))
+            if(jenkinsPlugins.contains(artifact.getId()))
                 continue;   // plugin dependency need not be WEB-INF/lib
-            if(artifact.getDependencyTrail().size() >= 1 && hudsonPlugins.contains(artifact.getDependencyTrail().get(1)))
+            if(artifact.getDependencyTrail().size() >= 1 && jenkinsPlugins.contains(artifact.getDependencyTrail().get(1)))
                 continue;   // no need to have transitive dependencies through plugins in WEB-INF/lib.
 
             String targetFileName = getDefaultFinalName(artifact);

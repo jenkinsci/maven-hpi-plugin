@@ -45,7 +45,7 @@ class HpiUtil {
     static String findJenkinsVersion(MavenProject project) {
         for(Dependency a : (List<Dependency>)project.getDependencies()) {
             if((a.getGroupId().equals("org.jenkins-ci.main") || a.getGroupId().equals("org.jvnet.hudson.main"))
-            && (a.getArtifactId().equals("hudson-core") || a.getArtifactId().equals("jenkins-core"))) {
+            && (a.getArtifactId().equals("jenkins-core") || a.getArtifactId().equals("hudson-core"))) {
                 return a.getVersion();
             }
         }

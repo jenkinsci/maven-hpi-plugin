@@ -21,4 +21,4 @@ Maven Jenkins Plugin
   * {{{upload-mojo.html}hpi:upload}} Posts the hpi file to java.net. Used during the release.
 
 
-  For more information about how to develop Jenkins plugins, refer to {{{http://wiki.jenkins-ci.org/wiki/display/JENKINS/Extend+Hudson}Wiki}}
+  For more information about how to develop Jenkins plugins, refer to {{{http://wiki.jenkins-ci.org/wiki/display/JENKINS/Extend+Jenkins}Wiki}}

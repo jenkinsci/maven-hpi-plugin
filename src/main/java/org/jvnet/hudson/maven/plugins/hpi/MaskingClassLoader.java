@@ -7,7 +7,7 @@ import java.util.NoSuchElementException;
 
 /**
  * {@link ClassLoader} that hides Maven and other conflicting dependencies
- * between maven-hpi-plugin and Hudson that runs in Maven.
+ * between maven-hpi-plugin and Jenkins that runs in Maven.
  *
  * @author Kohsuke Kawaguchi
  */

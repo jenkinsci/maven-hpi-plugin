@@ -19,7 +19,7 @@ public class AptMojo extends CompilerMojo {
         setField("compilerId", "hpi-apt");
 
         if(!isMustangOrAbove())
-            throw new MojoExecutionException("JDK6 or later is necessary to build a Hudson plugin");
+            throw new MojoExecutionException("JDK6 or later is necessary to build a Jenkins plugin");
 
         super.execute();
     }

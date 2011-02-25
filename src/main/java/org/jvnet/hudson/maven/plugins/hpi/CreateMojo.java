@@ -192,7 +192,7 @@ public class CreateMojo extends AbstractMojo {
 
 
         } catch (Exception e) {
-            throw new MojoExecutionException("Failed to create a new Hudson plugin",e);
+            throw new MojoExecutionException("Failed to create a new Jenkins plugin",e);
         }
     }
 
