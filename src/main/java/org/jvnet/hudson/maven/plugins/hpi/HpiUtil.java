@@ -49,6 +49,7 @@ class HpiUtil {
                 return a.getVersion();
             }
         }
+        System.err.println("** Warning: failed to determine Jenkins version this plugin depends on.");
         return null;
     }
 }
