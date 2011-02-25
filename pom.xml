@@ -146,9 +146,9 @@
   </reporting>
   
   <scm>
-    <connection>scm:git:git://github.com/jenkins/maven-hpi-plugin.git</connection>
-    <developerConnection>scm:git:ssh://git@github.com/jenkins/maven-hpi-plugin.git</developerConnection>
-    <url>https://github.com/jenkins/maven-hpi-plugin</url>
+    <connection>scm:git:git://github.com/jenkinsci/maven-hpi-plugin.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/jenkinsci/maven-hpi-plugin.git</developerConnection>
+    <url>https://github.com/jenkinsci/maven-hpi-plugin</url>
   </scm>
 
   <distributionManagement>
