@@ -32,6 +32,15 @@ public class TestInsertionMojo extends AbstractMojo {
      */
     private boolean disabledTestInjection;
 
+    /**
+     * Optional string that represents "groupId:artifactId" of Jenkins core jar.
+     * If left unspecified, the default groupId/artifactId pair for Jenkins is looked for.
+     *
+     * @parameter
+     * @since 1.65
+     */
+    private String jenkinsCoreId;
+
     private static String quote(String s) {
         return '"'+s.replace("\\", "\\\\")+'"';
     }
@@ -42,7 +51,7 @@ public class TestInsertionMojo extends AbstractMojo {
             return;
         }
         
-        String target = HpiUtil.findJenkinsVersion(project);	
+        String target = HpiUtil.findJenkinsVersion(project,jenkinsCoreId);
         if (new VersionNumber(target).compareTo(new VersionNumber("1.327"))<0) {
             getLog().info("Skipping auto-test generation because we are targeting Jenkins "+target+" (at least 1.327 is required).");
             return;

@@ -217,6 +217,15 @@ public abstract class AbstractHpiMojo extends AbstractMojo {
     private boolean pluginFirstClassLoader = false;
 
     /**
+     * Optional string that represents "groupId:artifactId" of Jenkins core jar.
+     * If left unspecified, the default groupId/artifactId pair for Jenkins is looked for.
+     *
+     * @parameter
+     * @since 1.65
+     */
+    private String jenkinsCoreId;
+
+    /**
      * If true, test scope dependencies count as if they are normal dependencies.
      * This is only useful during hpi:run, so not exposing it as a configurable parameter.
      */
@@ -880,7 +889,10 @@ public abstract class AbstractHpiMojo extends AbstractMojo {
             v += " (private-"+dt+"-"+System.getProperty("user.name")+")";
         }
         mainSection.addAttributeAndCheck(new Attribute("Plugin-Version",v));
-        mainSection.addAttributeAndCheck(new Attribute("Hudson-Version",HpiUtil.findJenkinsVersion(project)));
+
+        String jv = HpiUtil.findJenkinsVersion(project, jenkinsCoreId);
+        mainSection.addAttributeAndCheck(new Attribute("Hudson-Version",jv));
+        mainSection.addAttributeAndCheck(new Attribute("Jenkins-Version",jv));
 
         if(maskClasses!=null)
             mainSection.addAttributeAndCheck(new Attribute("Mask-Classes",maskClasses));
