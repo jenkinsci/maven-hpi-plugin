@@ -60,7 +60,7 @@ public abstract class AbstractJettyMojo extends AbstractMojo {
     /**
      * The context path for the webapp. Defaults to "/"
      *
-     * @parameter expression="/"
+     * @parameter expression="${hpi.prefix}" default-value="/"
      * @required
      */
     private String contextPath;
