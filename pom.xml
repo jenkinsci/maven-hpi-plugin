@@ -159,4 +159,11 @@
       <url>scp://jenkins-ci.org/var/www/jenkins-ci.org/maven-hpi-plugin/</url>
     </site>
   </distributionManagement>
+
+  <repositories>
+    <repository>
+      <id>m.g.o-public</id>
+      <url>http://maven.glassfish.org/content/groups/public/</url>
+    </repository>
+  </repositories>
 </project>
