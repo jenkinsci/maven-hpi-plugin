@@ -26,8 +26,8 @@ import java.io.IOException;
  * to remember the configuration.
  *
  * <p>
- * When a build is performed, the {@link #perform(AbstractBuild, Launcher, BuildListener)} method
- * will be invoked. 
+ * When a build is performed, the {@link #perform(AbstractBuild, Launcher, BuildListener)}
+ * method will be invoked. 
  *
  * @author Kohsuke Kawaguchi
  */
@@ -50,19 +50,19 @@ public class HelloWorldBuilder extends Builder {
 
     @Override
     public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) {
-        // this is where you 'build' the project
-        // since this is a dummy, we just say 'hello world' and call that a build
+        // This is where you 'build' the project.
+        // Since this is a dummy, we just say 'hello world' and call that a build.
 
-        // this also shows how you can consult the global configuration of the builder
-        if(getDescriptor().useFrench())
+        // This also shows how you can consult the global configuration of the builder
+        if (getDescriptor().useFrench())
             listener.getLogger().println("Bonjour, "+name+"!");
         else
             listener.getLogger().println("Hello, "+name+"!");
         return true;
     }
 
-    // overrided for better type safety.
-    // if your plugin doesn't really define any property on Descriptor,
+    // Overridden for better type safety.
+    // If your plugin doesn't really define any property on Descriptor,
     // you don't have to do this.
     @Override
     public DescriptorImpl getDescriptor() {
@@ -77,7 +77,7 @@ public class HelloWorldBuilder extends Builder {
      * See <tt>src/main/resources/hudson/plugins/hello_world/HelloWorldBuilder/*.jelly</tt>
      * for the actual HTML fragment for the configuration screen.
      */
-    @Extension // this marker indicates to Jenkins that this is an implementation of an extension point.
+    @Extension // This indicates to Jenkins that this is an implementation of an extension point.
     public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
         /**
          * To persist global configuration information,
@@ -96,16 +96,17 @@ public class HelloWorldBuilder extends Builder {
          * @return
          *      Indicates the outcome of the validation. This is sent to the browser.
          */
-        public FormValidation doCheckName(@QueryParameter String value) throws IOException, ServletException {
-            if(value.length()==0)
+        public FormValidation doCheckName(@QueryParameter String value)
+                throws IOException, ServletException {
+            if (value.length() == 0)
                 return FormValidation.error("Please set a name");
-            if(value.length()<4)
+            if (value.length() < 4)
                 return FormValidation.warning("Isn't the name too short?");
             return FormValidation.ok();
         }
 
         public boolean isApplicable(Class<? extends AbstractProject> aClass) {
-            // indicates that this builder can be used with all kinds of project types 
+            // Indicates that this builder can be used with all kinds of project types 
             return true;
         }
 

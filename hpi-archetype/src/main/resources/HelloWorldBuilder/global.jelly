@@ -13,7 +13,7 @@
   -->
   <f:section title="Hello World Builder">
     <!--
-      optional @help points to the help document HTML. /plugin/hpi-archetype
+      Optional @help points to the help document HTML. /plugin/hpi-archetype
       is mapped to our webapp/ directory, so this is a convenient way to serve
       static resources.
     -->
@@ -21,12 +21,10 @@
       description="Check if we should say hello in French"
       help="/plugin/hpi-archetype/help-globalConfig.html">
       <!--
-        we'll have on input field. In HTML, single "namespace" is shared between
-        all form components in one <form>, so we need to choose a name that doesn't
-        collide with other plugins. The 'descriptor' variable represents our descriptor
+        We'll have on input field. The 'descriptor' variable represents our descriptor
         object, so we use that to determine the initial value for this form.
       -->
-      <f:checkbox name="hello_world.useFrench" checked="${descriptor.useFrench()}" />
+      <f:checkbox name="useFrench" checked="${descriptor.useFrench()}" />
     </f:entry>
   </f:section>
 </j:jelly>

@@ -1,8 +1,6 @@
 <!--
-  This view is used to render the plugin list page.
-
-  Since we don't really have anything dynamic here, let's just use static HTML. 
+  This view is used to render the installed plugins page.
 -->
 <div>
-  This plugin is a sample plugin to explain how to write a Jenkins plugin.
+  This plugin is a sample to explain how to write a Jenkins plugin.
 </div>
