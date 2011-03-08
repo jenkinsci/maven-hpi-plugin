@@ -33,7 +33,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.jvnet.hudson.maven.plugins.hpi;
+package org.jenkinsci.maven.plugins.hpi;
 
 import java.util.StringTokenizer;
 

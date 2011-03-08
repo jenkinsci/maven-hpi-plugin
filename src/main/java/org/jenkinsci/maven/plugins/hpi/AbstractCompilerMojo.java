@@ -1,5 +1,5 @@
 // COPIED FROM MAVEN: DO NOT MODIFY
-package org.jvnet.hudson.maven.plugins.hpi;
+package org.jenkinsci.maven.plugins.hpi;
 
 /*
  * Copyright 2001-2005 The Apache Software Foundation.

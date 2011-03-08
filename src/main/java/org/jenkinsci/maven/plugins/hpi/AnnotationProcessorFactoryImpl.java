@@ -1,4 +1,4 @@
-package org.jvnet.hudson.maven.plugins.hpi;
+package org.jenkinsci.maven.plugins.hpi;
 
 import com.sun.mirror.apt.AnnotationProcessor;
 import com.sun.mirror.apt.AnnotationProcessorEnvironment;

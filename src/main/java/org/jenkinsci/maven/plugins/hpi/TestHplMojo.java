@@ -1,4 +1,4 @@
-package org.jvnet.hudson.maven.plugins.hpi;
+package org.jenkinsci.maven.plugins.hpi;
 
 import org.apache.maven.plugin.MojoExecutionException;
 

@@ -40,7 +40,7 @@
     <component>
       <role>org.codehaus.plexus.compiler.Compiler</role>
       <role-hint>hpi-apt</role-hint>
-      <implementation>org.jvnet.hudson.maven.plugins.hpi.AptCompiler</implementation>
+      <implementation>org.jenkinsci.maven.plugins.hpi.AptCompiler</implementation>
       <description />
     </component>
   </components>
