@@ -137,7 +137,7 @@ public class CreateMojo extends AbstractMojo {
             if (packageName == null) {
                 getLog().info("Defaulting package to group ID: " + groupId);
 
-                packageName = groupId;
+                packageName = replaceInvalidPackageNameChars(groupId);
             }
 
             if(artifactId==null) {
@@ -194,6 +194,31 @@ public class CreateMojo extends AbstractMojo {
         } catch (Exception e) {
             throw new MojoExecutionException("Failed to create a new Jenkins plugin",e);
         }
+    }
+
+    /**
+     * Replaces all characters which are invalid in package names.
+     * 
+     * TODO: Currently this only handles '-'
+     */
+    private String replaceInvalidPackageNameChars(String packageName) {
+        StringBuilder buf = new StringBuilder(packageName);
+        boolean changed = false;
+        int i = 0;
+        while (i < buf.length()) {
+            char c = buf.charAt(i);
+            if (c == '-') {
+                buf.deleteCharAt(i);
+                changed = true;
+            } else {
+                i++;
+            }
+        }
+        
+        if (changed) {
+            getLog().warn("Package name contains invalid characters. Replacing it with '" + buf + "'");
+        }
+        return buf.toString();
     }
 
     //TODO: this should be put in John's artifact utils and used from there instead of being repeated here. Creating
