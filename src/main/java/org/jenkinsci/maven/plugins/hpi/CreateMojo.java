@@ -179,7 +179,8 @@ public class CreateMojo extends AbstractMojo {
 
             // copy view resource files. So far maven archetype doesn't seem to be able to handle it.
             File outDir = new File( basedir, artifactId );
-            File viewDir = new File( outDir, "src/main/resources/"+groupId.replace('.','/')+"/HelloWorldBuilder" );
+            char sep = File.separatorChar;
+            File viewDir = new File( outDir, "src"+sep+"main"+sep+"resources"+sep+packageName.replace('.',sep)+sep+"HelloWorldBuilder" );
             viewDir.mkdirs();
 
             for( String s : new String[]{"config.jelly","global.jelly","help-name.html"} ) {
