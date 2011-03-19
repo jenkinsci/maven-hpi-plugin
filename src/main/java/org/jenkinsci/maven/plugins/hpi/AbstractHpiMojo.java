@@ -17,12 +17,14 @@ package org.jenkinsci.maven.plugins.hpi;
  */
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.model.Resource;
 import org.apache.maven.model.Developer;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.MavenProjectBuilder;
 import org.codehaus.plexus.archiver.ArchiverException;
 import org.codehaus.plexus.archiver.UnArchiver;
 import org.codehaus.plexus.archiver.jar.Manifest.Attribute;
@@ -231,6 +233,16 @@ public abstract class AbstractHpiMojo extends AbstractMojo {
      */
     boolean includeTestScope;
 
+    /**
+     * @component
+     */
+    protected MavenProjectBuilder projectBuilder;
+
+    /**
+     * @parameter expression="${localRepository}"
+     * @required
+     */
+    protected ArtifactRepository localRepository;
 
     private static final String[] EMPTY_STRING_ARRAY = {};
 
@@ -434,6 +446,18 @@ public abstract class AbstractHpiMojo extends AbstractMojo {
         }
     }
 
+    public Set<MavenArtifact> getProjectArtfacts() {
+        Set<MavenArtifact> r = new HashSet<MavenArtifact>();
+        for (Artifact a : (Collection<Artifact>)project.getArtifacts()) {
+            r.add(wrap(a));
+        }
+        return r;
+    }
+
+    protected MavenArtifact wrap(Artifact a) {
+        return new MavenArtifact(a,projectBuilder,project.getRemoteArtifactRepositories(),localRepository);
+    }
+
     /**
      * Builds the webapp for the specified project.
      * <p/>
@@ -458,26 +482,26 @@ public abstract class AbstractHpiMojo extends AbstractMojo {
             copyDirectoryStructureIfModified(classesDirectory, webappClassesDirectory);
         }
 
-        Set<Artifact> artifacts = project.getArtifacts();
+        Set<MavenArtifact> artifacts = getProjectArtfacts();
 
-        List duplicates = findDuplicates(artifacts);
+        List<String> duplicates = findDuplicates(artifacts);
 
         List<File> dependentWarDirectories = new ArrayList<File>();
 
         // List up IDs of Jenkins plugin dependencies
         Set<String> jenkinsPlugins = new HashSet<String>();
-        for (Artifact artifact : artifacts) {
-            if(HpiUtil.isPlugin(artifact))
+        for (MavenArtifact artifact : artifacts) {
+            if(artifact.isPlugin())
                 jenkinsPlugins.add(artifact.getId());
         }
 
-        for (Artifact artifact : artifacts) {
+        for (MavenArtifact artifact : artifacts) {
             if(jenkinsPlugins.contains(artifact.getId()))
                 continue;   // plugin dependency need not be WEB-INF/lib
             if(artifact.getDependencyTrail().size() >= 1 && jenkinsPlugins.contains(artifact.getDependencyTrail().get(1)))
                 continue;   // no need to have transitive dependencies through plugins in WEB-INF/lib.
 
-            String targetFileName = getDefaultFinalName(artifact);
+            String targetFileName = artifact.getDefaultFinalName();
 
             getLog().debug("Processing: " + targetFileName);
 
@@ -489,7 +513,7 @@ public abstract class AbstractHpiMojo extends AbstractMojo {
 
             // TODO: utilise appropriate methods from project builder
             ScopeArtifactFilter filter = new ScopeArtifactFilter(Artifact.SCOPE_RUNTIME);
-            if (!artifact.isOptional() && filter.include(artifact)) {
+            if (!artifact.isOptional() && filter.include(artifact.artifact)) {
                 String type = artifact.getType();
                 if ("tld".equals(type)) {
                     copyFileIfModified(artifact.getFile(), new File(tldDirectory, targetFileName));
@@ -532,11 +556,11 @@ public abstract class AbstractHpiMojo extends AbstractMojo {
      * @param artifacts set of artifacts
      * @return List of duplicated artifacts
      */
-    private List<String> findDuplicates(Set<Artifact> artifacts) {
+    private List<String> findDuplicates(Set<MavenArtifact> artifacts) {
         List<String> duplicates = new ArrayList<String>();
         List<String> identifiers = new ArrayList<String>();
-        for (Artifact artifact : artifacts) {
-            String candidate = getDefaultFinalName(artifact);
+        for (MavenArtifact artifact : artifacts) {
+            String candidate = artifact.getDefaultFinalName();
             if (identifiers.contains(candidate)) {
                 duplicates.add(candidate);
             } else {
@@ -554,7 +578,7 @@ public abstract class AbstractHpiMojo extends AbstractMojo {
      * @return Directory containing the unpacked war.
      * @throws MojoExecutionException
      */
-    private File unpackWarToTempDirectory(Artifact artifact)
+    private File unpackWarToTempDirectory(MavenArtifact artifact)
         throws MojoExecutionException {
         String name = artifact.getFile().getName();
         File tempLocation = new File(workDirectory, name.substring(0, name.length() - 4));
@@ -850,16 +874,6 @@ public abstract class AbstractHpiMojo extends AbstractMojo {
         Reader getReader(Reader fileReader, Properties filterProperties);
     }
 
-    /**
-     * Converts the filename of an artifact to artifactId-version.type format.
-     *
-     * @param artifact
-     * @return converted filename of the artifact
-     */
-    private String getDefaultFinalName(Artifact artifact) {
-        return artifact.getArtifactId() + "-" + artifact.getVersion() + "." +
-            artifact.getArtifactHandler().getExtension();
-    }
 
     protected void setAttributes(Section mainSection) throws MojoExecutionException, ManifestException, IOException {
         File pluginImpl = new File(project.getBuild().getOutputDirectory(), "META-INF/services/hudson.Plugin");
@@ -936,8 +950,8 @@ public abstract class AbstractHpiMojo extends AbstractMojo {
      */
     private String findDependencyProjects() throws IOException, MojoExecutionException {
         StringBuilder buf = new StringBuilder();
-        for (Artifact a : (Collection<Artifact>)project.getArtifacts()) {
-            if(HpiUtil.isPlugin(a) && (includeTestScope || !"test".equals(a.getScope()))) {
+        for (MavenArtifact a : getProjectArtfacts()) {
+            if(a.isPlugin() && (includeTestScope || !"test".equals(a.getScope()))) {
                 if(buf.length()>0)
                     buf.append(',');
                 buf.append(a.getArtifactId());
@@ -952,7 +966,7 @@ public abstract class AbstractHpiMojo extends AbstractMojo {
         // check any "provided" scope plugin dependencies that are probably not what the user intended.
         // see http://www.nabble.com/Classloading-problem-when-referencing-classes-from-another-plugin-during-the-initialization-phase-of-a-plugin-%28ClassicPluginStrategy%29-td25426117.html
         for (Artifact a : (Collection<Artifact>)project.getDependencyArtifacts())
-            if ("provided".equals(a.getScope()) && HpiUtil.isPlugin(a))
+            if ("provided".equals(a.getScope()) && wrap(a).isPlugin())
                 throw new MojoExecutionException(a.getId()+" is marked as 'provided' scope dependency, but it should be the 'compile' scope.");
 
 

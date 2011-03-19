@@ -20,7 +20,7 @@ import java.util.Set;
  * @requiresDependencyResolution test
  * @author Kohsuke Kawaguchi
  */
-public class TestDependencyMojo extends AbstractMojo {
+public class TestDependencyMojo extends AbstractHpiMojo {
     /**
      * The maven project.
      *
@@ -37,8 +37,8 @@ public class TestDependencyMojo extends AbstractMojo {
         try {
             Writer w = new OutputStreamWriter(new FileOutputStream(new File(testDir,"index")),"UTF-8");
 
-            for (Artifact a : (Set<Artifact>) project.getArtifacts()) {
-                if(!HpiUtil.isPlugin(a))
+            for (MavenArtifact a : getProjectArtfacts()) {
+                if(!a.isPlugin())
                     continue;
 
                 getLog().debug("Copying "+a.getId()+" as a test dependency");

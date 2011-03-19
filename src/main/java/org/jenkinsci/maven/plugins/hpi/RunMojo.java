@@ -23,6 +23,8 @@ import org.apache.maven.artifact.resolver.ArtifactResolver;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.commons.io.FileUtils;
@@ -35,6 +37,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -116,6 +120,20 @@ public class RunMojo extends AbstractJetty6Mojo {
      * @parameter expression="${jetty.consoleForceReload}" default-value="true"
      */
     protected boolean consoleForceReload;
+
+    /**
+     * The maven project.
+     *
+     * @parameter expression="${project}"
+     * @required
+     * @readonly
+     */
+    protected MavenProject project;
+
+    /**
+     * @component
+     */
+    protected MavenProjectBuilder projectBuilder;
 
     public void execute() throws MojoExecutionException, MojoFailureException {
         // compute hudsonHome
@@ -200,8 +218,8 @@ public class RunMojo extends AbstractJetty6Mojo {
 
         // copy other dependency Jenkins plugins
         try {
-            for( Artifact a : (Set<Artifact>)getProject().getArtifacts() ) {
-                if(!HpiUtil.isPlugin(a))
+            for( MavenArtifact a : getProjectArtfacts() ) {
+                if(!a.isPlugin())
                     continue;
                 getLog().info("Copying dependency Jenkins plugin "+a.getFile());
 
@@ -346,5 +364,17 @@ public class RunMojo extends AbstractJetty6Mojo {
         if (defaultPort!=null)
             return defaultPort;
         return super.getDefaultHttpPort();
+    }
+
+    public Set<MavenArtifact> getProjectArtfacts() {
+        Set<MavenArtifact> r = new HashSet<MavenArtifact>();
+        for (Artifact a : (Collection<Artifact>)project.getArtifacts()) {
+            r.add(wrap(a));
+        }
+        return r;
+    }
+
+    protected MavenArtifact wrap(Artifact a) {
+        return new MavenArtifact(a,projectBuilder,project.getRemoteArtifactRepositories(),localRepository);
     }
 }
