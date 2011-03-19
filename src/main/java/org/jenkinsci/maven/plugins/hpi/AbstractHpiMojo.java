@@ -240,7 +240,6 @@ public abstract class AbstractHpiMojo extends AbstractMojo {
 
     /**
      * @parameter expression="${localRepository}"
-     * @required
      */
     protected ArtifactRepository localRepository;
 

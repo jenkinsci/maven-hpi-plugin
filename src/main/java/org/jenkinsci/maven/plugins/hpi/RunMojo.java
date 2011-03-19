@@ -122,15 +122,6 @@ public class RunMojo extends AbstractJetty6Mojo {
     protected boolean consoleForceReload;
 
     /**
-     * The maven project.
-     *
-     * @parameter expression="${project}"
-     * @required
-     * @readonly
-     */
-    protected MavenProject project;
-
-    /**
      * @component
      */
     protected MavenProjectBuilder projectBuilder;
@@ -281,6 +272,8 @@ public class RunMojo extends AbstractJetty6Mojo {
         hpl.pluginName = getProject().getName();
         hpl.warSourceDirectory = warSourceDirectory;
         hpl.includeTestScope = true;
+        hpl.projectBuilder = this.projectBuilder;
+        hpl.localRepository = this.localRepository;
         hpl.execute();
     }
 
@@ -368,13 +361,13 @@ public class RunMojo extends AbstractJetty6Mojo {
 
     public Set<MavenArtifact> getProjectArtfacts() {
         Set<MavenArtifact> r = new HashSet<MavenArtifact>();
-        for (Artifact a : (Collection<Artifact>)project.getArtifacts()) {
+        for (Artifact a : (Collection<Artifact>)getProject().getArtifacts()) {
             r.add(wrap(a));
         }
         return r;
     }
 
     protected MavenArtifact wrap(Artifact a) {
-        return new MavenArtifact(a,projectBuilder,project.getRemoteArtifactRepositories(),localRepository);
+        return new MavenArtifact(a,projectBuilder,getProject().getRemoteArtifactRepositories(),localRepository);
     }
 }
