@@ -901,7 +901,14 @@ public abstract class AbstractHpiMojo extends AbstractMojo {
             String dt = new SimpleDateFormat("MM/dd/yyyy HH:mm").format(new Date());
             v += " (private-"+dt+"-"+System.getProperty("user.name")+")";
         }
-        mainSection.addAttributeAndCheck(new Attribute("Plugin-Version",v));
+
+        if (!project.getPackaging().equals("jenkins-module")) {
+            // Earlier maven-hpi-plugin used to look for this attribute to determine if a jar file is a Jenkins plugin.
+            // While that's fixed, people out there might be still using it, so as a precaution when building a module
+            // don't put this information in there.
+            // The "Implementation-Version" baked by Maven should serve the same purpose if someone needs to know the version.
+            mainSection.addAttributeAndCheck(new Attribute("Plugin-Version",v));
+        }
 
         String jv = HpiUtil.findJenkinsVersion(project, jenkinsCoreId);
         mainSection.addAttributeAndCheck(new Attribute("Hudson-Version",jv));
