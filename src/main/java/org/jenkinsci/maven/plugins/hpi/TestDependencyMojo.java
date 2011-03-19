@@ -21,15 +21,6 @@ import java.util.Set;
  * @author Kohsuke Kawaguchi
  */
 public class TestDependencyMojo extends AbstractHpiMojo {
-    /**
-     * The maven project.
-     *
-     * @parameter expression="${project}"
-     * @required
-     * @readonly
-     */
-    protected MavenProject project;
-
     public void execute() throws MojoExecutionException, MojoFailureException {
         File testDir = new File(project.getBuild().getTestOutputDirectory(),"test-dependencies");
         testDir.mkdirs();
