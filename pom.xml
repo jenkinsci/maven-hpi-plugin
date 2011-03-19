@@ -155,7 +155,7 @@
 
   <distributionManagement>
     <site>
-      <id>jenkins-ci.org</id>
+      <id>jenkins-ci.org:/var/www</id>
       <url>scp://jenkins-ci.org/var/www/jenkins-ci.org/maven-hpi-plugin/</url>
     </site>
   </distributionManagement>
