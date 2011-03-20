@@ -27,6 +27,9 @@ import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.commons.io.FileUtils;
+import org.mortbay.jetty.nio.SelectChannelConnector;
+import org.mortbay.jetty.plugin.Jetty6PluginServer;
+import org.mortbay.jetty.plugin.util.JettyPluginServer;
 import org.mortbay.jetty.plugin.util.Scanner;
 import org.mortbay.jetty.plugin.util.Scanner.Listener;
 import org.mortbay.jetty.plugin.util.SystemProperty;
@@ -396,6 +399,19 @@ public class RunMojo extends AbstractJetty6Mojo {
         if (defaultPort!=null)
             return defaultPort;
         return super.getDefaultHttpPort();
+    }
+
+    public JettyPluginServer createServer() throws Exception {
+        return new Jetty6PluginServer() {
+            @Override
+            public Object createDefaultConnector(String portnum) throws Exception {
+                SelectChannelConnector con = (SelectChannelConnector)super.createDefaultConnector(portnum);
+
+                con.setHeaderBufferSize(12*1024); // use a bigger buffer as Stapler traces can get pretty large on deeply nested URL
+
+                return con;
+            }
+        };
     }
 
     public Set<MavenArtifact> getProjectArtfacts() {
