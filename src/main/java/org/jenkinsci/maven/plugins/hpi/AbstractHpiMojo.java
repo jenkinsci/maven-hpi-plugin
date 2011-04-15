@@ -476,11 +476,20 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
                 jenkinsPlugins.add(artifact.getId());
         }
 
+        OUTER:
         for (MavenArtifact artifact : artifacts) {
             if(jenkinsPlugins.contains(artifact.getId()))
                 continue;   // plugin dependency need not be WEB-INF/lib
             if(artifact.getDependencyTrail().size() >= 1 && jenkinsPlugins.contains(artifact.getDependencyTrail().get(1)))
                 continue;   // no need to have transitive dependencies through plugins in WEB-INF/lib.
+
+            // if the dependency goes through jenkins core, we don't need to bundle it in the war
+            // because jenkins-core comes in the <provided> scope, I think this is a bug in Maven that it puts such
+            // dependencies into the artifact list.
+            for (String trail : artifact.getDependencyTrail()) {
+                if (trail.contains(":hudson-core:") || trail.contains(":jenkins-core:"))
+                    continue OUTER;
+            }
 
             String targetFileName = artifact.getDefaultFinalName();
 
