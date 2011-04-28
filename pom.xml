@@ -13,7 +13,7 @@
   <name>Maven Jenkins Plugin</name>
   <version>1.68-SNAPSHOT</version>
   <description>Maven2 plugin for developing Jenkins plugins</description>
-  
+
   <licenses>
     <license>
       <name>The Apache Software License, Version 2.0</name>
@@ -83,6 +83,7 @@
     <end>$}</end>
     <dollar>$</dollar>
     <openbracket>{</openbracket>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
   <dependencies>
