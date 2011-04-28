@@ -24,7 +24,6 @@ public class AptCompiler extends JavacCompiler {
         config.setTargetVersion("1.5");
         config.setSourceVersion("1.5");
 
-
         File destinationDir = new File( config.getOutputLocation() );
 
         if ( !destinationDir.exists() )
@@ -46,6 +45,8 @@ public class AptCompiler extends JavacCompiler {
         // this is where the META-INF/services get generated.
         config.addCompilerCustomArgument("-s",new File(config.getOutputLocation()).getAbsolutePath());
         String[] args = buildCompilerArguments( config, sourceFiles );
+
+        getLogger().info( "compilation forked " + config.isFork() );
 
         return compileInProcess( args );
     }

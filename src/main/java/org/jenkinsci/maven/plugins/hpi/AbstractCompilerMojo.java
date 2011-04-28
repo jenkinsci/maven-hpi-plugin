@@ -143,7 +143,7 @@ public abstract class AbstractCompilerMojo
      * Allows running the compiler in a separate process.
      * If "false" it uses the built in compiler, while if "true" it will use an executable.
      *
-     * @parameter default-value="false"
+     * @parameter default-value="false" expression="${maven.hpi.compiler.fork}"
      */
     private boolean fork;
 
