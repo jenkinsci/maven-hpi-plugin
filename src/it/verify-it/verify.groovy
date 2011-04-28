@@ -16,13 +16,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 assert new File(basedir, 'target/classes').exists();
 assert new File(basedir, 'target/classes/org/jenkinsci/tools/hpi/its').exists();
 assert new File(basedir, 'target/classes/org/jenkinsci/tools/hpi/its/HelloWorldBuilder.class').exists();
 assert new File(basedir, 'target/classes/org/jenkinsci/tools/hpi/its/HelloWorldBuilder$DescriptorImpl.class').exists();
 assert new File(basedir, 'target/classes/org/jenkinsci/tools/hpi/its/HelloWorldBuilder.stapler').exists();
+assert new File(basedir, 'target/classes/org/jenkinsci/tools/hpi/its/Messages.class').exists();
 assert new File(basedir, 'target/verify-it.hpi').exists();
 assert new File(basedir, 'target/verify-it.jar').exists();
+
+assert new File(basedir, 'target/generated-sources/localizer/org/jenkinsci/tools/hpi/its/Messages.java').exists();
+
+content = new File(basedir, 'target/generated-sources/localizer/org/jenkinsci/tools/hpi/its/Messages.java').text;
+assert content.contains(" holder.format(\"it.msg\");");
 
 // TODO add some test on hpi file content
 
