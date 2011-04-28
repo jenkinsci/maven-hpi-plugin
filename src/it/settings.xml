@@ -39,11 +39,31 @@ under the License.
             <enabled>true</enabled>
           </snapshots>
         </repository>
+        <repository>
+          <id>maven.jenkins</id>
+          <url>http://maven.jenkins-ci.org/content/groups/java.net2/</url>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+          <snapshots>
+            <enabled>true</enabled>
+          </snapshots>
+        </repository>
       </repositories>
       <pluginRepositories>
         <pluginRepository>
           <id>local.central</id>
           <url>@localRepositoryUrl@</url>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+          <snapshots>
+            <enabled>true</enabled>
+          </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+          <id>maven.jenkins</id>
+          <url>http://maven.jenkins-ci.org/content/groups/java.net2/</url>
           <releases>
             <enabled>true</enabled>
           </releases>
