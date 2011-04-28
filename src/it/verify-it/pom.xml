@@ -10,7 +10,7 @@
   </parent>
 
     <groupId>org.jenkins-ci.tools.hpi.its</groupId>
-    <artifactId>compile-it</artifactId>
+    <artifactId>verify-it</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <packaging>hpi</packaging>
