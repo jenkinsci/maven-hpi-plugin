@@ -23,7 +23,6 @@ import org.apache.maven.artifact.resolver.ArtifactResolver;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Copy;
@@ -126,6 +125,15 @@ public class RunMojo extends AbstractJetty6Mojo {
      */
     protected MavenProjectBuilder projectBuilder;
 
+    /**
+     * Optional string that represents "groupId:artifactId" of Jenkins war.
+     * If left unspecified, the default groupId/artifactId pair for Jenkins is looked for.
+     *
+     * @parameter
+     * @since 1.68
+     */
+    private String jenkinsWarId;
+
     public void execute() throws MojoExecutionException, MojoFailureException {
         // compute hudsonHome
         if(hudsonHome==null) {
@@ -151,27 +159,11 @@ public class RunMojo extends AbstractJetty6Mojo {
 
         // look for jenkins.war
         for( Artifact a : (Set<Artifact>)getProject().getArtifacts() ) {
-            if((a.getArtifactId().equals("jenkins-war") || a.getArtifactId().equals("hudson-war")) && a.getType().equals("war")) {
-                webApp = a.getFile();
-            }
             if(a.getGroupId().equals("org.jenkins-ci.main") || a.getGroupId().equals("org.jvnet.hudson.main"))
                 hudsonArtifacts.add(a);
         }
 
-        if(webApp==null) {
-            getLog().error(
-                "Unable to locate jenkins.war. Add the following dependency in your POM:\n" +
-                "\n" +
-                "<dependency>\n" +
-                "  <groupId>org.jenkins-ci.main</groupId>\n" +
-                "  <artifactId>jenkins-war</artifactId>\n" +
-                "  <type>war</type>\n" +
-                "  <version>1.396<!-- replace this with the version you want--></version>\n" +
-                "  <scope>test</scope>\n" +
-                "</dependency>"
-            );
-            throw new MojoExecutionException("Unable to find jenkins.war");
-        }
+        webApp = getJenkinsWarArtifact().getFile();
 
         // make sure all the relevant Jenkins artifacts have the same version
         for (Artifact a : hudsonArtifacts) {
@@ -369,5 +361,34 @@ public class RunMojo extends AbstractJetty6Mojo {
 
     protected MavenArtifact wrap(Artifact a) {
         return new MavenArtifact(a,projectBuilder,getProject().getRemoteArtifactRepositories(),localRepository);
+    }
+
+    protected Artifact getJenkinsWarArtifact() throws MojoExecutionException {
+        for( Artifact a : (Set<Artifact>)getProject().getArtifacts() ) {
+            boolean match;
+            if (jenkinsWarId!=null)
+                match = (a.getGroupId()+':'+a.getArtifactId()).equals(jenkinsWarId);
+            else
+                match = (a.getArtifactId().equals("jenkins-war") || a.getArtifactId().equals("hudson-war")) && a.getType().equals("war");
+            if(match)
+                return a;
+        }
+
+        if (jenkinsWarId!=null) {
+            getLog().error("Unable to locate jenkins.war in '"+jenkinsWarId+"'");
+        } else {
+            getLog().error(
+                "Unable to locate jenkins.war. Add the following dependency in your POM:\n" +
+                "\n" +
+                "<dependency>\n" +
+                "  <groupId>org.jenkins-ci.main</groupId>\n" +
+                "  <artifactId>jenkins-war</artifactId>\n" +
+                "  <type>war</type>\n" +
+                "  <version>1.396<!-- replace this with the version you want--></version>\n" +
+                "  <scope>test</scope>\n" +
+                "</dependency>"
+            );
+        }
+        throw new MojoExecutionException("Unable to find jenkins.war");
     }
 }
