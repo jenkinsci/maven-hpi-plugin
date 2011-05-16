@@ -30,7 +30,7 @@ public abstract class AbstractJenkinsMojo extends AbstractMojo {
      * @parameter
      * @since 1.65
      */
-    private String jenkinsCoreId;
+    protected String jenkinsCoreId;
 
     protected String findJenkinsVersion() throws MojoExecutionException {
         for(Dependency a : (List<Dependency>)project.getDependencies()) {

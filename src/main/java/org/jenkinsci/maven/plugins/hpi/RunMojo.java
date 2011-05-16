@@ -126,13 +126,22 @@ public class RunMojo extends AbstractJetty6Mojo {
     protected MavenProjectBuilder projectBuilder;
 
     /**
+     * Optional string that represents "groupId:artifactId" of Jenkins core jar.
+     * If left unspecified, the default groupId/artifactId pair for Jenkins is looked for.
+     *
+     * @parameter
+     * @since 1.65
+     */
+    protected String jenkinsCoreId;
+
+    /**
      * Optional string that represents "groupId:artifactId" of Jenkins war.
      * If left unspecified, the default groupId/artifactId pair for Jenkins is looked for.
      *
      * @parameter
      * @since 1.68
      */
-    private String jenkinsWarId;
+    protected String jenkinsWarId;
 
     public void execute() throws MojoExecutionException, MojoFailureException {
         // compute hudsonHome
@@ -266,6 +275,7 @@ public class RunMojo extends AbstractJetty6Mojo {
         hpl.includeTestScope = true;
         hpl.projectBuilder = this.projectBuilder;
         hpl.localRepository = this.localRepository;
+        hpl.jenkinsCoreId = this.jenkinsCoreId;
         hpl.execute();
     }
 
