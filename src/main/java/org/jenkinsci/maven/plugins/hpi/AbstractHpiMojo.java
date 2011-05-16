@@ -60,7 +60,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.Collection;
 
-public abstract class AbstractHpiMojo extends AbstractMojo {
+public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
     /**
      * The directory for the generated WAR.
      *
@@ -68,15 +68,6 @@ public abstract class AbstractHpiMojo extends AbstractMojo {
      * @required
      */
     protected String outputDirectory;
-
-    /**
-     * The maven project.
-     *
-     * @parameter expression="${project}"
-     * @required
-     * @readonly
-     */
-    protected MavenProject project;
 
     /**
      * The directory containing generated classes.
@@ -217,15 +208,6 @@ public abstract class AbstractHpiMojo extends AbstractMojo {
      * @parameter
      */
     private boolean pluginFirstClassLoader = false;
-
-    /**
-     * Optional string that represents "groupId:artifactId" of Jenkins core jar.
-     * If left unspecified, the default groupId/artifactId pair for Jenkins is looked for.
-     *
-     * @parameter
-     * @since 1.65
-     */
-    private String jenkinsCoreId;
 
     /**
      * If true, test scope dependencies count as if they are normal dependencies.
@@ -910,7 +892,7 @@ public abstract class AbstractHpiMojo extends AbstractMojo {
             mainSection.addAttributeAndCheck(new Attribute("Plugin-Version",v));
         }
 
-        String jv = HpiUtil.findJenkinsVersion(project, jenkinsCoreId);
+        String jv = findJenkinsVersion();
         mainSection.addAttributeAndCheck(new Attribute("Hudson-Version",jv));
         mainSection.addAttributeAndCheck(new Attribute("Jenkins-Version",jv));
 

@@ -1,6 +1,5 @@
 package org.jenkinsci.maven.plugins.hpi;
 
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
@@ -19,11 +18,7 @@ import java.io.FileNotFoundException;
  * @phase generate-test-sources
  * @requiresDependencyResolution test
  */
-public class TestInsertionMojo extends AbstractMojo {
-    /**
-     * @parameter expression="${project}"
-     */
-    protected MavenProject project;
+public class TestInsertionMojo extends AbstractJenkinsMojo {
 
     /**
      * If true, the automatic test injection will be skipped.
@@ -32,14 +27,6 @@ public class TestInsertionMojo extends AbstractMojo {
      */
     private boolean disabledTestInjection;
 
-    /**
-     * Optional string that represents "groupId:artifactId" of Jenkins core jar.
-     * If left unspecified, the default groupId/artifactId pair for Jenkins is looked for.
-     *
-     * @parameter
-     * @since 1.65
-     */
-    private String jenkinsCoreId;
 
     private static String quote(String s) {
         return '"'+s.replace("\\", "\\\\")+'"';
@@ -51,7 +38,7 @@ public class TestInsertionMojo extends AbstractMojo {
             return;
         }
         
-        String target = HpiUtil.findJenkinsVersion(project,jenkinsCoreId);
+        String target = findJenkinsVersion();
         if (new VersionNumber(target).compareTo(new VersionNumber("1.327"))<0) {
             getLog().info("Skipping auto-test generation because we are targeting Jenkins "+target+" (at least 1.327 is required).");
             return;
