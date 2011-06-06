@@ -49,7 +49,7 @@ public class TagLibInterfaceGeneratorMojo extends AbstractMojo {
     /**
      * The directory for the generated WAR.
      *
-     * @parameter expression="${project.basedir}/target/taglib-interface"
+     * @parameter expression="${project.basedir}/target/generated-sources/taglib-interface"
      * @required
      */
     protected File outputDirectory;
@@ -81,12 +81,12 @@ public class TagLibInterfaceGeneratorMojo extends AbstractMojo {
         });
         if (children!=null) {
             for (File child : children)
-                walk(child,pkg.subPackage(child.getName()));
+                walk(child,pkg.subPackage(h2j(child.getName())));
         }
 
         File taglib = new File(dir,"taglib");
         if (taglib.exists()) {
-            JDefinedClass c = pkg.parent()._interface(StringUtils.capitalize(dir.getName()) + "TagLib");
+            JDefinedClass c = pkg.parent()._interface(StringUtils.capitalize(h2j(dir.getName())) + "TagLib");
             c._implements(TypedTagLibrary.class);
             c.annotate(TagLibraryUri.class).param("value",(pkg+"."+dir.getName()).replace('.','/'));
 
@@ -126,5 +126,10 @@ public class TagLibInterfaceGeneratorMojo extends AbstractMojo {
             if (dst.exists() && dst.lastModified()>timestamp)
                 c.hide();
         }
+    }
+
+    private static String h2j(String s) {
+        if (s.equals("hudson")) return "jenkins";
+        return s;
     }
 }
