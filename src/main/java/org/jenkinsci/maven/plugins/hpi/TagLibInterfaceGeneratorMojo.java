@@ -65,7 +65,7 @@ public class TagLibInterfaceGeneratorMojo extends AbstractMojo {
 
             outputDirectory.mkdirs();
             codeModel.build(outputDirectory);
-            project.getCompileSourceRoots().add(outputDirectory);
+            project.getCompileSourceRoots().add(outputDirectory.getAbsolutePath());
         } catch (IOException e) {
             throw new MojoExecutionException("Failed to generate taglib type interface",e);
         } catch (JClassAlreadyExistsException e) {
