@@ -90,7 +90,7 @@ public class TagLibInterfaceGeneratorMojo extends AbstractMojo {
         if (taglib.exists()) {
             JDefinedClass c = pkg.parent()._interface(StringUtils.capitalize(h2j(dir.getName())) + "TagLib");
             c._implements(TypedTagLibrary.class);
-            c.annotate(TagLibraryUri.class).param("value",(pkg+"."+dir.getName()).replace('.','/'));
+            c.annotate(TagLibraryUri.class).param("value",'/'+pkg.name().replace('.','/'));
 
             File[] tags = dir.listFiles(new FilenameFilter() {
                 public boolean accept(File dir, String name) {
