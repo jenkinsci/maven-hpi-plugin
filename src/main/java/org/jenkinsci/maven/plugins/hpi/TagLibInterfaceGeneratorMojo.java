@@ -4,6 +4,7 @@ import com.sun.codemodel.JClassAlreadyExistsException;
 import com.sun.codemodel.JCodeModel;
 import com.sun.codemodel.JDefinedClass;
 import com.sun.codemodel.JDocComment;
+import com.sun.codemodel.JJavaName;
 import com.sun.codemodel.JMethod;
 import com.sun.codemodel.JPackage;
 import groovy.lang.Closure;
@@ -19,6 +20,7 @@ import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.QName;
 import org.dom4j.io.SAXReader;
+import org.kohsuke.stapler.jelly.groovy.TagFile;
 import org.kohsuke.stapler.jelly.groovy.TagLibraryUri;
 import org.kohsuke.stapler.jelly.groovy.TypedTagLibrary;
 
@@ -104,9 +106,20 @@ public class TagLibInterfaceGeneratorMojo extends AbstractMojo {
                     Document dom = saxReader.read(tag);
                     Element doc = dom.getRootElement().element(QName.get("st:documentation", "jelly:stapler"));
 
-                    String methodName = FilenameUtils.getBaseName(tag.getName()).replace('-','_');
+                    String baseName = FilenameUtils.getBaseName(tag.getName());
+                    String methodName;
+                    if (!JJavaName.isJavaIdentifier(tag.getName())) {
+                        methodName = baseName.replace('-', '_');
+                        if (ReservedName.NAMES.contains(methodName))
+                            methodName += '_';
+                    } else {
+                        methodName = baseName;
+                    }
+
                     for (int i=0; i<4; i++) {
                         JMethod m = c.method(0, void.class, methodName);
+                        if (!methodName.equals(baseName))
+                            m.annotate(TagFile.class).param("value",baseName);
                         if (i%2==0)
                             m.param(Map.class,"args");
                         if ((i/2)%2==0)
