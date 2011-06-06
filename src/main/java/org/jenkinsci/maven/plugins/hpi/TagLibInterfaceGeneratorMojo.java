@@ -54,13 +54,11 @@ public class TagLibInterfaceGeneratorMojo extends AbstractMojo {
      */
     protected File outputDirectory;
 
-    private JCodeModel codeModel;
-
     private SAXReader saxReader = new SAXReader();
 
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
-            codeModel = new JCodeModel();
+            JCodeModel codeModel = new JCodeModel();
             for (Resource res: (List<Resource>)project.getBuild().getResources()) {
                 walk(new File(res.getDirectory()),codeModel.rootPackage());
             }
@@ -88,7 +86,7 @@ public class TagLibInterfaceGeneratorMojo extends AbstractMojo {
 
         File taglib = new File(dir,"taglib");
         if (taglib.exists()) {
-            JDefinedClass c = pkg.parent()._interface(StringUtils.capitalize(dir.getName())+"TagLib");
+            JDefinedClass c = pkg.parent()._interface(StringUtils.capitalize(dir.getName()) + "TagLib");
             c._implements(TypedTagLibrary.class);
             c.annotate(TagLibraryUri.class).param("value",(pkg+"."+dir.getName()).replace('.','/'));
 
@@ -98,8 +96,10 @@ public class TagLibInterfaceGeneratorMojo extends AbstractMojo {
                 }
             });
 
+            long timestamp = -1;
 
             for (File tag : tags) {
+                timestamp = Math.max(tag.lastModified(),timestamp);
                 try {
                     Document dom = saxReader.read(tag);
                     Element doc = dom.getRootElement().element(QName.get("st:documentation", "jelly:stapler"));
@@ -121,9 +121,10 @@ public class TagLibInterfaceGeneratorMojo extends AbstractMojo {
                 }
             }
 
-            // TODO: up to date check
-
-//            File javaFile = new File(output.getParentFile(),dir.getName()+".java");
+            // up to date check. if the file already exists and is newer, don't regenerate it
+            File dst = new File(outputDirectory, c.fullName().replace('.', '/') + ".java");
+            if (dst.exists() && dst.lastModified()>timestamp)
+                c.hide();
         }
     }
 }
