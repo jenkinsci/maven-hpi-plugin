@@ -27,6 +27,12 @@ public class TestInsertionMojo extends AbstractJenkinsMojo {
      */
     private boolean disabledTestInjection;
 
+    /**
+     * If true, verify that all the jelly scripts have the Jelly XSS PI in them.
+     *
+     * @parameter expression="${jelly.requirePI}"
+     */
+    private boolean requirePI;
 
     private static String quote(String s) {
         return '"'+s.replace("\\", "\\\\")+'"';
@@ -62,6 +68,7 @@ public class TestInsertionMojo extends AbstractJenkinsMojo {
             w.println("    parameters.put(\"artifactId\","+quote(project.getArtifactId())+");");
             w.println("    parameters.put(\"outputDirectory\","+quote(project.getBuild().getOutputDirectory())+");");
             w.println("    parameters.put(\"testOutputDirectory\","+quote(project.getBuild().getTestOutputDirectory())+");");
+            w.println("    parameters.put(\"requirePI\","+quote(String.valueOf(requirePI))+");");
             w.println("    return new org.jvnet.hudson.test.PluginAutomaticTestBuilder().build(parameters);");
             w.println("  }");
             w.println("}");
