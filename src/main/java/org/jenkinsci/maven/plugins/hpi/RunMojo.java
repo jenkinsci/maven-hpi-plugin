@@ -30,6 +30,7 @@ import org.apache.commons.io.FileUtils;
 import org.mortbay.jetty.plugin.util.Scanner;
 import org.mortbay.jetty.plugin.util.Scanner.Listener;
 import org.mortbay.jetty.plugin.util.SystemProperty;
+import org.mortbay.jetty.webapp.WebAppClassLoader;
 import org.mortbay.jetty.webapp.WebAppContext;
 
 import java.io.File;
@@ -40,6 +41,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * Runs Jenkins with the current plugin project.
@@ -164,19 +166,19 @@ public class RunMojo extends AbstractJetty6Mojo {
         // this adds 3 secs to the shutdown time. Skip it.
         setSystemPropertyIfEmpty("hudson.DNSMultiCast.disabled","true");
 
-        List<Artifact> hudsonArtifacts = new ArrayList<Artifact>();
+        List<Artifact> jenkinsArtifacts = new ArrayList<Artifact>();
 
         // look for jenkins.war
         for( Artifact a : (Set<Artifact>)getProject().getArtifacts() ) {
             if(a.getGroupId().equals("org.jenkins-ci.main") || a.getGroupId().equals("org.jvnet.hudson.main"))
-                hudsonArtifacts.add(a);
+                jenkinsArtifacts.add(a);
         }
 
         webApp = getJenkinsWarArtifact().getFile();
 
         // make sure all the relevant Jenkins artifacts have the same version
-        for (Artifact a : hudsonArtifacts) {
-            Artifact ba = hudsonArtifacts.get(0);
+        for (Artifact a : jenkinsArtifacts) {
+            Artifact ba = jenkinsArtifacts.get(0);
             if(!a.getVersion().equals(ba.getVersion()))
                 throw new MojoExecutionException("Version of "+a.getId()+" is inconsistent with "+ba.getId());
         }
@@ -352,6 +354,41 @@ public class RunMojo extends AbstractJetty6Mojo {
         List<String> sc = new ArrayList<String>(Arrays.asList(wac.getSystemClasses()));
         sc.add("javax.activation.");
         wac.setSystemClasses(sc.toArray(new String[sc.size()]));
+
+        try {
+            // for Jenkins modules, swap the component from jenkins.war by target/classes
+            // via classloader magic
+            WebAppClassLoader wacl = new WebAppClassLoader(wac) {
+                private final Pattern exclusionPattern;
+                {
+                    if (getProject().getPackaging().equals("jenkins-module")) {
+                        // classes compiled from jenkins module should behave as if it's a part of the core
+                        // load resources from source folders directly
+                        for (Resource r : (List<Resource>)getProject().getResources())
+                            super.addURL(new File(r.getDirectory()).toURL());
+                        super.addURL(new File(getProject().getBuild().getOutputDirectory()).toURL());
+                        exclusionPattern = Pattern.compile("[/\\\\]\\Q"+getProject().getArtifactId()+"\\E-[0-9]([^/\\\\]+)\\.jar$");
+                    } else {
+                        exclusionPattern = Pattern.compile("this should never match");
+                    }
+                }
+
+                @Override
+                public void addClassPath(String classPath) throws IOException {
+                    if (exclusionPattern.matcher(classPath).find())
+                        return;
+                    super.addClassPath(classPath);
+                }
+
+                @Override
+                public void addJars(org.mortbay.resource.Resource lib) {
+                    super.addJars(lib);
+                }
+            };
+            wac.setClassLoader(wacl);
+        } catch (IOException e) {
+            throw new Error(e);
+        }
     }
 
     @Override
