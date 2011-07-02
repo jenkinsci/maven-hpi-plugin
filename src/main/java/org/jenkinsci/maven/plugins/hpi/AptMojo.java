@@ -11,6 +11,9 @@ import java.lang.reflect.Field;
  * @phase compile
  * @requiresDependencyResolution compile
  * @author Kohsuke Kawaguchi
+ * @deprecated
+ *      As the annotation processing has switched to JSR-269,
+ *      we no longer use this mojo.
  */
 public class AptMojo extends CompilerMojo {
     public void execute() throws MojoExecutionException, CompilationFailureException {

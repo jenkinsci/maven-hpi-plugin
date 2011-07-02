@@ -16,6 +16,9 @@ import java.util.List;
  * In Maven, {@link Compiler} handles the actual compiler invocation.
  *
  * @author Kohsuke Kawaguchi
+ * @deprecated
+ *      As the annotation processing has switched to JSR-269,
+ *      we no longer need this code.
  */
 public class AptCompiler extends JavacCompiler {
 

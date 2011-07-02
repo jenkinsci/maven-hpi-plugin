@@ -37,6 +37,9 @@ import java.util.Set;
  * @version $Id: CompilerMojo.java 10807 2008-07-14 18:56:05Z btosabre $
  * @phase compile
  * @requiresDependencyResolution compile
+ * @deprecated
+ *      As the annotation processing has switched to JSR-269,
+ *      we no longer need this code.
  */
 public class CompilerMojo
     extends AbstractCompilerMojo {

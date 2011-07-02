@@ -12,7 +12,7 @@
             <id>default</id>
             <phases>
               <process-resources>org.apache.maven.plugins:maven-resources-plugin:resources</process-resources>
-              <compile>org.jenkins-ci.tools:maven-hpi-plugin:apt-compile</compile>
+              <compile>org.apache.maven.plugins:maven-compiler-plugin:compile</compile>
               <process-classes>org.kohsuke:access-modifier-checker:enforce</process-classes>
               <process-test-resources>org.apache.maven.plugins:maven-resources-plugin:testResources</process-test-resources>
               <generate-test-sources>org.jenkins-ci.tools:maven-hpi-plugin:insert-test</generate-test-sources>
