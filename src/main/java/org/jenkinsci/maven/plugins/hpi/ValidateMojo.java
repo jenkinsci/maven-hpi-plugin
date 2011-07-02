@@ -15,7 +15,7 @@ public class ValidateMojo extends AbstractJenkinsMojo {
         if (!isMustangOrAbove())
             throw new MojoExecutionException("JDK6 or later is necessary to build a Jenkins plugin");
 
-        if (new VersionNumber(findJenkinsVersion()).compareTo(new VersionNumber("1.419.*"))<=0)
+        if (new VersionNumber(findJenkinsVersion()).compareTo(new VersionNumber("1.419.99"))<=0)
             throw new MojoExecutionException("This version of maven-hpi-plugin requires Jenkins 1.420 or later");
     }
 
