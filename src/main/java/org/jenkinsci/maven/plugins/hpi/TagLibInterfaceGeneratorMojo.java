@@ -62,7 +62,7 @@ public class TagLibInterfaceGeneratorMojo extends AbstractMojo {
         try {
             JCodeModel codeModel = new JCodeModel();
             for (Resource res: (List<Resource>)project.getBuild().getResources()) {
-                walk(new File(res.getDirectory()),codeModel.rootPackage());
+                walk(new File(res.getDirectory()),codeModel.rootPackage(),"");
             }
 
             outputDirectory.mkdirs();
@@ -75,7 +75,7 @@ public class TagLibInterfaceGeneratorMojo extends AbstractMojo {
         }
     }
 
-    private void walk(File dir,JPackage pkg) throws JClassAlreadyExistsException, IOException {
+    private void walk(File dir,JPackage pkg,String dirName) throws JClassAlreadyExistsException, IOException {
         File[] children = dir.listFiles(new FileFilter() {
             public boolean accept(File f) {
                 return f.isDirectory();
@@ -83,14 +83,14 @@ public class TagLibInterfaceGeneratorMojo extends AbstractMojo {
         });
         if (children!=null) {
             for (File child : children)
-                walk(child,pkg.subPackage(h2j(child.getName())));
+                walk(child,pkg.subPackage(h2j(child.getName())),dirName+'/'+child.getName());
         }
 
         File taglib = new File(dir,"taglib");
         if (taglib.exists()) {
             JDefinedClass c = pkg.parent()._interface(StringUtils.capitalize(h2j(dir.getName())) + "TagLib");
             c._implements(TypedTagLibrary.class);
-            c.annotate(TagLibraryUri.class).param("value",'/'+pkg.name().replace('.','/'));
+            c.annotate(TagLibraryUri.class).param("value",dirName);
 
             File[] tags = dir.listFiles(new FilenameFilter() {
                 public boolean accept(File dir, String name) {
