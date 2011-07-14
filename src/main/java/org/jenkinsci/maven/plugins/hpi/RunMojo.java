@@ -171,7 +171,8 @@ public class RunMojo extends AbstractJetty6Mojo {
         // look for jenkins.war
         for( Artifact a : (Set<Artifact>)getProject().getArtifacts() ) {
             if(a.getGroupId().equals("org.jenkins-ci.main") || a.getGroupId().equals("org.jvnet.hudson.main"))
-                jenkinsArtifacts.add(a);
+                if (!a.getArtifactId().equals("remoting"))  // remoting moved to its own release cycle
+                    jenkinsArtifacts.add(a);
         }
 
         webApp = getJenkinsWarArtifact().getFile();
