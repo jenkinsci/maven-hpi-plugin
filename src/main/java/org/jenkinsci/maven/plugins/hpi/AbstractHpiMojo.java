@@ -948,7 +948,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
     private String findDependencyProjects() throws IOException, MojoExecutionException {
         StringBuilder buf = new StringBuilder();
         for (MavenArtifact a : getProjectArtfacts()) {
-            if(a.isPlugin() && (includeTestScope || !"test".equals(a.getScope()))) {
+            if(a.isPlugin() && (includeTestScope || !"test".equals(a.getScope())) && !a.hasSameGAAs(project)) {
                 if(buf.length()>0)
                     buf.append(',');
                 buf.append(a.getArtifactId());

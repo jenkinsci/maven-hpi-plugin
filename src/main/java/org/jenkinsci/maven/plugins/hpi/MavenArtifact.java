@@ -99,4 +99,11 @@ public class MavenArtifact {
     public String getVersion() {
         return artifact.getVersion();
     }
+
+    /**
+     * Returns true if this artifact has the same groupId and artifactId as the given project.
+     */
+    public boolean hasSameGAAs(MavenProject project) {
+        return getGroupId().equals(project.getGroupId()) && getArtifactId().equals(project.getArtifactId());
+    }
 }
