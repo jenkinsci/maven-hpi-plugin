@@ -27,10 +27,16 @@ import org.codehaus.plexus.archiver.jar.Manifest;
 import org.codehaus.plexus.archiver.jar.Manifest.Section;
 import org.codehaus.plexus.archiver.jar.ManifestException;
 import org.codehaus.plexus.util.IOUtil;
+import sun.misc.IOUtils;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 
 /**
@@ -132,8 +138,9 @@ public class HpiMojo extends AbstractHpiMojo {
 
         File manifestFile = new File(getWebappDirectory(), "META-INF/MANIFEST.MF");
         generateManifest(manifestFile);
+        Manifest manifest = loadManifest(manifestFile);
 
-        hpiArchiver.setManifest(manifestFile);
+        hpiArchiver.addConfiguredManifest(manifest);
         hpiArchiver.addDirectory(getWebappDirectory(), getIncludes(), getExcludes());
 
         // create archive
@@ -145,10 +152,19 @@ public class HpiMojo extends AbstractHpiMojo {
         archiver = new MavenArchiver();
         archiver.setArchiver(jarArchiver);
         archiver.setOutputFile(jarFile);
-        jarArchiver.setManifest(manifestFile);
+        jarArchiver.addConfiguredManifest(manifest);
         jarArchiver.addDirectory(getClassesDirectory());
         archiver.createArchive(project,archive);
         projectHelper.attachArtifact(project, "jar", null, jarFile);
+    }
+
+    private Manifest loadManifest(File f) throws IOException, ManifestException {
+        InputStreamReader r = new InputStreamReader(new FileInputStream(f), "UTF-8");
+        try {
+            return new Manifest(r);
+        } finally {
+            IOUtil.close(r);
+        }
     }
 
     /**
@@ -170,7 +186,7 @@ public class HpiMojo extends AbstractHpiMojo {
             Section mainSection = mf.getMainSection();
             setAttributes(mainSection);
 
-            printWriter = new PrintWriter(new FileWriter(manifestFile));
+            printWriter = new PrintWriter(new OutputStreamWriter(new FileOutputStream(manifestFile),"UTF-8"));
             mf.write(printWriter);
         } catch (ManifestException e) {
             throw new MojoExecutionException("Error preparing the manifest: " + e.getMessage(), e);
