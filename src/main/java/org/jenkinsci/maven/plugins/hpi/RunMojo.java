@@ -44,6 +44,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 /**
@@ -358,6 +359,11 @@ public class RunMojo extends AbstractJetty6Mojo {
         List<String> sc = new ArrayList<String>(Arrays.asList(wac.getSystemClasses()));
         sc.add("javax.activation.");
         wac.setSystemClasses(sc.toArray(new String[sc.size()]));
+
+        // to allow the development environment to run multiple "mvn hpi:run" with different port,
+        // use different session cookie names. Otherwise they can mix up. See
+        // http://stackoverflow.com/questions/1612177/are-http-cookies-port-specific
+        wac.getSessionHandler().getSessionManager().setSessionCookie("JSESSIONID."+UUID.randomUUID().toString().replace("-","").substring(0,8));
 
         try {
             // for Jenkins modules, swap the component from jenkins.war by target/classes
