@@ -17,13 +17,17 @@ final class MaskingClassLoader extends ClassLoader {
     }
 
     protected synchronized Class loadClass(String name, boolean resolve) throws ClassNotFoundException {
-        if(name.startsWith("org.kohsuke")
-        || name.startsWith("org.apache.maven")
-        || name.startsWith("org.sonatype")
-        || name.startsWith("org.cyberneko")
-        || name.startsWith("org.codehaus.plexus"))
+        if(isMaskedClassPrefix(name))
             throw new ClassNotFoundException(name);
         return super.loadClass(name, resolve);
+    }
+
+    private boolean isMaskedClassPrefix(String name) {
+        return name.startsWith("org.kohsuke")
+            || name.startsWith("org.apache.maven")
+            || name.startsWith("org.sonatype")
+            || name.startsWith("org.cyberneko")
+            || name.startsWith("org.codehaus.plexus");
     }
 
     public URL getResource(String name) {
@@ -33,6 +37,8 @@ final class MaskingClassLoader extends ClassLoader {
     }
 
     private boolean isMaskedResourcePrefix(String name) {
+        if (name.startsWith(META_INF_SERVICES) && isMaskedClassPrefix(name.substring(META_INF_SERVICES.length())))
+            return true;
         return name.startsWith("org/kohsuke")
             || name.startsWith("org/apache/maven")
             || name.startsWith("org/sonatype")
@@ -56,4 +62,6 @@ final class MaskingClassLoader extends ClassLoader {
             throw new NoSuchElementException();
         }
     };
+
+    private static final String META_INF_SERVICES = "META-INF/services/";
 }
