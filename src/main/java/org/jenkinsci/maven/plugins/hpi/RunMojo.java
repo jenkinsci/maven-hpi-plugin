@@ -226,6 +226,14 @@ public class RunMojo extends AbstractJetty6Mojo {
                 Artifact hpi = artifactFactory.createArtifact(a.getGroupId(),a.getArtifactId(),a.getVersion(),null,"hpi");
                 artifactResolver.resolve(hpi,getProject().getRemoteArtifactRepositories(), localRepository);
 
+                // check recursive dependency. this is a rare case that happens when we split out some things from the core
+                // into a plugin
+                if (hasSameGavAsProject(hpi))
+                    continue;
+
+                if (hpi.getFile().isDirectory())
+                    throw new UnsupportedOperationException(hpi.getFile()+" is a directory and not packaged yet. this isn't supported");
+
                 copyFile(hpi.getFile(),new File(pluginsDir,a.getArtifactId()+".hpi"));
                 // pin the dependency plugin, so that even if a different version of the same plugin is bundled to Jenkins,
                 // we still use the plugin as specified by the POM of the plugin.
@@ -246,6 +254,12 @@ public class RunMojo extends AbstractJetty6Mojo {
         } finally {
             Thread.currentThread().setContextClassLoader(ccl);
         }
+    }
+
+    private boolean hasSameGavAsProject(Artifact a) {
+        return getProject().getGroupId().equals(a.getGroupId())
+            && getProject().getArtifactId().equals(a.getArtifactId())
+            && getProject().getVersion().equals(a.getVersion());
     }
 
     private void setSystemPropertyIfEmpty(String name, String value) {
