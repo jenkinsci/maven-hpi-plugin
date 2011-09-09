@@ -16,10 +16,13 @@ package org.jenkinsci.maven.plugins.hpi;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
+import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
+import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
 import org.apache.maven.artifact.resolver.ArtifactResolver;
+import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -59,7 +62,6 @@ import java.util.regex.Pattern;
  * </p>
  * 
  * @goal run
- * @requiresDependencyResolution test
  * @execute phase=compile
  * @description Runs Jenkins with the current plugin
  * @author Kohsuke Kawaguchi
@@ -86,6 +88,13 @@ public class RunMojo extends AbstractJetty6Mojo {
     private File hudsonHome;
 
     /**
+     * Decides the level of dependency resolution.
+     *
+     * @parameter
+     */
+    private String dependencyResolution = "compile";
+
+    /**
      * Single directory for extra files to include in the WAR.
      *
      * @parameter expression="${basedir}/src/main/webapp"
@@ -108,6 +117,11 @@ public class RunMojo extends AbstractJetty6Mojo {
      * @required
      */
     protected ArtifactRepository localRepository;
+
+    /**
+     * @component
+     */
+    protected ArtifactMetadataSource artifactMetadataSource;
 
     /**
      * Specifies the HTTP port number.
@@ -150,6 +164,8 @@ public class RunMojo extends AbstractJetty6Mojo {
     protected String jenkinsWarId;
 
     public void execute() throws MojoExecutionException, MojoFailureException {
+        getProject().setArtifacts(resolveDependencies(dependencyResolution));
+
         // compute hudsonHome
         if(hudsonHome==null) {
             String h = System.getenv("HUDSON_HOME");
@@ -435,6 +451,29 @@ public class RunMojo extends AbstractJetty6Mojo {
         };
     }
 
+    /**
+     * Performs the equivalent of "@requireDependencyResolution" mojo attribute,
+     * so that we can choose the scope at runtime.
+     * @param scope
+     */
+    private Set<Artifact> resolveDependencies(String scope) throws MojoExecutionException {
+        try {
+            ArtifactResolutionResult result = artifactResolver.resolveTransitively(
+                    getProject().getDependencyArtifacts(),
+                    getProject().getArtifact(),
+                    getProject().getManagedVersionMap(),
+                    localRepository,
+                    getProject().getRemoteArtifactRepositories(),
+                    artifactMetadataSource,
+                    new ScopeArtifactFilter(scope));
+            return result.getArtifacts();
+        } catch (ArtifactNotFoundException e) {
+            throw new MojoExecutionException("Unable to copy dependency plugin",e);
+        } catch (ArtifactResolutionException e) {
+            throw new MojoExecutionException("Unable to copy dependency plugin",e);
+        }
+    }
+
     public Set<MavenArtifact> getProjectArtfacts() {
         Set<MavenArtifact> r = new HashSet<MavenArtifact>();
         for (Artifact a : (Collection<Artifact>)getProject().getArtifacts()) {
@@ -448,7 +487,7 @@ public class RunMojo extends AbstractJetty6Mojo {
     }
 
     protected Artifact getJenkinsWarArtifact() throws MojoExecutionException {
-        for( Artifact a : (Set<Artifact>)getProject().getArtifacts() ) {
+        for( Artifact a : resolveDependencies("test") ) {
             boolean match;
             if (jenkinsWarId!=null)
                 match = (a.getGroupId()+':'+a.getArtifactId()).equals(jenkinsWarId);
