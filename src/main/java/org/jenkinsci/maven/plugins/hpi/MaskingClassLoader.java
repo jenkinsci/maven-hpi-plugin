@@ -26,6 +26,7 @@ final class MaskingClassLoader extends ClassLoader {
         return name.startsWith("org.kohsuke")
             || name.startsWith("org.apache.maven")
             || name.startsWith("org.sonatype")
+            || name.startsWith("com.google.")
             || name.startsWith("org.cyberneko")
             || name.startsWith("org.codehaus.plexus");
     }
@@ -43,6 +44,7 @@ final class MaskingClassLoader extends ClassLoader {
             || name.startsWith("org/apache/maven")
             || name.startsWith("org/sonatype")
             || name.startsWith("org/codehaus/plexus")
+            || name.startsWith("com/google/")
             || name.startsWith("META-INF/plexus")
             || name.startsWith("META-INF/maven");
     }
