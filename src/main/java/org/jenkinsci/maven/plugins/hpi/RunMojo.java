@@ -185,6 +185,8 @@ public class RunMojo extends AbstractJetty6Mojo {
         setSystemPropertyIfEmpty("hudson.hpi.run","true");
         // this adds 3 secs to the shutdown time. Skip it.
         setSystemPropertyIfEmpty("hudson.DNSMultiCast.disabled","true");
+        // expose the current top-directory of the plugin
+        setSystemPropertyIfEmpty("jenkins.moduleRoot",new File(".").getAbsolutePath());
 
         List<Artifact> jenkinsArtifacts = new ArrayList<Artifact>();
 
