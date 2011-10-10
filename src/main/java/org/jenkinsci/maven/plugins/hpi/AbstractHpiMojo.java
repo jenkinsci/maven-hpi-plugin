@@ -201,7 +201,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
      *
      * @parameter
      */
-    private String maskClasses;
+    protected String maskClasses;
     
     /**
      * @since 1.53

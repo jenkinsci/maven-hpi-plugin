@@ -163,6 +163,18 @@ public class RunMojo extends AbstractJetty6Mojo {
      */
     protected String jenkinsWarId;
 
+    /**
+     * [ws|tab|CR|LF]+ separated list of package prefixes that your plugin doesn't want to see
+     * from the core.
+     *
+     * <p>
+     * Tokens in this list is prefix-matched against the fully-qualified class name, so add
+     * "." to the end of each package name, like "com.foo. com.bar."
+     *
+     * @parameter
+     */
+    protected String maskClasses;
+
     public void execute() throws MojoExecutionException, MojoFailureException {
         getProject().setArtifacts(resolveDependencies(dependencyResolution));
 
@@ -315,6 +327,7 @@ public class RunMojo extends AbstractJetty6Mojo {
         hpl.projectBuilder = this.projectBuilder;
         hpl.localRepository = this.localRepository;
         hpl.jenkinsCoreId = this.jenkinsCoreId;
+        hpl.maskClasses = this.maskClasses;
         hpl.execute();
     }
 
