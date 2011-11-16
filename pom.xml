@@ -127,6 +127,11 @@
       <artifactId>maven-jetty-plugin</artifactId>
       <version>6.1.1</version>
     </dependency>
+    <dependency>
+      <groupId>net.java.sezpoz</groupId>
+      <artifactId>sezpoz</artifactId>
+      <version>1.9</version>
+    </dependency>
     <!-- for the create goal -->
     <dependency>
       <groupId>org.apache.maven.plugins</groupId>

@@ -16,6 +16,10 @@ package org.jenkinsci.maven.plugins.hpi;
  * limitations under the License.
  */
 
+import hudson.Extension;
+import jenkins.YesNoMaybe;
+import net.java.sezpoz.Index;
+import net.java.sezpoz.IndexItem;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
@@ -49,10 +53,14 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -918,6 +926,31 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         if (project.getDevelopers() != null) {
             mainSection.addAttributeAndCheck(new Attribute("Plugin-Developers",getDevelopersForManifest()));
         }
+
+        Boolean b = isSupportDynamicLoading();
+        if (b!=null)
+            mainSection.addAttributeAndCheck(new Attribute("Support-Dynamic-Loading",b.toString()));
+    }
+
+    /**
+     * Is the dynamic loading supported?
+     *
+     * False, if the answer is known to be "No". Otherwise null, if there are some extensions
+     * we don't know we can dynamic load. Otherwise, if everything is known to be dynamic loadable, return true.
+     */
+    protected Boolean isSupportDynamicLoading() throws IOException {
+        URLClassLoader cl = new URLClassLoader(new URL[]{
+                new File(project.getBuild().getOutputDirectory()).toURI().toURL()
+        }, getClass().getClassLoader());
+
+        EnumSet<YesNoMaybe> e = EnumSet.noneOf(YesNoMaybe.class);
+        for (IndexItem<Extension,Object> i : Index.load(Extension.class, Object.class, cl)) {
+            e.add(i.annotation().dynamicLoadable());
+        }
+
+        if (e.contains(YesNoMaybe.NO))  return false;
+        if (e.contains(YesNoMaybe.MAYBE))   return null;
+        return true;
     }
 
     /**
