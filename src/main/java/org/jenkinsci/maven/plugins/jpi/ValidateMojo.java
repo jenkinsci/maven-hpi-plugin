@@ -17,6 +17,7 @@ public class ValidateMojo extends AbstractJenkinsMojo {
         }
 
         final String jenkinsVersion = findJenkinsVersion();
+        // TODO change version to the first supporting jpi plugins!!!! 
 		if (new VersionNumber(jenkinsVersion).compareTo(new VersionNumber("1.443.99"))<=0) {
 			throw new MojoExecutionException("This version of maven-jpi-plugin requires Jenkins 1.444 or later (current used: "+jenkinsVersion+")");
 		}
