@@ -1,25 +1,25 @@
 <component-set>
-  <!-- this defines a custom life cycle for .hpi -->
+  <!-- this defines a custom life cycle for .jpi -->
   <components>
     <!-- Jenkins plugin -->
     <component>
       <role>org.apache.maven.lifecycle.mapping.LifecycleMapping</role>
-      <role-hint>hpi</role-hint>
+      <role-hint>jpi</role-hint>
       <implementation>org.apache.maven.lifecycle.mapping.DefaultLifecycleMapping</implementation>
       <configuration>
         <lifecycles>
           <lifecycle>
             <id>default</id>
             <phases>
-              <validate>org.jenkins-ci.tools:maven-hpi-plugin:validate</validate>
+              <validate>org.jenkins-ci.tools:maven-jpi-plugin:validate</validate>
               <process-resources>org.apache.maven.plugins:maven-resources-plugin:resources</process-resources>
               <compile>org.apache.maven.plugins:maven-compiler-plugin:compile</compile>
               <process-classes>org.kohsuke:access-modifier-checker:enforce</process-classes>
               <process-test-resources>org.apache.maven.plugins:maven-resources-plugin:testResources</process-test-resources>
-              <generate-test-sources>org.jenkins-ci.tools:maven-hpi-plugin:insert-test</generate-test-sources>
-              <test-compile>org.apache.maven.plugins:maven-compiler-plugin:testCompile,org.jenkins-ci.tools:maven-hpi-plugin:test-hpl,org.jenkins-ci.tools:maven-hpi-plugin:resolve-test-dependencies</test-compile>
+              <generate-test-sources>org.jenkins-ci.tools:maven-jpi-plugin:insert-test</generate-test-sources>
+              <test-compile>org.apache.maven.plugins:maven-compiler-plugin:testCompile,org.jenkins-ci.tools:maven-jpi-plugin:test-hpl,org.jenkins-ci.tools:maven-jpi-plugin:resolve-test-dependencies</test-compile>
               <test>org.apache.maven.plugins:maven-surefire-plugin:test</test>
-              <package>org.jenkins-ci.tools:maven-hpi-plugin:hpi</package>
+              <package>org.jenkins-ci.tools:maven-jpi-plugin:jpi</package>
               <install>org.apache.maven.plugins:maven-install-plugin:install</install>
               <deploy>org.apache.maven.plugins:maven-deploy-plugin:deploy</deploy>
             </phases>
@@ -29,12 +29,12 @@
     </component>
     <component>
       <role>org.apache.maven.artifact.handler.ArtifactHandler</role>
-      <role-hint>hpi</role-hint>
+      <role-hint>jpi</role-hint>
       <implementation>org.apache.maven.artifact.handler.DefaultArtifactHandler</implementation>
       <configuration>
-        <extension>hpi</extension>
+        <extension>jpi</extension>
         <type>hudson-plugin</type>
-        <packaging>hpi</packaging>
+        <packaging>jpi</packaging>
         <language>java</language>
         <addedToClasspath>true</addedToClasspath>
       </configuration>
@@ -54,13 +54,13 @@
             <id>default</id>
             <phases>
               <process-resources>org.apache.maven.plugins:maven-resources-plugin:resources</process-resources>
-              <compile>org.jenkins-ci.tools:maven-hpi-plugin:apt-compile</compile>
+              <compile>org.jenkins-ci.tools:maven-jpi-plugin:apt-compile</compile>
               <process-classes>org.kohsuke:access-modifier-checker:enforce</process-classes>
               <process-test-resources>org.apache.maven.plugins:maven-resources-plugin:testResources</process-test-resources>
-              <generate-test-sources>org.jenkins-ci.tools:maven-hpi-plugin:insert-test</generate-test-sources>
-              <test-compile>org.apache.maven.plugins:maven-compiler-plugin:testCompile,org.jenkins-ci.tools:maven-hpi-plugin:test-hpl,org.jenkins-ci.tools:maven-hpi-plugin:resolve-test-dependencies</test-compile>
+              <generate-test-sources>org.jenkins-ci.tools:maven-jpi-plugin:insert-test</generate-test-sources>
+              <test-compile>org.apache.maven.plugins:maven-compiler-plugin:testCompile,org.jenkins-ci.tools:maven-jpi-plugin:test-jpl,org.jenkins-ci.tools:maven-jpi-plugin:resolve-test-dependencies</test-compile>
               <test>org.apache.maven.plugins:maven-surefire-plugin:test</test>
-              <package>org.jenkins-ci.tools:maven-hpi-plugin:hpi</package>
+              <package>org.jenkins-ci.tools:maven-jpi-plugin:jpi</package>
               <install>org.apache.maven.plugins:maven-install-plugin:install</install>
               <deploy>org.apache.maven.plugins:maven-deploy-plugin:deploy</deploy>
             </phases>
@@ -83,8 +83,8 @@
 
     <component>
       <role>org.codehaus.plexus.compiler.Compiler</role>
-      <role-hint>hpi-apt</role-hint>
-      <implementation>org.jenkinsci.maven.plugins.hpi.AptCompiler</implementation>
+      <role-hint>jpi-apt</role-hint>
+      <implementation>org.jenkinsci.maven.plugins.jpi.AptCompiler</implementation>
       <description />
     </component>
   </components>

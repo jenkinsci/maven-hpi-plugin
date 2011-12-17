@@ -23,7 +23,7 @@ assert new File(basedir, 'target/classes/org/jenkinsci/tools/hpi/its/HelloWorldB
 assert new File(basedir, 'target/classes/org/jenkinsci/tools/hpi/its/HelloWorldBuilder$DescriptorImpl.class').exists();
 assert new File(basedir, 'target/classes/org/jenkinsci/tools/hpi/its/HelloWorldBuilder.stapler').exists();
 assert new File(basedir, 'target/classes/org/jenkinsci/tools/hpi/its/Messages.class').exists();
-assert new File(basedir, 'target/verify-it.hpi').exists();
+assert new File(basedir, 'target/verify-it.jpi').exists();
 assert new File(basedir, 'target/verify-it.jar').exists();
 
 assert new File(basedir, 'target/generated-sources/localizer/org/jenkinsci/tools/hpi/its/Messages.java').exists();

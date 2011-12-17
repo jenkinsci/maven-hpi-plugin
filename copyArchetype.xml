@@ -1,7 +1,7 @@
 <project name="copy.archetype" default="make.transforming.copy">
-  <!-- copy hpi-archetypes as resources, while performing necessary transformations for an archetype. -->
+  <!-- copy jpi-archetypes as resources, while performing necessary transformations for an archetype. -->
   <target name="make.transforming.copy">
-    <property name="src" location="hpi-archetype" />
+    <property name="src" location="jpi-archetype" />
     <property name="dst" location="target/classes/archetype-resources" />
 
     <property name="package.header.file" location="${dst}/.package.header" />
@@ -11,7 +11,7 @@
 
     <!-- this filter chain is applied to all files -->
     <filterchain id="artifactId">
-      <replacestring from="hpi-archetype" to="@artifactId@" />
+      <replacestring from="jpi-archetype" to="@artifactId@" />
     </filterchain>
 
     <!-- modify POM -->
@@ -45,7 +45,7 @@
         <exclude name="**/*.java" />
         <exclude name="**/.svn" />
         <exclude name="target" />
-        <exclude name="hpi-archetype.*" />
+        <exclude name="jpi-archetype.*" />
       </fileset>
       <filterchain refid="artifactId" />
     </copy>

@@ -7,7 +7,7 @@
   </parent>
   
   <groupId>org.jenkins-ci.tools</groupId>
-  <artifactId>maven-hpi-plugin</artifactId>
+  <artifactId>maven-jpi-plugin</artifactId>
   <packaging>maven-plugin</packaging>
   
   <name>Maven Jenkins Plugin</name>
@@ -34,7 +34,7 @@
         <artifactId>maven-plugin-plugin</artifactId>
         <version>2.7</version>
         <configuration>
-          <goalPrefix>hpi</goalPrefix>
+          <goalPrefix>jpi</goalPrefix>
         </configuration>
       </plugin>
       <plugin>
