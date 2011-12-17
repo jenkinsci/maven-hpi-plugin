@@ -5,20 +5,20 @@ import org.apache.maven.plugin.MojoExecutionException;
 import java.io.File;
 
 /**
- * Generate .hpl file in the test class directory so that test harness can locate the plugin.
+ * Generate .jpl file in the test class directory so that test harness can locate the plugin.
  *
- * @goal test-hpl
+ * @goal test-jpl
  * @requiresDependencyResolution test
  * @author Kohsuke Kawaguchi
  */
-public class TestHplMojo extends HplMojo {
+public class TestJplMojo extends JplMojo {
     /**
-     * Generates the hpl file in a known location.
+     * Generates the jpl file in a known location.
      */
     @Override
-    protected File computeHplFile() throws MojoExecutionException {
+    protected File computeJplFile() throws MojoExecutionException {
         File testDir = new File(project.getBuild().getTestOutputDirectory());
         testDir.mkdirs();
-        return new File(testDir,"the.hpl");
+        return new File(testDir,"the.jpl");
     }
 }

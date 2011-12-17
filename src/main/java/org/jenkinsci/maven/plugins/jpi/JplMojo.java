@@ -24,16 +24,16 @@ import java.util.Set;
  * @goal jpl
  * @requiresDependencyResolution runtime
  */
-public class HplMojo extends AbstractHpiMojo {
+public class JplMojo extends AbstractJpiMojo {
     /**
      * Path to <tt>$JENKINS_HOME</tt>. A .jpl file will be generated to this location.
      *
-     * @parameter expression="${hudsonHome}
+     * @parameter expression="${jenkinsHome}
      */
-    private File hudsonHome;
+    private File jenkinsHome;
 
     public void setHudsonHome(File hudsonHome) {
-        this.hudsonHome = hudsonHome;
+        this.jenkinsHome = hudsonHome;
     }
 
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -42,8 +42,8 @@ public class HplMojo extends AbstractHpiMojo {
             return;
         }
 
-        File hplFile = computeHplFile();
-        getLog().info("Generating "+hplFile);
+        File jplFile = computeJplFile();
+        getLog().info("Generating "+jplFile);
 
         PrintWriter printWriter = null;
         try {
@@ -77,7 +77,7 @@ public class HplMojo extends AbstractHpiMojo {
             // compute Resource-Path entry
             mainSection.addAttributeAndCheck(new Attribute("Resource-Path",warSourceDirectory.getAbsolutePath()));
 
-            printWriter = new PrintWriter(new FileWriter(hplFile));
+            printWriter = new PrintWriter(new FileWriter(jplFile));
             mf.write(printWriter);
         } catch (ManifestException e) {
             throw new MojoExecutionException("Error preparing the manifest: " + e.getMessage(), e);
@@ -91,15 +91,15 @@ public class HplMojo extends AbstractHpiMojo {
     /**
      * Determine where to produce the .jpl file.
      */
-    protected File computeHplFile() throws MojoExecutionException {
-        if(hudsonHome==null) {
+    protected File computeJplFile() throws MojoExecutionException {
+        if(jenkinsHome==null) {
             throw new MojoExecutionException(
-                "Property hudsonHome needs to be set to $HUDSON_HOME. Please use 'mvn -DhudsonHome=...' or" +
-                "put <settings><profiles><profile><properties><property><hudsonHome>...</...>"
+                "Property jenkinsHome needs to be set to $JENKINS_HOME. Please use 'mvn -DjenkinsHome=...' or" +
+                "put <settings><profiles><profile><properties><property><jenkinsHome>...</...>"
             );
         }
 
-        File hplFile = new File(hudsonHome, "plugins/" + project.getBuild().getFinalName() + ".jpl");
-        return hplFile;
+        File jplFile = new File(jenkinsHome, "plugins/" + project.getBuild().getFinalName() + ".jpl");
+        return jplFile;
     }
 }

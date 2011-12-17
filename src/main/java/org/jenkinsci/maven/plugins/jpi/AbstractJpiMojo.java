@@ -60,7 +60,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.Collection;
 
-public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
+public abstract class AbstractJpiMojo extends AbstractJenkinsMojo {
     /**
      * The directory for the generated WAR.
      *
@@ -878,14 +878,17 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         mainSection.addAttributeAndCheck(new Attribute("Short-Name",project.getArtifactId()));
         mainSection.addAttributeAndCheck(new Attribute("Long-Name",pluginName));
         String url = project.getUrl();
-        if(url!=null)
-            mainSection.addAttributeAndCheck(new Attribute("Url", url));
+        if(url!=null) {
+        	mainSection.addAttributeAndCheck(new Attribute("Url", url));
+        }
 
-        if (compatibleSinceVersion!=null)
-            mainSection.addAttributeAndCheck(new Attribute("Compatible-Since-Version", compatibleSinceVersion));
+        if (compatibleSinceVersion!=null) {
+        	mainSection.addAttributeAndCheck(new Attribute("Compatible-Since-Version", compatibleSinceVersion));
+        }
 
-        if (sandboxStatus!=null)
-            mainSection.addAttributeAndCheck(new Attribute("Sandbox-Status", sandboxStatus));
+        if (sandboxStatus!=null) {
+        	mainSection.addAttributeAndCheck(new Attribute("Sandbox-Status", sandboxStatus));
+        }
 
         String v = project.getVersion();
         if(v.endsWith("-SNAPSHOT")) {
@@ -949,8 +952,9 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         StringBuilder buf = new StringBuilder();
         for (MavenArtifact a : getProjectArtfacts()) {
             if(a.isPlugin() && (includeTestScope || !"test".equals(a.getScope())) && !a.hasSameGAAs(project)) {
-                if(buf.length()>0)
+                if(buf.length()>0) {
                     buf.append(',');
+                }
                 buf.append(a.getArtifactId());
                 buf.append(':');
                 buf.append(a.getVersion());
@@ -962,9 +966,11 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
 
         // check any "provided" scope plugin dependencies that are probably not what the user intended.
         // see http://www.nabble.com/Classloading-problem-when-referencing-classes-from-another-plugin-during-the-initialization-phase-of-a-plugin-%28ClassicPluginStrategy%29-td25426117.html
-        for (Artifact a : (Collection<Artifact>)project.getDependencyArtifacts())
-            if ("provided".equals(a.getScope()) && wrap(a).isPlugin())
+        for (Artifact a : (Collection<Artifact>)project.getDependencyArtifacts()) {
+            if ("provided".equals(a.getScope()) && wrap(a).isPlugin()) {
                 throw new MojoExecutionException(a.getId()+" is marked as 'provided' scope dependency, but it should be the 'compile' scope.");
+            }
+        }
 
 
         return buf.toString();

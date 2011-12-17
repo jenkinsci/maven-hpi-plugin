@@ -136,13 +136,16 @@ public class TagLibInterfaceGeneratorMojo extends AbstractMojo {
 
             // up to date check. if the file already exists and is newer, don't regenerate it
             File dst = new File(outputDirectory, c.fullName().replace('.', '/') + ".java");
-            if (dst.exists() && dst.lastModified()>timestamp)
+            if (dst.exists() && dst.lastModified()>timestamp) {
                 c.hide();
+            }
         }
     }
 
     private static String h2j(String s) {
-        if (s.equals("hudson")) return "jenkins";
+        if (s.equals("hudson")) {
+        	return "jenkins";
+        }
         return s;
     }
 }

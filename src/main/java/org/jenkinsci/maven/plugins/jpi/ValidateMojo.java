@@ -12,12 +12,14 @@ import org.apache.maven.plugin.MojoFailureException;
  */
 public class ValidateMojo extends AbstractJenkinsMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
-        if (!isMustangOrAbove())
-            throw new MojoExecutionException("JDK6 or later is necessary to build a Jenkins plugin");
+        if (!isMustangOrAbove()) {
+        	throw new MojoExecutionException("JDK6 or later is necessary to build a Jenkins plugin");
+        }
 
         final String jenkinsVersion = findJenkinsVersion();
-		if (new VersionNumber(jenkinsVersion).compareTo(new VersionNumber("1.443.99"))<=0)
-            throw new MojoExecutionException("This version of maven-jpi-plugin requires Jenkins 1.444 or later (current used: "+jenkinsVersion+")");
+		if (new VersionNumber(jenkinsVersion).compareTo(new VersionNumber("1.443.99"))<=0) {
+			throw new MojoExecutionException("This version of maven-jpi-plugin requires Jenkins 1.444 or later (current used: "+jenkinsVersion+")");
+		}
     }
 
     /**

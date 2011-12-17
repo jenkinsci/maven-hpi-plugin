@@ -12,9 +12,9 @@ Maven Jenkins Plugin
 
   * {{{create-mojo.html}jpi:create}} Creates a skeleton of a new plugin.
 
-  * {{{jpi-mojo.html}jpi:hpi}} Builds the .jpi file
+  * {{{jpi-mojo.html}jpi:jpi}} Builds the .jpi file
 
-  * {{{jpl-mojo.html}jpi:hpl}} Generates the .jpl file
+  * {{{jpl-mojo.html}jpi:jpl}} Generates the .jpl file
 
   * {{{run-mojo.html}jpi:run}} Runs Jenkins with the current plugin project
 

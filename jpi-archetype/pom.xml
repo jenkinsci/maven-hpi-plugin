@@ -7,9 +7,9 @@
 	</parent>
 
 	<!-- $ -->
-	<groupId>org.jenkins-ci.tools</groupId><!-- /$ -->
+	<groupId>${groupId}</groupId><!-- /$ -->
 	<!-- $ -->
-	<artifactId>jpi-archetype</artifactId><!-- /$ -->
+	<artifactId>${artifactId}</artifactId><!-- /$ -->
 	<!-- $ -->
 	<version>1.0-SNAPSHOT</version><!-- /$ -->
 	<packaging>jpi</packaging>

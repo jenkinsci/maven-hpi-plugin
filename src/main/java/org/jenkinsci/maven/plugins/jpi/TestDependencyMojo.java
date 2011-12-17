@@ -20,7 +20,7 @@ import java.util.Set;
  * @requiresDependencyResolution test
  * @author Kohsuke Kawaguchi
  */
-public class TestDependencyMojo extends AbstractHpiMojo {
+public class TestDependencyMojo extends AbstractJpiMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
         File testDir = new File(project.getBuild().getTestOutputDirectory(),"test-dependencies");
         testDir.mkdirs();
@@ -29,8 +29,9 @@ public class TestDependencyMojo extends AbstractHpiMojo {
             Writer w = new OutputStreamWriter(new FileOutputStream(new File(testDir,"index")),"UTF-8");
 
             for (MavenArtifact a : getProjectArtfacts()) {
-                if(!a.isPlugin())
-                    continue;
+                if(!a.isPlugin()){
+                	continue;
+                }
 
                 getLog().debug("Copying "+a.getId()+" as a test dependency");
                 File dst = new File(testDir, a.getArtifactId() + ".jpi");

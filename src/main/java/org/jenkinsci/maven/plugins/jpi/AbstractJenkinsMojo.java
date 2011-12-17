@@ -35,14 +35,16 @@ public abstract class AbstractJenkinsMojo extends AbstractMojo {
     protected String findJenkinsVersion() throws MojoExecutionException {
         for(Dependency a : (List<Dependency>)project.getDependencies()) {
             boolean match;
-            if (jenkinsCoreId!=null)
-                match = (a.getGroupId()+':'+a.getArtifactId()).equals(jenkinsCoreId);
-            else
-                match = (a.getGroupId().equals("org.jenkins-ci.main") || a.getGroupId().equals("org.jvnet.hudson.main"))
+            if (jenkinsCoreId!=null) {
+            	match = (a.getGroupId()+':'+a.getArtifactId()).equals(jenkinsCoreId);
+            } else {
+            	match = (a.getGroupId().equals("org.jenkins-ci.main") || a.getGroupId().equals("org.jvnet.hudson.main"))
                      && (a.getArtifactId().equals("jenkins-core") || a.getArtifactId().equals("hudson-core"));
+            }
 
-            if (match)
+            if (match) {
                 return a.getVersion();
+            }
         }
         throw new MojoExecutionException("Failed to determine Jenkins version this plugin depends on.");
     }

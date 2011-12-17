@@ -48,7 +48,7 @@ import java.io.PrintWriter;
  * @phase package
  * @requiresDependencyResolution runtime
  */
-public class HpiMojo extends AbstractHpiMojo {
+public class JpiMojo extends AbstractJpiMojo {
 
     /**
      * The name of the generated jpi.

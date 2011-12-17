@@ -243,7 +243,7 @@ public class RunMojo extends AbstractJetty6Mojo {
         }
 
 
-        generateHpl();
+        generateJpl();
 
         // copy other dependency Jenkins plugins
         try {
@@ -258,11 +258,13 @@ public class RunMojo extends AbstractJetty6Mojo {
 
                 // check recursive dependency. this is a rare case that happens when we split out some things from the core
                 // into a plugin
-                if (hasSameGavAsProject(jpi))
+                if (hasSameGavAsProject(jpi)) {
                     continue;
+                }
 
-                if (jpi.getFile().isDirectory())
+                if (jpi.getFile().isDirectory()) {
                     throw new UnsupportedOperationException(jpi.getFile()+" is a directory and not packaged yet. this isn't supported");
+                }
 
                 copyFile(jpi.getFile(),new File(pluginsDir,a.getArtifactId()+".jpi"));
                 // pin the dependency plugin, so that even if a different version of the same plugin is bundled to Jenkins,
@@ -306,36 +308,37 @@ public class RunMojo extends AbstractJetty6Mojo {
     }
 
     /**
-     * Create a dot-hpl file.
+     * Create a dot-jpl file.
      *
      * <p>
-     * All I want to do here is to invoke the hpl target.
+     * All I want to do here is to invoke the jpl target.
      * there must be a better way to do this!
      *
      * <p>
      * Besides, if the user wants to change the plugin name, etc,
      * this forces them to do it in two places.
      */
-    private void generateHpl() throws MojoExecutionException, MojoFailureException {
-        HplMojo hpl = new HplMojo();
-        hpl.project = getProject();
-        hpl.setHudsonHome(hudsonHome);
-        hpl.setLog(getLog());
-        hpl.pluginName = getProject().getName();
-        hpl.warSourceDirectory = warSourceDirectory;
-        hpl.includeTestScope = true;
-        hpl.projectBuilder = this.projectBuilder;
-        hpl.localRepository = this.localRepository;
-        hpl.jenkinsCoreId = this.jenkinsCoreId;
-        hpl.maskClasses = this.maskClasses;
-        hpl.execute();
+    private void generateJpl() throws MojoExecutionException, MojoFailureException {
+        JplMojo jpl = new JplMojo();
+        jpl.project = getProject();
+        jpl.setHudsonHome(hudsonHome);
+        jpl.setLog(getLog());
+        jpl.pluginName = getProject().getName();
+        jpl.warSourceDirectory = warSourceDirectory;
+        jpl.includeTestScope = true;
+        jpl.projectBuilder = this.projectBuilder;
+        jpl.localRepository = this.localRepository;
+        jpl.jenkinsCoreId = this.jenkinsCoreId;
+        jpl.maskClasses = this.maskClasses;
+        jpl.execute();
     }
 
     public void configureWebApplication() throws Exception {
         // Jetty tries to do this in WebAppContext.resolveWebApp but it failed to delete the directory.
         File extractedWebAppDir= new File(getTmpDirectory(), "webapp");
-        if(extractedWebAppDir.lastModified() < webApp.lastModified())
+        if(extractedWebAppDir.lastModified() < webApp.lastModified()) {
             FileUtils.deleteDirectory(extractedWebAppDir);
+        }
         
         super.configureWebApplication();
         getWebApplication().setWebAppSrcDir(webApp);
@@ -359,7 +362,7 @@ public class RunMojo extends AbstractJetty6Mojo {
                     // which is if the pom changes
                     if (changes.contains(getProject().getFile().getCanonicalPath())) {
                         getLog().info("Reconfiguring scanner after change to pom.xml ...");
-                        generateHpl(); // regenerate hpl if POM changes.
+                        generateJpl(); // regenerate jpl if POM changes.
                         ArrayList scanList = getScanList();
                         scanList.clear();
                         setUpScanList(scanList);
@@ -448,8 +451,9 @@ public class RunMojo extends AbstractJetty6Mojo {
 
     @Override
     protected String getDefaultHttpPort() {
-        if (defaultPort!=null)
+        if (defaultPort!=null) {
             return defaultPort;
+        }
         return super.getDefaultHttpPort();
     }
 
@@ -504,12 +508,14 @@ public class RunMojo extends AbstractJetty6Mojo {
     protected Artifact getJenkinsWarArtifact() throws MojoExecutionException {
         for( Artifact a : resolveDependencies("test") ) {
             boolean match;
-            if (jenkinsWarId!=null)
+            if (jenkinsWarId!=null) {
                 match = (a.getGroupId()+':'+a.getArtifactId()).equals(jenkinsWarId);
-            else
+            } else {
                 match = (a.getArtifactId().equals("jenkins-war") || a.getArtifactId().equals("hudson-war")) && a.getType().equals("war");
-            if(match)
+            }
+            if(match) {
                 return a;
+            }
         }
 
         if (jenkinsWarId!=null) {

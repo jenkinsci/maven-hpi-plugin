@@ -1,5 +1,5 @@
 <archetype>
-  <id>hudson-plugin</id>
+  <id>jenkins-plugin</id>
   <sources>
     <source>src/main/java/HelloWorldBuilder.java</source>
     <!-- these files are copied inside CreateMojo -->
