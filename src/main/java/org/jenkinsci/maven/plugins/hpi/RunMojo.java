@@ -200,14 +200,11 @@ public class RunMojo extends AbstractJetty6Mojo {
         // expose the current top-directory of the plugin
         setSystemPropertyIfEmpty("jenkins.moduleRoot",new File(".").getAbsolutePath());
 
-        List<Artifact> jenkinsArtifacts = new ArrayList<Artifact>();
 
         // look for jenkins.war
-        for( Artifact a : (Set<Artifact>)getProject().getArtifacts() ) {
-            if(a.getGroupId().equals("org.jenkins-ci.main") || a.getGroupId().equals("org.jvnet.hudson.main"))
-                if (!a.getArtifactId().equals("remoting"))  // remoting moved to its own release cycle
-                    jenkinsArtifacts.add(a);
-        }
+        Artifacts jenkinsArtifacts = Artifacts.of(getProject())
+                .groupIdIs("org.jenkins-ci.main","org.jvnet.hudson.main")
+                .artifactIdIsNot("remoting");       // remoting moved to its own release cycle
 
         webApp = getJenkinsWarArtifact().getFile();
 
@@ -424,11 +421,10 @@ public class RunMojo extends AbstractJetty6Mojo {
                         super.addURL(new File(getProject().getBuild().getOutputDirectory()).toURL());
 
                         // add all the jar dependencies of the module
-                        for (Artifact a : (Set<Artifact>) getProject().getArtifacts()) {
-                            if ("provided".equals(a.getScope()))
-                                continue;   // to simulate the real environment, drop the "provided" scope dependencies from the list
-                            if ("pom".equals(a.getType()))
-                                continue;   // pom dependency is sometimes used so that one can depend on its transitive dependencies
+                        // "provided" includes all core and others, so drop them
+                        // similarly, "test" would pull in all the harness
+                        // pom dependency is sometimes used so that one can depend on its transitive dependencies
+                        for (Artifact a : Artifacts.of(getProject()).scopeIsNot("provided","test").typeIsNot("pom")) {
                             super.addURL(a.getFile().toURI().toURL());
                         }
                         

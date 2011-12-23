@@ -437,7 +437,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
 
     public Set<MavenArtifact> getProjectArtfacts() {
         Set<MavenArtifact> r = new HashSet<MavenArtifact>();
-        for (Artifact a : (Collection<Artifact>)project.getArtifacts()) {
+        for (Artifact a : Artifacts.of(project)) {
             r.add(wrap(a));
         }
         return r;
