@@ -85,7 +85,7 @@ public class RunMojo extends AbstractJetty6Mojo {
      *
      * @parameter expression="${HUDSON_HOME}"
      */
-    private File hudsonHome;
+    private File jenkinsHome;
 
     /**
      * Decides the level of dependency resolution.
@@ -179,12 +179,12 @@ public class RunMojo extends AbstractJetty6Mojo {
         getProject().setArtifacts(resolveDependencies(dependencyResolution));
 
         // compute hudsonHome
-        if(hudsonHome==null) {
+        if(jenkinsHome ==null) {
             String h = System.getenv("HUDSON_HOME");
             if(h!=null)
-                hudsonHome = new File(h);
+                jenkinsHome = new File(h);
             else
-                hudsonHome = new File("./work");
+                jenkinsHome = new File("./work");
         }
 
         // auto-enable stapler trace, unless otherwise configured already.
@@ -221,9 +221,9 @@ public class RunMojo extends AbstractJetty6Mojo {
         // set HUDSON_HOME
         SystemProperty sp = new SystemProperty();
         sp.setName("HUDSON_HOME");
-        sp.setValue(hudsonHome.getAbsolutePath());
+        sp.setValue(jenkinsHome.getAbsolutePath());
         sp.setIfNotSetAlready();
-        File pluginsDir = new File(hudsonHome, "plugins");
+        File pluginsDir = new File(jenkinsHome, "plugins");
         pluginsDir.mkdirs();
 
         // enable view auto refreshing via stapler
@@ -319,7 +319,7 @@ public class RunMojo extends AbstractJetty6Mojo {
     private void generateHpl() throws MojoExecutionException, MojoFailureException {
         HplMojo hpl = new HplMojo();
         hpl.project = getProject();
-        hpl.setHudsonHome(hudsonHome);
+        hpl.setHudsonHome(jenkinsHome);
         hpl.setLog(getLog());
         hpl.pluginName = getProject().getName();
         hpl.warSourceDirectory = warSourceDirectory;
