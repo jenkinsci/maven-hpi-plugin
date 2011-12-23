@@ -422,6 +422,16 @@ public class RunMojo extends AbstractJetty6Mojo {
                         for (Resource r : (List<Resource>)getProject().getResources())
                             super.addURL(new File(r.getDirectory()).toURL());
                         super.addURL(new File(getProject().getBuild().getOutputDirectory()).toURL());
+
+                        // add all the jar dependencies of the module
+                        for (Artifact a : (Set<Artifact>) getProject().getArtifacts()) {
+                            if ("provided".equals(a.getScope()))
+                                continue;   // to simulate the real environment, drop the "provided" scope dependencies from the list
+                            if ("pom".equals(a.getType()))
+                                continue;   // pom dependency is sometimes used so that one can depend on its transitive dependencies
+                            super.addURL(a.getFile().toURI().toURL());
+                        }
+                        
                         exclusionPattern = Pattern.compile("[/\\\\]\\Q"+getProject().getArtifactId()+"\\E-[0-9]([^/\\\\]+)\\.jar$");
                     } else {
                         exclusionPattern = Pattern.compile("this should never match");
