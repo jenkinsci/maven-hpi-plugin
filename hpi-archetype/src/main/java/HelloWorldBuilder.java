@@ -54,7 +54,7 @@ public class HelloWorldBuilder extends Builder {
         // Since this is a dummy, we just say 'hello world' and call that a build.
 
         // This also shows how you can consult the global configuration of the builder
-        if (getDescriptor().useFrench())
+        if (getDescriptor().getUseFrench())
             listener.getLogger().println("Bonjour, "+name+"!");
         else
             listener.getLogger().println("Hello, "+name+"!");
@@ -130,8 +130,11 @@ public class HelloWorldBuilder extends Builder {
 
         /**
          * This method returns true if the global configuration says we should speak French.
+         *
+         * The method name is bit awkward because global.jelly calls this method to determine
+         * the initial state of the checkbox by the naming convention.
          */
-        public boolean useFrench() {
+        public boolean getUseFrench() {
             return useFrench;
         }
     }
