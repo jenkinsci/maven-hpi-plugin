@@ -9,6 +9,5 @@
   <resources>
     <resource>pom.xml</resource>
     <resource>src/main/resources/index.jelly</resource>
-    <resource>src/main/webapp/help-useFrench.html</resource>
   </resources>
 </archetype>
