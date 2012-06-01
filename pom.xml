@@ -30,6 +30,30 @@
     </resources>
     <plugins>
       <plugin>
+        <!--
+          building this plugin requires Java6 (and not 5 nor 7) because it still
+          has old APT processor code that's no longer present in Java7.
+          We can lift this restriction when we remove Java5 compatibility in development
+        -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>1.1</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requireJavaVersion>
+                  <version>(1.6,1.7)</version>
+                </requireJavaVersion>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-plugin-plugin</artifactId>
         <version>2.7</version>
