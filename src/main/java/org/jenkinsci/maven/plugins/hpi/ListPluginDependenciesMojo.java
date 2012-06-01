@@ -33,7 +33,7 @@ public class ListPluginDependenciesMojo extends AbstractHpiMojo {
                 if(!a.isPlugin())
                     continue;
 
-                String line = String.format("%s:%s:%s", a.getGroupId(), a.getArtifactId(), a.getVersion());
+                String line = String.format("%s:%s:%s", a.getGroupId(), a.getArtifactId(), a.artifact.getBaseVersion());
                 w.write(line);
                 w.write('\n');
                 getLog().info(line);
