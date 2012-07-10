@@ -108,6 +108,7 @@
     <dollar>$</dollar>
     <openbracket>{</openbracket>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <netbeans.hint.jdkPlatform>JDK_1.6</netbeans.hint.jdkPlatform> <!-- cf. maven-enforcer-plugin rule above -->
   </properties>
 
   <dependencies>
