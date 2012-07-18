@@ -206,6 +206,11 @@
     </site>
   </distributionManagement>
 
+  <ciManagement>
+    <system>jenkins</system>
+    <url>https://buildhive.cloudbees.com/job/jenkinsci/job/maven-hpi-plugin/</url>
+  </ciManagement>
+
   <repositories>
     <repository>
       <id>repo.jenkins-ci.org</id>
