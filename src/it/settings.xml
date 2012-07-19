@@ -40,8 +40,8 @@ under the License.
           </snapshots>
         </repository>
         <repository>
-          <id>maven.jenkins</id>
-          <url>http://maven.jenkins-ci.org/content/groups/java.net2/</url>
+          <id>repo.jenkins-ci.org</id>
+          <url>http://repo.jenkins-ci.org/public/</url>
           <releases>
             <enabled>true</enabled>
           </releases>
@@ -62,8 +62,8 @@ under the License.
           </snapshots>
         </pluginRepository>
         <pluginRepository>
-          <id>maven.jenkins</id>
-          <url>http://maven.jenkins-ci.org/content/groups/java.net2/</url>
+          <id>repo.jenkins-ci.org</id>
+          <url>http://repo.jenkins-ci.org/public/</url>
           <releases>
             <enabled>true</enabled>
           </releases>
