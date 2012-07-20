@@ -121,13 +121,4 @@
         <addedToClasspath>true</addedToClasspath>
       </configuration>
     </component>
-
-
-    <component>
-      <role>org.codehaus.plexus.compiler.Compiler</role>
-      <role-hint>hpi-apt</role-hint>
-      <implementation>org.jenkinsci.maven.plugins.hpi.AptCompiler</implementation>
-      <description />
-    </component>
-  </components>
 </component-set>
