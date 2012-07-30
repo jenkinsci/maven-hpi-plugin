@@ -46,6 +46,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -175,6 +176,14 @@ public class RunMojo extends AbstractJetty6Mojo {
      */
     protected String maskClasses;
 
+    /**
+     * List of additionnal System properties to set
+     *
+     * @parameter
+     * @since 1.85
+     */
+    private Map<String, String> systemProperties;
+
     public void execute() throws MojoExecutionException, MojoFailureException {
         getProject().setArtifacts(resolveDependencies(dependencyResolution));
 
@@ -200,6 +209,13 @@ public class RunMojo extends AbstractJetty6Mojo {
         // expose the current top-directory of the plugin
         setSystemPropertyIfEmpty("jenkins.moduleRoot",new File(".").getAbsolutePath());
 
+        if (systemProperties != null && !systemProperties.isEmpty()) {
+            for (Map.Entry<String,String> entry : systemProperties.entrySet()) {
+                if (entry.getKey() != null && entry.getValue()!=null) {
+                    System.setProperty( entry.getKey(), entry.getValue() );
+                }
+            }
+        }
 
         // look for jenkins.war
         Artifacts jenkinsArtifacts = Artifacts.of(getProject())
