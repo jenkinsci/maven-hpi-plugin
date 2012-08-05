@@ -1,15 +1,16 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
     <version>1.26</version>
   </parent>
-  
+
   <groupId>org.jenkins-ci.tools</groupId>
   <artifactId>maven-hpi-plugin</artifactId>
   <packaging>maven-plugin</packaging>
-  
+
   <name>Maven Jenkins Plugin</name>
   <version>1.86-SNAPSHOT</version>
   <description>Maven2 plugin for developing Jenkins plugins</description>
@@ -45,7 +46,7 @@
             <phase>process-resources</phase>
             <configuration>
               <tasks>
-                <ant antfile="${basedir}/copyArchetype.xml" />
+                <ant antfile="${basedir}/copyArchetype.xml"/>
               </tasks>
             </configuration>
             <goals>
@@ -71,8 +72,8 @@
     <extensions>
       <extension>
         <groupId>org.apache.maven.wagon</groupId>
-         <artifactId>wagon-ssh</artifactId>
-         <version>1.0-beta-7</version>
+        <artifactId>wagon-ssh</artifactId>
+        <version>1.0-beta-7</version>
       </extension>
     </extensions>
   </build>
@@ -167,7 +168,7 @@
       </plugin>
     </plugins>
   </reporting>
-  
+
   <scm>
     <connection>scm:git:git://github.com/jenkinsci/maven-hpi-plugin.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/jenkinsci/maven-hpi-plugin.git</developerConnection>
@@ -230,11 +231,11 @@
     </profile>
   </profiles>
 
-    <pluginRepositories>
-        <pluginRepository>
-            <id>repo.jenkins-ci.org</id>
-            <url>http://repo.jenkins-ci.org/public/</url>
-        </pluginRepository>
-    </pluginRepositories>
+  <pluginRepositories>
+    <pluginRepository>
+      <id>repo.jenkins-ci.org</id>
+      <url>http://repo.jenkins-ci.org/public/</url>
+    </pluginRepository>
+  </pluginRepositories>
 </project>  
 
