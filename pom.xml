@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.jenkins-ci</groupId>
@@ -12,7 +11,7 @@
   <packaging>maven-plugin</packaging>
 
   <name>Maven Jenkins Plugin</name>
-  <version>1.86-SNAPSHOT</version>
+  <version>1.86</version>
   <description>Maven2 plugin for developing Jenkins plugins</description>
 
   <licenses>
@@ -51,7 +50,7 @@
             <phase>process-resources</phase>
             <configuration>
               <tasks>
-                <ant antfile="${basedir}/copyArchetype.xml"/>
+                <ant antfile="${basedir}/copyArchetype.xml" />
               </tasks>
             </configuration>
             <goals>
@@ -178,6 +177,7 @@
     <connection>scm:git:git://github.com/jenkinsci/maven-hpi-plugin.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/jenkinsci/maven-hpi-plugin.git</developerConnection>
     <url>https://github.com/jenkinsci/maven-hpi-plugin</url>
+    <tag>maven-hpi-plugin-1.86</tag>
   </scm>
 
   <distributionManagement>
