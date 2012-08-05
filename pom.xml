@@ -11,7 +11,7 @@
   <packaging>maven-plugin</packaging>
 
   <name>Maven Jenkins Plugin</name>
-  <version>1.86</version>
+  <version>1.87-SNAPSHOT</version>
   <description>Maven2 plugin for developing Jenkins plugins</description>
 
   <licenses>
@@ -177,7 +177,7 @@
     <connection>scm:git:git://github.com/jenkinsci/maven-hpi-plugin.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/jenkinsci/maven-hpi-plugin.git</developerConnection>
     <url>https://github.com/jenkinsci/maven-hpi-plugin</url>
-    <tag>maven-hpi-plugin-1.86</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <distributionManagement>
