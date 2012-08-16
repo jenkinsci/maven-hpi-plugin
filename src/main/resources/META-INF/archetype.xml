@@ -1,10 +1,8 @@
+<!-- XXX this is bogus (see maven/archetype-metadata.xml for real thing); just used by CreateMojo; better to use real ArchetypeManager API -->
 <archetype>
   <id>hudson-plugin</id>
   <sources>
     <source>src/main/java/HelloWorldBuilder.java</source>
-    <!-- these files are copied inside CreateMojo -->
-    <!--source>src/main/resources/HelloWorldBuilder/config.jelly</source>
-    <source>src/main/resources/HelloWorldBuilder/global.jelly</source-->
   </sources>
   <resources>
     <resource>pom.xml</resource>

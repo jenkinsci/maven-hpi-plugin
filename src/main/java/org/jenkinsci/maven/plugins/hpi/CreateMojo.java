@@ -149,7 +149,6 @@ public class CreateMojo extends AbstractMojo {
 
             map.put("basedir", basedir);
             map.put("package", packageName);
-            map.put("packageName", packageName);
             map.put("groupId", groupId);
             map.put("artifactId", artifactId);
             map.put("version", version);

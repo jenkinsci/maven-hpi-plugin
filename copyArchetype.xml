@@ -26,7 +26,7 @@
     </copy>
 
     <!-- inject the package statement into *.java files -->
-    <echo message="package $${packageName};&#xA;" file="${package.header.file}" />
+    <echo message="package $${package};&#xA;" file="${package.header.file}" />
     <copy todir="${dst}">
       <fileset dir="${src}">
         <include name="**/*.java" />

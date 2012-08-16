@@ -1,0 +1,27 @@
+<archetype-descriptor xmlns="http://maven.apache.org/plugins/maven-archetype-plugin/archetype-descriptor/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/plugins/maven-archetype-plugin/archetype-descriptor/1.0.0 http://maven.apache.org/xsd/archetype-descriptor-1.0.0.xsd"
+  name="Jenkins plugin">
+    <fileSets>
+        <fileSet packaged="true" filtered="true">
+            <directory>src/main/java</directory>
+        </fileSet>
+        <fileSet>
+            <directory>.</directory>
+            <includes>
+                <include>pom.xml</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>src/main/resources</directory>
+            <includes>
+                <include>index.jelly</include>
+            </includes>
+        </fileSet>
+        <fileSet packaged="true" filtered="true">
+            <directory>src/main/resources</directory>
+            <excludes>
+                <exclude>index.jelly</exclude>
+            </excludes>
+        </fileSet>
+    </fileSets>
+</archetype-descriptor>
