@@ -1,6 +1,6 @@
 package org.jenkinsci.maven.plugins.hpi;
 
-import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -15,7 +15,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Generate .hpl file.
@@ -62,15 +61,15 @@ public class HplMojo extends AbstractHpiMojo {
                 if(new File(project.getBasedir(),r.getDirectory()).exists())
                     buf.append(r.getDirectory());
             }
-            if(buf.length()>0)
-                buf.append(',');
-            buf.append(new File(project.getBuild().getOutputDirectory()).getAbsoluteFile());
-            for (Artifact a : (Set<Artifact>) project.getArtifacts()) {
-                if ("provided".equals(a.getScope()))
-                    continue;   // to simulate the real environment, drop the "provided" scope dependencies from the list
-                if ("pom".equals(a.getType()))
-                    continue;   // pom dependency is sometimes used so that one can depend on its transitive dependencies
-                buf.append(',').append(a.getFile());
+            try {
+                for (String f : (List<String>) project.getRuntimeClasspathElements()) {
+                    if (buf.length() > 0) {
+                        buf.append(',');
+                    }
+                    buf.append(f);
+                }
+            } catch (DependencyResolutionRequiredException x) {
+                throw new MojoExecutionException("Failed to resolve " + x, x);
             }
             mainSection.addAttributeAndCheck(new Attribute("Libraries",buf.toString()));
 
