@@ -1,0 +1,21 @@
+<lifecycleMappingMetadata>
+	<pluginExecutions>
+		<pluginExecution>
+			<pluginExecutionFilter>
+				<goals>
+					<goal>test-hpl</goal>
+					<goal>insert-test</goal>
+					<goal>resolve-test-dependencies</goal>
+					<goal>validate</goal>
+				</goals>
+			</pluginExecutionFilter>
+			<action>
+				<!-- <ignore /> -->
+				<execute>
+					<runOnIncremental>false</runOnIncremental>
+					<runOnConfiguration>true</runOnConfiguration>
+				</execute>
+			</action>
+		</pluginExecution>
+	</pluginExecutions>
+</lifecycleMappingMetadata>
