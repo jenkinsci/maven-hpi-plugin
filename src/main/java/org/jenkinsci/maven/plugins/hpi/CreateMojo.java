@@ -129,7 +129,7 @@ public class CreateMojo extends AbstractMojo {
             }
 
             if(groupId==null) {
-                groupId = prompter.prompt("Enter the groupId of your plugin");
+                groupId = prompter.prompt("Enter the groupId of your plugin", DEFAULT_GROUPID);
             }
 
             String basedir = System.getProperty("user.dir");
@@ -215,7 +215,7 @@ public class CreateMojo extends AbstractMojo {
             }
         }
         
-        if (changed) {
+        if (changed && !packageName.equals(DEFAULT_GROUPID)) {
             getLog().warn("Package name contains invalid characters. Replacing it with '" + buf + "'");
         }
         return buf.toString();
@@ -242,4 +242,6 @@ public class CreateMojo extends AbstractMojo {
         return artifactRepositoryFactory.createArtifactRepository(repositoryId, url, defaultArtifactRepositoryLayout,
             snapshotsPolicy, releasesPolicy);
     }
+
+    private static final String DEFAULT_GROUPID = "org.jenkins-ci.plugins";
 }
