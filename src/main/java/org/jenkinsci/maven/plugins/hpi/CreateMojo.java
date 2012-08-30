@@ -129,7 +129,8 @@ public class CreateMojo extends AbstractMojo {
             }
 
             if(groupId==null) {
-                groupId = prompter.prompt("Enter the groupId of your plugin", DEFAULT_GROUPID);
+                groupId = prompter.prompt("Enter the groupId of your plugin ["+DEFAULT_GROUPID+']');
+                if (StringUtils.isEmpty(groupId))  groupId = DEFAULT_GROUPID;
             }
 
             String basedir = System.getProperty("user.dir");
@@ -141,7 +142,7 @@ public class CreateMojo extends AbstractMojo {
             }
 
             if(artifactId==null) {
-                artifactId = prompter.prompt("Enter the artifactId of your plugin");
+                artifactId = prompter.prompt("Enter the artifactId of your plugin (normally without '-plugin' suffix)");
             }
 
             // TODO: context mojo more appropriate?
