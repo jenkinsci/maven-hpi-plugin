@@ -29,7 +29,7 @@ public class ListPluginDependenciesMojo extends AbstractHpiMojo {
         try {
             Writer w = outputFile==null ? new NullWriter() : new OutputStreamWriter(new FileOutputStream(outputFile),"UTF-8");
 
-            for (MavenArtifact a : getProjectArtfacts()) {
+            for (MavenArtifact a : getDirectDependencyArtfacts()) {
                 if(!a.isPlugin())
                     continue;
 

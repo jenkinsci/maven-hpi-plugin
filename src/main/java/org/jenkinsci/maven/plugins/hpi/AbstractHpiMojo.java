@@ -25,7 +25,6 @@ import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.model.Resource;
 import org.apache.maven.model.Developer;
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectBuilder;
@@ -53,7 +52,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.text.SimpleDateFormat;
@@ -435,9 +433,23 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         }
     }
 
+    /**
+     * Returns all the transitive dependencies.
+     */
     public Set<MavenArtifact> getProjectArtfacts() {
+        return wrap(Artifacts.of(project));
+    }
+
+    /**
+     * Returns all just the direct dependencies.
+     */
+    public Set<MavenArtifact> getDirectDependencyArtfacts() {
+        return wrap(Artifacts.ofDirectDependencies(project));
+    }
+
+    protected Set<MavenArtifact> wrap(Iterable<Artifact> artifacts) {
         Set<MavenArtifact> r = new HashSet<MavenArtifact>();
-        for (Artifact a : Artifacts.of(project)) {
+        for (Artifact a : artifacts) {
             r.add(wrap(a));
         }
         return r;
@@ -919,7 +931,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         if(pluginFirstClassLoader)
             mainSection.addAttributeAndCheck( new Attribute( "PluginFirstClassLoader", "true" ) );
 
-        String dep = findDependencyProjects();
+        String dep = findDependencyPlugins();
         if(dep.length()>0)
             mainSection.addAttributeAndCheck(new Attribute("Plugin-Dependencies",dep));
 
@@ -978,9 +990,9 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
     /**
      * Finds and lists dependency plugins.
      */
-    private String findDependencyProjects() throws IOException, MojoExecutionException {
+    private String findDependencyPlugins() throws IOException, MojoExecutionException {
         StringBuilder buf = new StringBuilder();
-        for (MavenArtifact a : getProjectArtfacts()) {
+        for (MavenArtifact a : getDirectDependencyArtfacts()) {
             if(a.isPlugin() && (includeTestScope || !"test".equals(a.getScope())) && !a.hasSameGAAs(project)) {
                 if(buf.length()>0)
                     buf.append(',');

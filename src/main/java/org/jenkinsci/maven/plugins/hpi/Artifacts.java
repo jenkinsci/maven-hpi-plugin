@@ -31,7 +31,11 @@ public class Artifacts extends ArrayList<Artifact> {
     public static Artifacts of(MavenProject p) {
         return new Artifacts(p.getArtifacts());
     }
-    
+
+    public static Artifacts ofDirectDependencies(MavenProject p) {
+        return new Artifacts(p.getDependencyArtifacts());
+    }
+
     public Artifacts retainAll(Predicate<Artifact> filter) {
         for (Iterator<Artifact> itr = iterator(); itr.hasNext(); ) {
             if (!filter.apply(itr.next()))
