@@ -136,9 +136,9 @@ public class CreateMojo extends AbstractMojo {
             String basedir = System.getProperty("user.dir");
 
             if (packageName == null) {
-                getLog().info("Defaulting package to group ID: " + groupId);
+                getLog().info("Defaulting package to group ID + artifact ID: " + groupId+'.'+artifactId);
 
-                packageName = replaceInvalidPackageNameChars(groupId);
+                packageName = replaceInvalidPackageNameChars(groupId+'.'+artifactId);
             }
 
             if(artifactId==null) {
