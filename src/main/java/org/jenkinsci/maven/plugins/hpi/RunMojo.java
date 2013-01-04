@@ -290,13 +290,7 @@ public class RunMojo extends AbstractJetty6Mojo {
             throw new MojoExecutionException("Unable to copy dependency plugin",e);
         }
 
-        ClassLoader ccl = Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(new MaskingClassLoader(ccl));
-        try {
-            super.execute();
-        } finally {
-            Thread.currentThread().setContextClassLoader(ccl);
-        }
+        super.execute();
     }
 
     private boolean hasSameGavAsProject(Artifact a) {
@@ -426,7 +420,7 @@ public class RunMojo extends AbstractJetty6Mojo {
         try {
             // for Jenkins modules, swap the component from jenkins.war by target/classes
             // via classloader magic
-            WebAppClassLoader wacl = new WebAppClassLoader(wac) {
+            WebAppClassLoader wacl = new WebAppClassLoader(new ServletApiOnlyClassLoader(null,getClass().getClassLoader()),wac) {
                 private final Pattern exclusionPattern;
                 {
                     if (getProject().getPackaging().equals("jenkins-module")) {
