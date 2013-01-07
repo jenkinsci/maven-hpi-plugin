@@ -135,14 +135,14 @@ public class CreateMojo extends AbstractMojo {
 
             String basedir = System.getProperty("user.dir");
 
+            if(artifactId==null) {
+                artifactId = prompter.prompt("Enter the artifactId of your plugin (normally without '-plugin' suffix)");
+            }
+
             if (packageName == null) {
                 getLog().info("Defaulting package to group ID + artifact ID: " + groupId+'.'+artifactId);
 
                 packageName = replaceInvalidPackageNameChars(groupId+'.'+artifactId);
-            }
-
-            if(artifactId==null) {
-                artifactId = prompter.prompt("Enter the artifactId of your plugin (normally without '-plugin' suffix)");
             }
 
             // TODO: context mojo more appropriate?
