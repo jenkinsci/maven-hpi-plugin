@@ -177,6 +177,12 @@ public class RunMojo extends AbstractJetty6Mojo {
     protected String maskClasses;
 
     /**
+     * @since 1.94
+     * @parameter
+     */
+    protected boolean pluginFirstClassLoader = false;
+
+    /**
      * List of additionnal System properties to set
      *
      * @parameter
@@ -334,6 +340,7 @@ public class RunMojo extends AbstractJetty6Mojo {
         hpl.projectBuilder = this.projectBuilder;
         hpl.localRepository = this.localRepository;
         hpl.jenkinsCoreId = this.jenkinsCoreId;
+        hpl.pluginFirstClassLoader = this.pluginFirstClassLoader;
         hpl.maskClasses = this.maskClasses;
         hpl.execute();
     }

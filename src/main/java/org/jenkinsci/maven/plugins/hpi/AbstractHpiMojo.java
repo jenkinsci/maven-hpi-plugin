@@ -228,7 +228,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
      * @since 1.53
      * @parameter
      */
-    private boolean pluginFirstClassLoader = false;
+    protected boolean pluginFirstClassLoader = false;
 
     /**
      * If true, test scope dependencies count as if they are normal dependencies.
