@@ -234,7 +234,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
      * If true, test scope dependencies count as if they are normal dependencies.
      * This is only useful during hpi:run, so not exposing it as a configurable parameter.
      */
-    boolean includeTestScope;
+    ScopeArtifactFilter scopeFilter = new ScopeArtifactFilter("runtime");
 
     /**
      * @component
@@ -1011,7 +1011,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
     private String findDependencyPlugins() throws IOException, MojoExecutionException {
         StringBuilder buf = new StringBuilder();
         for (MavenArtifact a : getDirectDependencyArtfacts()) {
-            if(a.isPlugin() && (includeTestScope || !"test".equals(a.getScope())) && !a.hasSameGAAs(project)) {
+            if(a.isPlugin() && scopeFilter.include(a.artifact) && !a.hasSameGAAs(project)) {
                 if(buf.length()>0)
                     buf.append(',');
                 buf.append(a.getArtifactId());

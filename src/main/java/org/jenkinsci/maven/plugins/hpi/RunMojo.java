@@ -91,6 +91,9 @@ public class RunMojo extends AbstractJetty6Mojo {
     /**
      * Decides the level of dependency resolution.
      *
+     * This controls what plugins are made available to the
+     * running Jenkins.
+     *
      * @parameter
      */
     private String dependencyResolution = "compile";
@@ -336,7 +339,7 @@ public class RunMojo extends AbstractJetty6Mojo {
         hpl.setLog(getLog());
         hpl.pluginName = getProject().getName();
         hpl.warSourceDirectory = warSourceDirectory;
-        hpl.includeTestScope = true;
+        hpl.scopeFilter = new ScopeArtifactFilter(dependencyResolution);
         hpl.projectBuilder = this.projectBuilder;
         hpl.localRepository = this.localRepository;
         hpl.jenkinsCoreId = this.jenkinsCoreId;
