@@ -96,7 +96,7 @@ public class RunMojo extends AbstractJetty6Mojo {
      *
      * @parameter
      */
-    private String dependencyResolution = "compile";
+    private String dependencyResolution = "test";
 
     /**
      * Single directory for extra files to include in the WAR.
