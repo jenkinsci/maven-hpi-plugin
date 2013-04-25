@@ -23,9 +23,18 @@ public class TestInsertionMojo extends AbstractJenkinsMojo {
     /**
      * If true, the automatic test injection will be skipped.
      *
-     * @parameter
+     * @parameter default=false expression="${maven-hpi-plugin.disabledTestInjection}"
      */
     private boolean disabledTestInjection;
+
+    /**
+     * Name of the injected test.
+     *
+     * You may change this to "InjectIT" to get the test running during phase integration-test.
+     *
+     * @parameter default="InjectedTest" expression="${maven-hpi-plugin.injectedTestName}"
+     */
+    private String injectedTestName;
 
     /**
      * If true, verify that all the jelly scripts have the Jelly XSS PI in them.
@@ -43,17 +52,17 @@ public class TestInsertionMojo extends AbstractJenkinsMojo {
             getLog().info("Skipping auto-test generation");
             return;
         }
-        
+
         String target = findJenkinsVersion();
         if (new VersionNumber(target).compareTo(new VersionNumber("1.327"))<0) {
             getLog().info("Skipping auto-test generation because we are targeting Jenkins "+target+" (at least 1.327 is required).");
             return;
         }
-                
+
         try {
             File f = new File(project.getBasedir(), "target/inject-tests");
             f.mkdirs();
-            File javaFile = new File(f, "InjectedTest.java");
+            File javaFile = new File(f, injectedTestName + ".java");
             PrintWriter w = new PrintWriter(new OutputStreamWriter(new FileOutputStream(javaFile)));
             w.println("import java.util.*;");
             w.println("/**");
@@ -61,7 +70,7 @@ public class TestInsertionMojo extends AbstractJenkinsMojo {
             w.println(" * If this fails to compile, you are probably using Hudson &lt; 1.327. If so, disable");
             w.println(" * this code generation by configuring maven-hpi-plugin to &lt;disabledTestInjection>true&lt;/disabledTestInjection>.");
             w.println(" */");
-            w.println("public class InjectedTest extends junit.framework.TestCase {");
+            w.println("public class " + injectedTestName + " extends junit.framework.TestCase {");
             w.println("  public static junit.framework.Test suite() throws Exception {");
             w.println("    Map parameters = new HashMap();");
             w.println("    parameters.put(\"basedir\","+quote(project.getBasedir().getAbsolutePath())+");");
@@ -73,7 +82,7 @@ public class TestInsertionMojo extends AbstractJenkinsMojo {
             w.println("  }");
             w.println("}");
             w.close();
-            
+
             project.addTestCompileSourceRoot(f.getAbsolutePath());
 
             // always set the same time stamp on this file, so that Maven will not re-compile this
