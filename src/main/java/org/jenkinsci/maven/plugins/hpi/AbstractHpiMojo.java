@@ -225,6 +225,14 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
     protected String globalMaskClasses;
 
     /**
+     * Change the classloader preference such that classes locally bundled in this plugin
+     * will take precedence over those that are defined by the dependency plugins.
+     *
+     * <p>
+     * This is useful if the plugins that you want to depend on exposes conflicting versions
+     * of the libraries you are using, but enabling this switch makes your code
+     * susceptible to classloader constraint violations.
+     *
      * @since 1.53
      * @parameter
      */
