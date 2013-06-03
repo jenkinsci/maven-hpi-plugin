@@ -28,7 +28,6 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -61,7 +60,7 @@ public class TagLibInterfaceGeneratorMojo extends AbstractMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
             JCodeModel codeModel = new JCodeModel();
-            for (Resource res: (List<Resource>)project.getBuild().getResources()) {
+            for (Resource res: project.getBuild().getResources()) {
                 walk(new File(res.getDirectory()),codeModel.rootPackage(),"");
             }
 
