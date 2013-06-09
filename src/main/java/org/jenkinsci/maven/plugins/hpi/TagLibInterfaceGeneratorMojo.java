@@ -7,6 +7,7 @@ import com.sun.codemodel.JDocComment;
 import com.sun.codemodel.JJavaName;
 import com.sun.codemodel.JMethod;
 import com.sun.codemodel.JPackage;
+import com.sun.codemodel.fmt.JBinaryFile;
 import groovy.lang.Closure;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
@@ -28,6 +29,8 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -85,11 +88,15 @@ public class TagLibInterfaceGeneratorMojo extends AbstractMojo {
                 walk(child,pkg.subPackage(h2j(child.getName())),dirName+'/'+child.getName());
         }
 
-        File taglib = new File(dir,"taglib");
-        if (taglib.exists()) {
+        if (isTagLibDir(dir)) {
             JDefinedClass c = pkg.parent()._interface(StringUtils.capitalize(h2j(dir.getName())) + "TagLib");
             c._implements(TypedTagLibrary.class);
             c.annotate(TagLibraryUri.class).param("value",dirName);
+
+            JBinaryFile _gdsl = new JBinaryFile(c.name()+".gdsl");
+            PrintWriter gdsl = new PrintWriter(_gdsl.getDataStore());
+            gdsl.printf("package %s;\n",pkg.parent().name());
+            gdsl.printf("contributor(context(ctype:'%s')) {\n",c.fullName());
 
             File[] tags = dir.listFiles(new FilenameFilter() {
                 public boolean accept(File dir, String name) {
@@ -115,6 +122,7 @@ public class TagLibInterfaceGeneratorMojo extends AbstractMojo {
                         methodName = baseName;
                     }
 
+                    // add 4 overload variants
                     for (int i=0; i<4; i++) {
                         JMethod m = c.method(0, void.class, methodName);
                         if (!methodName.equals(baseName))
@@ -128,16 +136,42 @@ public class TagLibInterfaceGeneratorMojo extends AbstractMojo {
                         if (doc!=null)
                             javadoc.append(doc.getText().replace("&","&amp;").replace("<","&lt;"));
                     }
+
+                    // generate Groovy DSL
+                    if (doc!=null) {
+                        gdsl.printf("  method name:'%s', type:void, params:[args:[\n", methodName);
+                        List<Element> atts = doc.elements(QName.get("st:attribute", "jelly:stapler"));
+                        for (Element a : atts) {
+    //                                    parameter(name: 'param1', type: String, doc: 'My doc'),
+                            gdsl.printf("    parameter(name:'%s',type:'%s', doc:\"\"\"\n%s\n\"\"\"),\n",
+                                    a.attributeValue("name"),
+                                    a.attributeValue("type","java.lang.Object"),
+                                    a.getTextTrim().replace("$","\\$").replace("&","&amp;").replace("<","&lt;"));
+                        }
+
+                        // see http://youtrack.jetbrains.com/issue/IDEA-108355 for why
+                        // we add the bogus 'dummy' parameter
+                        gdsl.printf("  ], dummy:void, c:Closure]\n");
+                    }
                 } catch (DocumentException e) {
                     throw (IOException)new IOException("Failed to parse "+tag).initCause(e);
                 }
             }
 
+            gdsl.printf("}\n");
+            gdsl.close();
+
             // up to date check. if the file already exists and is newer, don't regenerate it
             File dst = new File(outputDirectory, c.fullName().replace('.', '/') + ".java");
             if (dst.exists() && dst.lastModified()>timestamp)
                 c.hide();
+            else
+                pkg.parent().addResourceFile(_gdsl);
         }
+    }
+
+    private boolean isTagLibDir(File dir) {
+        return new File(dir,"taglib").exists();
     }
 
     private static String h2j(String s) {
