@@ -340,7 +340,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         return StringUtils.split(StringUtils.defaultString(dependentWarIncludes), ",");
     }
 
-    public void buildExplodedWebapp(File webappDirectory)
+    public void buildExplodedWebapp(File webappDirectory, File jarFile)
         throws MojoExecutionException {
         getLog().info("Exploding webapp...");
 
@@ -370,6 +370,8 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
             }
 
             buildWebapp(project, webappDirectory);
+
+            copyFileIfModified(jarFile, new File(getWebappDirectory(),"WEB-INF/lib/"+jarFile.getName()));
         }
         catch (IOException e) {
             throw new MojoExecutionException("Could not explode webapp...", e);
@@ -499,12 +501,6 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         File libDirectory = new File(webappDirectory, WEB_INF + "/lib");
 
         File tldDirectory = new File(webappDirectory, WEB_INF + "/tld");
-
-        File webappClassesDirectory = new File(webappDirectory, WEB_INF + "/classes");
-
-        if (classesDirectory.exists() && !classesDirectory.equals(webappClassesDirectory)) {
-            copyDirectoryStructureIfModified(classesDirectory, webappClassesDirectory);
-        }
 
         Set<MavenArtifact> artifacts = getProjectArtfacts();
 

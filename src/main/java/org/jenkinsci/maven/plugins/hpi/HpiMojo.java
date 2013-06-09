@@ -122,20 +122,31 @@ public class HpiMojo extends AbstractHpiMojo {
     private void performPackaging()
         throws IOException, ArchiverException, ManifestException, DependencyResolutionRequiredException, MojoExecutionException {
 
-        File hpiFile = getOutputFile(".hpi");
-        buildExplodedWebapp(getWebappDirectory());
-
-        //generate war file
-        getLog().info("Generating hpi " + hpiFile.getAbsolutePath());
-
-        MavenArchiver archiver = new MavenArchiver();
-
-        archiver.setArchiver(hpiArchiver);
-        archiver.setOutputFile(hpiFile);
-
+        // generate a manifest
         File manifestFile = new File(getWebappDirectory(), "META-INF/MANIFEST.MF");
         generateManifest(manifestFile);
         Manifest manifest = loadManifest(manifestFile);
+
+        // create a jar file to be used when other plugins depend on this plugin.
+        File jarFile = getOutputFile(".jar");
+        MavenArchiver archiver = new MavenArchiver();
+        archiver.setArchiver(jarArchiver);
+        archiver.setOutputFile(jarFile);
+        jarArchiver.addConfiguredManifest(manifest);
+        jarArchiver.addDirectory(getClassesDirectory());
+        archiver.createArchive(project,archive);
+        projectHelper.attachArtifact(project, "jar", null, jarFile);
+
+        // generate war file
+        buildExplodedWebapp(getWebappDirectory(),jarFile);
+
+        File hpiFile = getOutputFile(".hpi");
+        getLog().info("Generating hpi " + hpiFile.getAbsolutePath());
+
+        archiver = new MavenArchiver();
+
+        archiver.setArchiver(hpiArchiver);
+        archiver.setOutputFile(hpiFile);
 
         hpiArchiver.addConfiguredManifest(manifest);
         hpiArchiver.addDirectory(getWebappDirectory(), getIncludes(), getExcludes());
@@ -144,15 +155,6 @@ public class HpiMojo extends AbstractHpiMojo {
         archiver.createArchive(project, archive);
         project.getArtifact().setFile(hpiFile);
 
-        // also creates a jar file to be used when other plugins depend on this plugin.
-        File jarFile = getOutputFile(".jar");
-        archiver = new MavenArchiver();
-        archiver.setArchiver(jarArchiver);
-        archiver.setOutputFile(jarFile);
-        jarArchiver.addConfiguredManifest(manifest);
-        jarArchiver.addDirectory(getClassesDirectory());
-        archiver.createArchive(project,archive);
-        projectHelper.attachArtifact(project, "jar", null, jarFile);
     }
 
     private Manifest loadManifest(File f) throws IOException, ManifestException {
