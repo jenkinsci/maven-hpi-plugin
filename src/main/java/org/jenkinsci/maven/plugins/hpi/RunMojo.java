@@ -272,7 +272,6 @@ public class RunMojo extends AbstractJetty6Mojo {
             for( MavenArtifact a : getProjectArtifacts() ) {
                 if(!a.isPlugin())
                     continue;
-                getLog().info("Copying dependency Jenkins plugin "+a.getFile());
 
                 // find corresponding .hpi file
                 Artifact hpi = artifactFactory.createArtifact(a.getGroupId(),a.getArtifactId(),a.getVersion(),null,"hpi");
@@ -286,6 +285,7 @@ public class RunMojo extends AbstractJetty6Mojo {
                 if (hpi.getFile().isDirectory())
                     throw new UnsupportedOperationException(hpi.getFile()+" is a directory and not packaged yet. this isn't supported");
 
+                getLog().info("Copying dependency Jenkins plugin "+a.getFile());
                 copyFile(hpi.getFile(),new File(pluginsDir,a.getArtifactId()+".hpi"));
                 // pin the dependency plugin, so that even if a different version of the same plugin is bundled to Jenkins,
                 // we still use the plugin as specified by the POM of the plugin.
