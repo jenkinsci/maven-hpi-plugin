@@ -269,7 +269,7 @@ public class RunMojo extends AbstractJetty6Mojo {
 
         // copy other dependency Jenkins plugins
         try {
-            for( MavenArtifact a : getProjectArtfacts() ) {
+            for( MavenArtifact a : getProjectArtifacts() ) {
                 if(!a.isPlugin())
                     continue;
                 getLog().info("Copying dependency Jenkins plugin "+a.getFile());
@@ -515,7 +515,7 @@ public class RunMojo extends AbstractJetty6Mojo {
         }
     }
 
-    public Set<MavenArtifact> getProjectArtfacts() {
+    public Set<MavenArtifact> getProjectArtifacts() {
         Set<MavenArtifact> r = new HashSet<MavenArtifact>();
         for (Artifact a : (Collection<Artifact>)getProject().getArtifacts()) {
             r.add(wrap(a));
