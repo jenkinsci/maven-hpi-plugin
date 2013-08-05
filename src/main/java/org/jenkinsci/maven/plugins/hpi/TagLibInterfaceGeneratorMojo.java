@@ -1,5 +1,6 @@
 package org.jenkinsci.maven.plugins.hpi;
 
+import com.sun.codemodel.CodeWriter;
 import com.sun.codemodel.JClassAlreadyExistsException;
 import com.sun.codemodel.JCodeModel;
 import com.sun.codemodel.JDefinedClass;
@@ -8,6 +9,8 @@ import com.sun.codemodel.JJavaName;
 import com.sun.codemodel.JMethod;
 import com.sun.codemodel.JPackage;
 import com.sun.codemodel.fmt.JBinaryFile;
+import com.sun.codemodel.writer.FileCodeWriter;
+import com.sun.codemodel.writer.FilterCodeWriter;
 import groovy.lang.Closure;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
@@ -29,7 +32,9 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.io.Writer;
 import java.util.List;
 import java.util.Map;
 
@@ -58,6 +63,12 @@ public class TagLibInterfaceGeneratorMojo extends AbstractMojo {
      */
     protected File outputDirectory;
 
+    /**
+     * The encoding to use for generated files.
+     * @parameter expression="${project.build.sourceEncoding}"
+     */
+    protected String encoding;
+
     private SAXReader saxReader = new SAXReader();
 
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -68,7 +79,25 @@ public class TagLibInterfaceGeneratorMojo extends AbstractMojo {
             }
 
             outputDirectory.mkdirs();
-            codeModel.build(outputDirectory);
+            CodeWriter w = new FilterCodeWriter(encoding != null ? new FileCodeWriter(outputDirectory, encoding) : new FileCodeWriter(outputDirectory)) {
+                // Cf. ProgressCodeWriter:
+                @Override public Writer openSource(JPackage pkg, String fileName) throws IOException {
+                    report(pkg, fileName);
+                    return super.openSource(pkg, fileName);
+                }
+                @Override public OutputStream openBinary(JPackage pkg, String fileName) throws IOException {
+                    report(pkg, fileName);
+                    return super.openBinary(pkg, fileName);
+                }
+                private void report(JPackage pkg, String fileName) {
+                    if (pkg.isUnnamed()) {
+                        getLog().info(fileName);
+                    } else {
+                        getLog().info(pkg.name().replace('.', File.separatorChar) + File.separatorChar + fileName);
+                    }
+               }
+            };
+            codeModel.build(w);
             project.getCompileSourceRoots().add(outputDirectory.getAbsolutePath());
         } catch (IOException e) {
             throw new MojoExecutionException("Failed to generate taglib type interface",e);
