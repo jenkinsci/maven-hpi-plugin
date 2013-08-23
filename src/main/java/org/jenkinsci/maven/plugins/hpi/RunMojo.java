@@ -45,10 +45,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 /**
@@ -193,6 +199,17 @@ public class RunMojo extends AbstractJetty6Mojo {
      */
     private Map<String, String> systemProperties;
 
+    /**
+     * List of loggers to define.
+     * Keys are logger names (usually package or class names);
+     * values are level names (such as {@code FINE}).
+     * @parameter
+     * @since 1.98
+     */
+    private Map<String,String> loggers;
+
+    private Collection<Logger> loggerReferences; // just to prevent GC
+
     public void execute() throws MojoExecutionException, MojoFailureException {
         getProject().setArtifacts(resolveDependencies(dependencyResolution));
 
@@ -297,6 +314,20 @@ public class RunMojo extends AbstractJetty6Mojo {
             throw new MojoExecutionException("Unable to copy dependency plugin",e);
         } catch (ArtifactResolutionException e) {
             throw new MojoExecutionException("Unable to copy dependency plugin",e);
+        }
+
+        if (loggers != null) {
+            for (Handler h : LogManager.getLogManager().getLogger("").getHandlers()) {
+                if (h instanceof ConsoleHandler) {
+                    h.setLevel(Level.ALL);
+                }
+            }
+            loggerReferences = new LinkedList<Logger>();
+            for (Map.Entry<String,String> logger : loggers.entrySet()) {
+                Logger l = Logger.getLogger(logger.getKey());
+                loggerReferences.add(l);
+                l.setLevel(Level.parse(logger.getValue()));
+            }
         }
 
         super.execute();
