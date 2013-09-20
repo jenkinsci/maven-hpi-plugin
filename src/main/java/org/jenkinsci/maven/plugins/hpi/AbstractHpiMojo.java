@@ -20,6 +20,7 @@ import hudson.Extension;
 import jenkins.YesNoMaybe;
 import net.java.sezpoz.Index;
 import net.java.sezpoz.IndexItem;
+import org.apache.commons.io.IOUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
@@ -65,6 +66,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
     /**
@@ -92,6 +95,17 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
      * @readonly 
      */
     protected String pluginName;
+
+    /**
+     * Additional information that accompanies the version number of the plugin.
+     *
+     * Useful to distinguish snapshot builds.
+     * For example, if you are building snapshot plugins from Jenkins, you can
+     * put the build number in here by running Maven with "-Dplugin.version.description=$BUILD_TAG"
+     *
+     * @parameter expression="${plugin.version.description}"
+     */
+    protected String pluginVersionDescription;
 
     /**
      * The directory where the webapp is built.
@@ -897,6 +911,38 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
     }
 
     /**
+     * If the project is on Git, figure out Git SHA1.
+     *
+     * @return null if no git repository is found
+     */
+    public String getGitHeadSha1() {
+        // we want to allow the plugin that's not sitting at the root (such as findbugs plugin),
+        // but we don't want to go up too far and pick up unrelated repository.
+        File git = new File(project.getBasedir(), ".git");
+        if (!git.exists()) {
+            git = new File(project.getBasedir(),"../.git");
+            if (!git.exists())
+                return null;
+        }
+
+        try {
+            Process p = new ProcessBuilder("git", "rev-parse", "HEAD").redirectErrorStream(true).start();
+            p.getOutputStream().close();
+            String v = IOUtils.toString(p.getInputStream()).trim();
+            if (p.waitFor()!=0)
+                return null;    // git rev-parse failed to run
+
+            return v.trim().substring(0,8);
+        } catch (IOException e) {
+            LOGGER.log(Level.FINE, "Failed to run git rev-parse HEAD",e);
+            return null;
+        } catch (InterruptedException e) {
+            LOGGER.log(Level.FINE, "Failed to run git rev-parse HEAD",e);
+            return null;
+        }
+    }
+
+    /**
      * TO DO: Remove this interface when Maven moves to plexus-utils version 1.4
      */
     private interface FilterWrapper {
@@ -927,10 +973,14 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
             mainSection.addAttributeAndCheck(new Attribute("Sandbox-Status", sandboxStatus));
 
         String v = project.getVersion();
-        if(v.endsWith("-SNAPSHOT")) {
-            String dt = new SimpleDateFormat("MM/dd/yyyy HH:mm").format(new Date());
-            v += " (private-"+dt+"-"+System.getProperty("user.name")+")";
+        if (v.endsWith("-SNAPSHOT") && pluginVersionDescription==null) {
+            String dt = getGitHeadSha1();
+            if (dt==null)   // if SHA1 isn't available, fall back to timestamp
+                dt = new SimpleDateFormat("MM/dd/yyyy HH:mm").format(new Date());
+            pluginVersionDescription = "private-"+dt+"-"+System.getProperty("user.name");
         }
+        if (pluginVersionDescription!=null)
+            v += " (" + pluginVersionDescription + ")";
 
         if (!project.getPackaging().equals("jenkins-module")) {
             // Earlier maven-hpi-plugin used to look for this attribute to determine if a jar file is a Jenkins plugin.
@@ -1036,4 +1086,6 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
 
         return buf.toString();
     }
+
+    private static final Logger LOGGER = Logger.getLogger(AbstractHpiMojo.class.getName());
 }
