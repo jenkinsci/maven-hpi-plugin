@@ -40,7 +40,9 @@ import org.mortbay.jetty.webapp.WebAppClassLoader;
 import org.mortbay.jetty.webapp.WebAppContext;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -48,6 +50,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.ConsoleHandler;
@@ -56,6 +59,8 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 /**
  * Runs Jenkins with the current plugin project.
@@ -382,11 +387,73 @@ public class RunMojo extends AbstractJetty6Mojo {
     public void configureWebApplication() throws Exception {
         // Jetty tries to do this in WebAppContext.resolveWebApp but it failed to delete the directory.
         File extractedWebAppDir= new File(getTmpDirectory(), "webapp");
-        if(extractedWebAppDir.lastModified() < webApp.lastModified())
+        if (isExtractedWebAppDirStale(extractedWebAppDir, webApp)) {
             FileUtils.deleteDirectory(extractedWebAppDir);
+        }
         
         super.configureWebApplication();
         getWebApplication().setWebAppSrcDir(webApp);
+    }
+
+    private static final String VERSION_PATH = "META-INF/maven/org.jenkins-ci.main/jenkins-war/pom.properties";
+    private static final String VERSION_PROP = "version";
+    private boolean isExtractedWebAppDirStale(File extractedWebAppDir, File webApp) throws IOException {
+        if (!extractedWebAppDir.isDirectory()) {
+            getLog().info(extractedWebAppDir + " does not yet exist, will receive " + webApp);
+            return false;
+        }
+        if (extractedWebAppDir.lastModified() < webApp.lastModified()) {
+            getLog().info(extractedWebAppDir + " is older than " + webApp + ", will recreate");
+            return true;
+        }
+        File extractedPath = new File(extractedWebAppDir, VERSION_PATH);
+        if (!extractedPath.isFile()) {
+            getLog().warn("no such file " + extractedPath);
+            return false;
+        }
+        InputStream is = new FileInputStream(extractedPath);
+        String extractedVersion;
+        try {
+            extractedVersion = loadVersion(is);
+        } finally {
+            is.close();
+        }
+        if (extractedVersion == null) {
+            getLog().warn("no " + VERSION_PROP + " in " + extractedPath);
+            return false;
+        }
+        ZipFile zip = new ZipFile(webApp);
+        String originalVersion;
+        try {
+            ZipEntry entry = zip.getEntry(VERSION_PATH);
+            if (entry == null) {
+                getLog().warn("no " + VERSION_PATH + " in " + webApp);
+                return false;
+            }
+            is = zip.getInputStream(entry);
+            try {
+                originalVersion = loadVersion(is);
+            } finally {
+                is.close();
+            }
+        } finally {
+            zip.close();
+        }
+        if (originalVersion == null) {
+            getLog().warn("no " + VERSION_PROP + " in jar:" + webApp.toURI() + "!/" + VERSION_PATH);
+            return false;
+        }
+        if (!extractedVersion.equals(originalVersion)) {
+            getLog().info("Version " + extractedVersion + " in " + extractedWebAppDir + " does not match " + originalVersion + " in " + webApp + ", will recreate");
+            return true;
+        }
+        getLog().info(extractedWebAppDir + " already up to date with respect to " + webApp);
+        return false;
+    }
+    private String loadVersion(InputStream is) throws IOException {
+        Properties props = new Properties();
+        props.load(is);
+        return props.getProperty(VERSION_PROP);
     }
 
     public void configureScanner() throws MojoExecutionException {
