@@ -27,8 +27,6 @@ import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProjectBuilder;
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.commons.io.FileUtils;
 import org.mortbay.jetty.nio.SelectChannelConnector;
 import org.mortbay.jetty.plugin.Jetty6PluginServer;
@@ -53,6 +51,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
+import java.util.jar.JarFile;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -307,11 +306,7 @@ public class RunMojo extends AbstractJetty6Mojo {
                 if (hpi.getFile().isDirectory())
                     throw new UnsupportedOperationException(hpi.getFile()+" is a directory and not packaged yet. this isn't supported");
 
-                getLog().info("Copying dependency Jenkins plugin "+a.getFile());
-                copyFile(hpi.getFile(),new File(pluginsDir,a.getArtifactId()+".hpi"));
-                // pin the dependency plugin, so that even if a different version of the same plugin is bundled to Jenkins,
-                // we still use the plugin as specified by the POM of the plugin.
-                FileUtils.writeStringToFile(new File(pluginsDir,a.getArtifactId()+".hpi.pinned"),"pinned");
+                copyPlugin(hpi.getFile(), pluginsDir, a.getArtifactId());
             }
         } catch (IOException e) {
             throw new MojoExecutionException("Unable to copy dependency plugin",e);
@@ -349,12 +344,41 @@ public class RunMojo extends AbstractJetty6Mojo {
             System.setProperty(name, value);
     }
 
-    private void copyFile(File src, File dst) {
-        Copy cp = new Copy();
-        cp.setProject(new Project());
-        cp.setFile(src);
-        cp.setTofile(dst);
-        cp.execute();
+    private void copyPlugin(File src, File pluginsDir, String shortName) throws IOException {
+        File dst = new File(pluginsDir, shortName + ".jpi");
+        File hpi = new File(pluginsDir, shortName + ".hpi");
+        if (hpi.isFile()) {
+            getLog().warn("Moving historical " + hpi + " to *.jpi");
+            hpi.renameTo(dst);
+        }
+        if (versionOfPlugin(src).compareTo(versionOfPlugin(dst)) < 0) {
+            getLog().warn("will not overwrite " + dst + " with " + src + " because it is newer");
+            return;
+        }
+        getLog().info("Copying dependency Jenkins plugin " + src);
+        FileUtils.copyFile(src, dst);
+        // pin the dependency plugin, so that even if a different version of the same plugin is bundled to Jenkins,
+        // we still use the plugin as specified by the POM of the plugin.
+        FileUtils.writeStringToFile(new File(dst + ".pinned"), "pinned");
+    }
+    private VersionNumber versionOfPlugin(File p) throws IOException {
+        if (!p.isFile()) {
+            return new VersionNumber("0.0");
+        }
+        JarFile j = new JarFile(p);
+        try {
+            String v = j.getManifest().getMainAttributes().getValue("Plugin-Version");
+            if (v == null) {
+                throw new IOException("no Plugin-Version in " + p);
+            }
+            try {
+                return new VersionNumber(v);
+            } catch (IllegalArgumentException x) {
+                throw new IOException("malformed Plugin-Version in " + p + ": " + x, x);
+            }
+        } finally {
+            j.close();
+        }
     }
 
     /**
