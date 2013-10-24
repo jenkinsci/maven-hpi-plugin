@@ -71,7 +71,7 @@ public class VersionNumber implements Comparable<VersionNumber> {
      * @throws IllegalArgumentException
      *      if the parsing fails.
      */
-    public VersionNumber( String num ) {
+    public VersionNumber( String num ) throws IllegalArgumentException {
         StringTokenizer tokens = new StringTokenizer(num,".-");
         digits = new int[tokens.countTokens()];
         if(digits.length<2)
