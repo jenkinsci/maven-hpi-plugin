@@ -89,6 +89,14 @@ public class HelloWorldBuilder extends Builder {
         private boolean useFrench;
 
         /**
+         * In order to load the persisted global configuration, you have to 
+         * call load() in the constructor.
+         */
+        public DescriptorImpl() {
+            load();
+        }
+
+        /**
          * Performs on-the-fly validation of the form field 'name'.
          *
          * @param value
