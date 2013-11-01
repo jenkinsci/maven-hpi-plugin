@@ -44,9 +44,14 @@ public class MavenArtifact {
      */
     public boolean isPlugin() throws IOException {
         try {
-            // some artifacts aren't even Java, so ignore those.
-            if(!artifact.getType().equals("jar"))    return false;
+            String t = artifact.getType();
 
+            if(t.equals("hpi") || t.equals("jpi"))    return true;
+
+            // some artifacts aren't even Java, so ignore those.
+            if(!t.equals("jar"))    return false;
+
+            // when a plugin depends on another plugin, it doesn't specify the type as hpi, so we need to resolve its POM to see it
             return resolvePom().getPackaging().equals("hpi");
         } catch (ProjectBuildingException e) {
             throw new IOException2("Failed to open artifact "+artifact.toString()+" at "+artifact.getFile(),e);
