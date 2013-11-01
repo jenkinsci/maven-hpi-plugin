@@ -166,6 +166,12 @@
       <artifactId>sezpoz</artifactId>
       <version>1.9</version>
     </dependency>
+    <!-- for copy-dependency-plugins -->
+    <dependency>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-dependency-plugin</artifactId>
+      <version>2.8</version>
+    </dependency>
     <!-- for the create goal -->
     <dependency>
       <groupId>org.apache.maven.plugins</groupId>

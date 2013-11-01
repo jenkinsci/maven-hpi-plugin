@@ -258,15 +258,6 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
      */
     ScopeArtifactFilter scopeFilter = new ScopeArtifactFilter("runtime");
 
-    /**
-     * @component
-     */
-    protected MavenProjectBuilder projectBuilder;
-
-    /**
-     * @parameter expression="${localRepository}"
-     */
-    protected ArtifactRepository localRepository;
 
     private static final String[] EMPTY_STRING_ARRAY = {};
 

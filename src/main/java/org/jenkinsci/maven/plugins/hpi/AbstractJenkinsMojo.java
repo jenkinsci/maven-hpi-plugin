@@ -1,9 +1,14 @@
 package org.jenkinsci.maven.plugins.hpi;
 
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.factory.ArtifactFactory;
+import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
+import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.MavenProjectBuilder;
 
 import java.util.List;
 
@@ -32,6 +37,37 @@ public abstract class AbstractJenkinsMojo extends AbstractMojo {
      */
     protected String jenkinsCoreId;
 
+
+    /**
+     * List of Remote Repositories used by the resolver
+     *
+     * @parameter expression="${project.remoteArtifactRepositories}"
+     * @required
+     */
+    protected List<ArtifactRepository> remoteRepos;
+
+    /**
+     * @parameter expression="${localRepository}"
+     * @required
+     */
+    protected ArtifactRepository localRepository;
+
+    /**
+     * @component
+     */
+    protected ArtifactMetadataSource artifactMetadataSource;
+
+    /**
+     * @component
+     */
+    protected ArtifactFactory artifactFactory;
+
+    /**
+     * @component
+     */
+    protected MavenProjectBuilder projectBuilder;
+
+
     protected String findJenkinsVersion() throws MojoExecutionException {
         for(Dependency a : (List<Dependency>)project.getDependencies()) {
             boolean match;
@@ -45,5 +81,9 @@ public abstract class AbstractJenkinsMojo extends AbstractMojo {
                 return a.getVersion();
         }
         throw new MojoExecutionException("Failed to determine Jenkins version this plugin depends on.");
+    }
+
+    protected MavenArtifact wrap(Artifact a) {
+        return new MavenArtifact(a,projectBuilder,remoteRepos,localRepository);
     }
 }
