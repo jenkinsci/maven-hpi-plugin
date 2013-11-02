@@ -86,7 +86,8 @@ public class CopyPluginsWithDependenciesMojo extends AbstractJenkinsMojo {
                     if (cur!=null) {
                         if (cur.getVersionNumber().compareTo(a.getVersionNumber())<0)
                             cur = a;
-                    }
+                    } else
+                        cur = a;
                     selected.put(a.getArtifactId(),cur);
                 }
             }
