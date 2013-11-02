@@ -15,6 +15,9 @@ import org.codehaus.plexus.util.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -61,6 +64,10 @@ public class CopyPluginsWithDependenciesMojo extends AbstractJenkinsMojo {
                 all.add(toArtifact(ai));
             }
 
+            List<Artifact> hpis = new ArrayList<Artifact>();
+            int artifactIdLength=0; // how many chars does it take to print artifactId?
+            int versionLength=0;
+
             ArtifactResolutionResult r = resolver.resolveTransitively(all, project.getArtifact(), remoteRepos, localRepository, artifactMetadataSource);
             for (Artifact o : (Set<Artifact>)r.getArtifacts()) {
                 if (wrap(o).isPlugin()) {
@@ -70,7 +77,24 @@ public class CopyPluginsWithDependenciesMojo extends AbstractJenkinsMojo {
                     resolver.resolve(hpi,remoteRepos,localRepository);
 
                     FileUtils.copyFile(hpi.getFile(), new File(outputDirectory,hpi.getArtifactId()+".hpi"));
+                    hpis.add(hpi);
+                    artifactIdLength = Math.max(artifactIdLength,hpi.getArtifactId().length());
+                    versionLength = Math.max(versionLength,hpi.getVersion().length());
                 }
+            }
+
+            Collections.sort(hpis, new Comparator<Artifact>() {
+                public int compare(Artifact o1, Artifact o2) {
+                    return map(o1).compareTo(map(o2));
+                }
+
+                private String map(Artifact a) {
+                    return a.getArtifactId();
+                }
+            });
+
+            for (Artifact hpi : hpis) {
+                getLog().info(String.format("%"+(-artifactIdLength)+"s    %"+(-versionLength)+"s    %s", hpi.getArtifactId(),hpi.getVersion(),hpi.getGroupId()));
             }
 
         } catch (InvalidVersionSpecificationException e) {
