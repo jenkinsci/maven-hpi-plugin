@@ -1,5 +1,6 @@
 package org.jenkinsci.maven.plugins.hpi;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.ArtifactCollector;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
@@ -15,11 +16,14 @@ import org.codehaus.plexus.util.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.apache.maven.artifact.Artifact.*;
@@ -64,23 +68,39 @@ public class CopyPluginsWithDependenciesMojo extends AbstractJenkinsMojo {
                 all.add(toArtifact(ai));
             }
 
+            ArtifactResolutionResult r = resolver.resolveTransitively(all, project.getArtifact(), remoteRepos, localRepository, artifactMetadataSource);
+
             List<Artifact> hpis = new ArrayList<Artifact>();
             int artifactIdLength=0; // how many chars does it take to print artifactId?
             int versionLength=0;
 
-            ArtifactResolutionResult r = resolver.resolveTransitively(all, project.getArtifact(), remoteRepos, localRepository, artifactMetadataSource);
+
+            // resolveTransitively resolves items in the 'all' set individually, so there will be duplicates and multiple versions
+            // we need to select the latest
+            Map<String,MavenArtifact> selected = new HashMap<String, MavenArtifact>();
+
             for (Artifact o : (Set<Artifact>)r.getArtifacts()) {
-                if (wrap(o).isPlugin()) {
-                    getLog().debug("Copying "+o.getFile());
-
-                    Artifact hpi = artifactFactory.createArtifact(o.getGroupId(),o.getArtifactId(),o.getVersion(),SCOPE_COMPILE,"hpi");
-                    resolver.resolve(hpi,remoteRepos,localRepository);
-
-                    FileUtils.copyFile(hpi.getFile(), new File(outputDirectory,hpi.getArtifactId()+".hpi"));
-                    hpis.add(hpi);
-                    artifactIdLength = Math.max(artifactIdLength,hpi.getArtifactId().length());
-                    versionLength = Math.max(versionLength,hpi.getVersion().length());
+                MavenArtifact a = wrap(o);
+                if (a.isPlugin()) {
+                    MavenArtifact cur = selected.get(a.getArtifactId());
+                    if (cur!=null) {
+                        if (cur.getVersionNumber().compareTo(a.getVersionNumber())<0)
+                            cur = a;
+                    }
+                    selected.put(a.getArtifactId(),cur);
                 }
+            }
+
+            for (MavenArtifact a : selected.values()) {
+                getLog().debug("Copying "+a.getFile());
+
+                Artifact hpi = artifactFactory.createArtifact(a.getGroupId(),a.getArtifactId(),a.getVersion(),SCOPE_COMPILE,"hpi");
+                resolver.resolve(hpi,remoteRepos,localRepository);
+
+                FileUtils.copyFile(hpi.getFile(), new File(outputDirectory,hpi.getArtifactId()+".hpi"));
+                hpis.add(hpi);
+                artifactIdLength = Math.max(artifactIdLength,hpi.getArtifactId().length());
+                versionLength = Math.max(versionLength,hpi.getVersion().length());
             }
 
             Collections.sort(hpis, new Comparator<Artifact>() {
@@ -93,10 +113,18 @@ public class CopyPluginsWithDependenciesMojo extends AbstractJenkinsMojo {
                 }
             });
 
-            for (Artifact hpi : hpis) {
-                getLog().info(String.format("%"+(-artifactIdLength)+"s    %"+(-versionLength)+"s    %s", hpi.getArtifactId(),hpi.getVersion(),hpi.getGroupId()));
+            File list = new File(project.getBuild().getOutputDirectory(),"bundled-plugins.txt");
+            PrintWriter w = new PrintWriter(list);
+            try {
+                for (Artifact hpi : hpis) {
+                    getLog().info(String.format("%" + (-artifactIdLength) + "s    %" + (-versionLength) + "s    %s", hpi.getArtifactId(), hpi.getVersion(), hpi.getGroupId()));
+                    w.println(hpi.getId());
+                }
+            } finally {
+                IOUtils.closeQuietly(w);
             }
 
+            projectHelper.attachArtifact(project,"txt","bundled-plugins",list);
         } catch (InvalidVersionSpecificationException e) {
             throw new MojoExecutionException("Failed to resolve plugin dependencies",e);
         } catch (ArtifactResolutionException e) {

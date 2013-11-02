@@ -2,6 +2,8 @@ package org.jenkinsci.maven.plugins.hpi;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.artifact.versioning.ArtifactVersion;
+import org.apache.maven.artifact.versioning.OverConstrainedVersionException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
@@ -9,10 +11,7 @@ import org.kohsuke.stapler.framework.io.IOException2;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
-import java.util.jar.JarFile;
-import java.util.jar.Manifest;
 
 /**
  * {@link Artifact} is a bare data structure without any behavior and therefore
@@ -103,6 +102,10 @@ public class MavenArtifact {
 
     public String getVersion() {
         return artifact.getVersion();
+    }
+
+    public ArtifactVersion getVersionNumber() throws OverConstrainedVersionException {
+        return artifact.getSelectedVersion();
     }
 
     /**

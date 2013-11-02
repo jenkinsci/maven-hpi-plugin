@@ -9,6 +9,7 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectBuilder;
+import org.apache.maven.project.MavenProjectHelper;
 
 import java.util.List;
 
@@ -66,6 +67,11 @@ public abstract class AbstractJenkinsMojo extends AbstractMojo {
      * @component
      */
     protected MavenProjectBuilder projectBuilder;
+
+    /**
+     * @component
+     */
+    protected MavenProjectHelper projectHelper;
 
 
     protected String findJenkinsVersion() throws MojoExecutionException {

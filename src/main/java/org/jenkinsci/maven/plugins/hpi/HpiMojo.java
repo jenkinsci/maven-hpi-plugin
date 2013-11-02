@@ -78,11 +78,6 @@ public class HpiMojo extends AbstractHpiMojo {
      */
     private MavenArchiveConfiguration archive = new MavenArchiveConfiguration();
 
-    /**
-     * @component
-     */
-    private MavenProjectHelper projectHelper;
-
     // ----------------------------------------------------------------------
     // Implementation
     // ----------------------------------------------------------------------
