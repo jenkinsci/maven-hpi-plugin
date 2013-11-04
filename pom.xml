@@ -33,8 +33,8 @@
   </ciManagement>
   <distributionManagement>
     <site>
-      <id>jenkins-ci.org:/var/www</id>
-      <url>scp://jenkins-ci.org/var/www/jenkins-ci.org/maven-hpi-plugin/</url>
+      <id>github.com</id>
+      <url>gitsite:git@github.com/jenkinsci/maven-hpi-plugin.git</url>
     </site>
   </distributionManagement>
 
@@ -164,6 +164,13 @@
         <plugin>
           <artifactId>maven-site-plugin</artifactId>
           <version>3.3</version>
+          <dependencies>
+            <dependency>
+              <groupId>com.github.stephenc.wagon</groupId>
+              <artifactId>wagon-gitsite</artifactId>
+              <version>0.4.1</version>
+            </dependency>
+          </dependencies>
         </plugin>
         <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
         <plugin>
