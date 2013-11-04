@@ -27,6 +27,8 @@ import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.model.Resource;
 import org.apache.maven.model.Developer;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugins.annotations.Component;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectBuilder;
 import org.codehaus.plexus.archiver.ArchiverException;
@@ -72,28 +74,21 @@ import java.util.logging.Logger;
 public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
     /**
      * The directory for the generated WAR.
-     *
-     * @parameter expression="${project.build.directory}"
-     * @required
      */
+    @Parameter(defaultValue = "${project.build.directory}")
     protected String outputDirectory;
 
     /**
      * The directory containing generated classes.
-     *
-     * @parameter expression="${project.build.outputDirectory}"
-     * @required
      */
+    @Parameter(defaultValue = "${project.build.outputDirectory}")
     private File classesDirectory;
 
     /**
      * Name of the plugin that Jenkins uses for display purpose.
      * It should be one line text.
-     *
-     * @parameter expression="${project.name}"
-     * @required
-     * @readonly 
      */
+    @Parameter(defaultValue = "${project.name}", readonly = true) // TODO why is this read-only, surely I should be able to override
     protected String pluginName;
 
     /**
@@ -102,75 +97,60 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
      * Useful to distinguish snapshot builds.
      * For example, if you are building snapshot plugins from Jenkins, you can
      * put the build number in here by running Maven with "-Dplugin.version.description=$BUILD_TAG"
-     *
-     * @parameter expression="${plugin.version.description}"
      */
+    @Parameter(defaultValue = "${plugin.version.description}")
     protected String pluginVersionDescription;
 
     /**
      * The directory where the webapp is built.
-     *
-     * @parameter expression="${project.build.directory}/${project.build.finalName}"
-     * @required
      */
+    @Parameter(defaultValue = "${project.build.directory}/${project.build.finalName}")
     private File webappDirectory;
 
     /**
      * Optional - the oldest version of this plugin which the current version is
      * configuration-compatible with.
-     *
-     * @parameter
      */
+    @Parameter
     private String compatibleSinceVersion;
 
     /**
      * Optional - sandbox status of this plugin. 
-     *
-     * @parameter
      */
+    @Parameter
     private String sandboxStatus;
 
     /**
      * Single directory for extra files to include in the WAR.
-     *
-     * @parameter expression="${basedir}/src/main/webapp"
-     * @required
      */
+    @Parameter(defaultValue = "${basedir}/src/main/webapp")
     protected File warSourceDirectory;
 
     /**
      * The list of webResources we want to transfer.
-     *
-     * @parameter
      */
+    @Parameter
     private Resource[] webResources;
 
-    /**
-     * @parameter expression="${project.build.filters}"
-     */
+    @Parameter(defaultValue = "${project.build.filters}")
     private List<String> filters;
 
     /**
      * The path to the context.xml file to use.
-     *
-     * @parameter expression="${maven.war.containerConfigXML}"
      */
+    @Parameter(defaultValue = "${maven.war.containerConfigXML}")
     private File containerConfigXML;
 
     /**
      * Directory to unpack dependent WARs into if needed
-     *
-     * @parameter expression="${project.build.directory}/war/work"
-     * @required
      */
+    @Parameter(defaultValue = "${project.build.directory}/war/work")
     private File workDirectory;
 
     /**
      * To look up Archiver/UnArchiver implementations
-     *
-     * @component role="org.codehaus.plexus.archiver.manager.ArchiverManager"
-     * @required
      */
+    @Component
     protected ArchiverManager archiverManager;
 
     private static final String WEB_INF = "WEB-INF";
@@ -181,34 +161,28 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
 
     /**
      * The comma separated list of tokens to include in the WAR.
-     * Default is '**'.
-     *
-     * @parameter alias="includes"
      */
-    private String warSourceIncludes = "**";
+    @Parameter(alias = "includes", defaultValue = "**")
+    private String warSourceIncludes;
 
     /**
      * The comma separated list of tokens to exclude from the WAR.
-     *
-     * @parameter alias="excludes"
      */
+    @Parameter(alias = "excludes")
     private String warSourceExcludes;
 
     /**
      * The comma separated list of tokens to include when doing
      * a war overlay.
-     * Default is '**'
-     *
-     * @parameter
      */
-    private String dependentWarIncludes = "**";
+    @Parameter(defaultValue = "**")
+    private String dependentWarIncludes;
 
     /**
      * The comma separated list of tokens to exclude when doing
      * a way overlay.
-     *
-     * @parameter
      */
+    @Parameter
     private String dependentWarExcludes;
 
     /**
@@ -218,9 +192,8 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
      * <p>
      * Tokens in this list is prefix-matched against the fully-qualified class name, so add
      * "." to the end of each package name, like "com.foo. com.bar."
-     *
-     * @parameter
      */
+    @Parameter
     protected String maskClasses;
 
     /**
@@ -232,10 +205,9 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
      * which brings in the JPA API.) Other plugins that depend on the database plugin can still see
      * the JPA API through the container classloader, so to make them all resolve to the JPA API in the
      * database plugin, the database plugin needs to rely on this mechanism.
-     *
-     * @parameter
      * @since 1.92
      */
+    @Parameter
     protected String globalMaskClasses;
 
     /**
@@ -248,8 +220,8 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
      * susceptible to classloader constraint violations.
      *
      * @since 1.53
-     * @parameter
      */
+    @Parameter
     protected boolean pluginFirstClassLoader = false;
 
     /**

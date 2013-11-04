@@ -2,6 +2,9 @@ package org.jenkinsci.maven.plugins.hpi;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.codehaus.groovy.control.io.NullWriter;
 
 import java.io.File;
@@ -13,16 +16,14 @@ import java.io.Writer;
 /**
  * List up all the plugin dependencies.
  *
- * @goal list-plugin-dependencies
- * @requiresDependencyResolution compile
  * @author Kohsuke Kawaguchi
  */
+@Mojo(name="list-plugin-dependencies", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
 public class ListPluginDependenciesMojo extends AbstractHpiMojo {
     /**
      * If non-null, the output will be sent to a file
-     *
-     * @parameter expression="${outputFile}"
      */
+    @Parameter(property = "outputFile")
     protected File outputFile;
 
     public void execute() throws MojoExecutionException, MojoFailureException {

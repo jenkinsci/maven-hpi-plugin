@@ -1,5 +1,6 @@
 package org.jenkinsci.maven.plugins.hpi;
 
+import org.apache.maven.plugins.annotations.Parameter;
 import org.mortbay.jetty.Connector;
 import org.mortbay.jetty.RequestLog;
 import org.mortbay.jetty.plugin.Jetty6PluginServer;
@@ -20,16 +21,15 @@ public abstract class AbstractJetty6Mojo extends AbstractJettyMojo {
     /**
      * List of connectors to use. If none are configured
      * then we use a single SelectChannelConnector at port 8080
-     *
-     * @parameter
      */
+    @Parameter
     private Connector[] connectors;
 
 
     /**
      * List of security realms to set up. Optional.
-     * @parameter
      */
+    @Parameter
     private UserRealm[] userRealms;
 
 
@@ -37,8 +37,8 @@ public abstract class AbstractJetty6Mojo extends AbstractJettyMojo {
     /**
      * A RequestLog implementation to use for the webapp at runtime.
      * Optional.
-     * @parameter
      */
+    @Parameter
     private RequestLog requestLog;
 
 

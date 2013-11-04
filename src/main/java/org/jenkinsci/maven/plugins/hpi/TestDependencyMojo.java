@@ -5,6 +5,8 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 
 import java.io.*;
@@ -16,10 +18,9 @@ import java.util.Set;
  * <p>
  * See {@code TestPluginManager.loadBundledPlugins()} where the test harness uses it.
  *
- * @goal resolve-test-dependencies
- * @requiresDependencyResolution test
  * @author Kohsuke Kawaguchi
  */
+@Mojo(name="resolve-test-dependencies", requiresDependencyResolution = ResolutionScope.TEST)
 public class TestDependencyMojo extends AbstractHpiMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
         File testDir = new File(project.getBuild().getTestOutputDirectory(),"test-dependencies");
@@ -33,7 +34,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                     continue;
 
                 getLog().debug("Copying "+a.getId()+" as a test dependency");
-                File dst = new File(testDir, a.getArtifactId() + ".hpi");
+                File dst = new File(testDir, a.getArtifactId() + ".jpi");
                 FileUtils.copyFile(a.getFile(),dst);
                 w.write(a.getArtifactId()+"\n");
             }

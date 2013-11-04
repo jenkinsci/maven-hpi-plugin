@@ -12,6 +12,9 @@ import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.dependency.fromConfiguration.ArtifactItem;
+import org.apache.maven.plugins.annotations.Component;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.codehaus.plexus.util.FileUtils;
 
 import java.io.File;
@@ -32,31 +35,28 @@ import static org.apache.maven.artifact.Artifact.*;
  * Resolve plugin dependencies transitively and copy them all into a specific directory.
  *
  * @author Kohsuke Kawaguchi
- * @goal copy-plugins-with-dependencies
+ * @deprecated this goal does not encourage correctly declaring the project dependencies and will result in an
+ * incorrect reactor build plan, use the {@code bundle-plugins} mojo instead {@link BundlePluginsMojo}.
  */
+@Deprecated
+@Mojo(name = "copy-plugins-with-dependencies")
 public class CopyPluginsWithDependenciesMojo extends AbstractJenkinsMojo {
     /**
      * Collection of plugins to copy from
-     *
-     * @parameter
      */
+    @Parameter
     private List<ArtifactItem> artifactItems;
 
     /**
      * Where to copy plugins into.
-     *
-     * @parameter
      */
+    @Parameter
     private File outputDirectory;
 
-    /**
-     * @component
-     */
+    @Component
     protected ArtifactResolver resolver;
 
-    /**
-     * @component
-     */
+    @Component
     protected ArtifactCollector artifactCollector;
 
 

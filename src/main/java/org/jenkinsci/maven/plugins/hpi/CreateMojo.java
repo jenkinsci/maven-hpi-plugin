@@ -22,6 +22,9 @@ import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
 import org.apache.maven.artifact.repository.layout.ArtifactRepositoryLayout;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugins.annotations.Component;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.components.interactivity.Prompter;
 import org.codehaus.plexus.util.IOUtil;
@@ -44,72 +47,44 @@ import java.util.Properties;
  * but since Maven doesn't really let one Mojo calls another Mojo, this turns
  * out to be the easiest.
  *
- * @requiresProject false
- * @goal create
  */
+@Mojo(name="create", requiresProject = false)
 public class CreateMojo extends AbstractMojo {
-    /**
-     * @component
-     */
+    @Component
     private Archetype archetype;
 
-    /**
-     * @component
-     */
+    @Component
     private Prompter prompter;
 
-    /**
-     * @component
-     */
+    @Component
     private ArtifactRepositoryFactory artifactRepositoryFactory;
 
-    /**
-     * @component role="org.apache.maven.artifact.repository.layout.ArtifactRepositoryLayout" roleHint="default"
-     */
+    @Component
     private ArtifactRepositoryLayout defaultArtifactRepositoryLayout;
 
 
-    /**
-     * @parameter expression="${localRepository}"
-     * @required
-     */
+    @Parameter(defaultValue = "${localRepository}", readonly = true, required = true)
     private ArtifactRepository localRepository;
 
-    /**
-     * @parameter expression="${groupId}"
-     */
+    @Parameter(property = "groupId")
     private String groupId;
 
-    /**
-     * @parameter expression="${artifactId}"
-     */
+    @Parameter(property = "artifactId")
     private String artifactId;
 
-    /**
-     * @parameter expression="${version}" default-value="1.0-SNAPSHOT"
-     * @required
-     */
+    @Parameter(property = "version", defaultValue = "1.0-SNAPSHOT")
     private String version;
 
-    /**
-     * @parameter expression="${packageName}" alias="package"
-     */
+    @Parameter(property = "packageName", alias = "package")
     private String packageName;
 
-    /**
-     * @parameter expression="${project.remoteArtifactRepositories}"
-     * @required
-     */
+    @Parameter(defaultValue = "${project.remoteArtifactRepositories}")
     private List pomRemoteRepositories;
 
-    /**
-     * @parameter expression="${remoteRepositories}"
-     */
+    @Parameter(property = "remoteRepositories")
     private String remoteRepositories;
 
-    /**
-     * @parameter expression="${project}"
-     */
+    @Component
     private MavenProject project;
 
     public void execute() throws MojoExecutionException {

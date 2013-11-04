@@ -7,6 +7,8 @@ import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugins.annotations.Component;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.project.MavenProjectHelper;
@@ -22,11 +24,8 @@ public abstract class AbstractJenkinsMojo extends AbstractMojo {
 
     /**
      * The maven project.
-     *
-     * @parameter expression="${project}"
-     * @required
-     * @readonly
      */
+    @Component
     protected MavenProject project;
 
     /**
@@ -36,41 +35,30 @@ public abstract class AbstractJenkinsMojo extends AbstractMojo {
      * @parameter
      * @since 1.65
      */
+    @Parameter
     protected String jenkinsCoreId;
 
 
     /**
      * List of Remote Repositories used by the resolver
-     *
-     * @parameter expression="${project.remoteArtifactRepositories}"
-     * @required
      */
+    @Parameter(defaultValue = "${project.remoteArtifactRepositories}",readonly = true, required = true)
     protected List<ArtifactRepository> remoteRepos;
 
-    /**
-     * @parameter expression="${localRepository}"
-     * @required
-     */
+    @Component
+    @Parameter(defaultValue = "${localRepository}", readonly = true, required = true)
     protected ArtifactRepository localRepository;
 
-    /**
-     * @component
-     */
+    @Component
     protected ArtifactMetadataSource artifactMetadataSource;
 
-    /**
-     * @component
-     */
+    @Component
     protected ArtifactFactory artifactFactory;
 
-    /**
-     * @component
-     */
+    @Component
     protected MavenProjectBuilder projectBuilder;
 
-    /**
-     * @component
-     */
+    @Component
     protected MavenProjectHelper projectHelper;
 
 

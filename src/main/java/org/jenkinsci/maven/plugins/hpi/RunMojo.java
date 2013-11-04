@@ -26,6 +26,11 @@ import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Component;
+import org.apache.maven.plugins.annotations.Execute;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.commons.io.FileUtils;
 import org.mortbay.jetty.nio.SelectChannelConnector;
@@ -72,11 +77,10 @@ import java.util.zip.ZipFile;
  * To specify the HTTP port, use <tt>-Djetty.port=<i>PORT</i></tt>
  * </p>
  * 
- * @goal run
- * @execute phase=compile
- * @description Runs Jenkins with the current plugin
  * @author Kohsuke Kawaguchi
  */
+@Mojo(name="run")
+@Execute(phase = LifecyclePhase.COMPILE)
 public class RunMojo extends AbstractJetty6Mojo {
 
     /**
@@ -86,16 +90,20 @@ public class RunMojo extends AbstractJetty6Mojo {
      * Normally this should be left empty, in which case the plugin loads it from the repository.
      * But this parameter allows that to be overwritten.
      * </p>
-     * 
-     * @parameter
      */
+    @Parameter
     private File webApp;
 
     /**
      * Path to <tt>$JENKINS_HOME</tt>. The launched Jenkins will use this directory as the workspace.
-     *
-     * @parameter expression="${HUDSON_HOME}"
      */
+    @Parameter(property = "hudsonHome", defaultValue = "${HUDSON_HOME}")
+    private File hudsonHome;
+
+    /**
+     * Path to <tt>$JENKINS_HOME</tt>. The launched Jenkins will use this directory as the workspace.
+     */
+    @Parameter(property = "jenkinsHome", defaultValue = "${JENKINS_HOME}")
     private File jenkinsHome;
 
     /**
@@ -103,78 +111,62 @@ public class RunMojo extends AbstractJetty6Mojo {
      *
      * This controls what plugins are made available to the
      * running Jenkins.
-     *
-     * @parameter
      */
-    private String dependencyResolution = "test";
+    @Parameter(defaultValue = "test")
+    private String dependencyResolution;
 
     /**
      * Single directory for extra files to include in the WAR.
-     *
-     * @parameter expression="${basedir}/src/main/webapp"
-     * @required
      */
+    @Parameter(defaultValue = "${basedir}/src/main/webapp")
     protected File warSourceDirectory;
 
-    /**
-     * @component
-     */
+    @Component
     protected ArtifactResolver artifactResolver;
 
-    /**
-     * @component
-     */
+    @Component
     protected ArtifactFactory artifactFactory;
 
-    /**
-     * @parameter expression="${localRepository}"
-     * @required
-     */
+    @Parameter(defaultValue = "${localRepository}")
     protected ArtifactRepository localRepository;
 
-    /**
-     * @component
-     */
+    @Component
     protected ArtifactMetadataSource artifactMetadataSource;
 
     /**
      * Specifies the HTTP port number.
      *
      * If connectors are configured in the Mojo, that'll take precedence.
-     *
-     * @parameter expression="${port}"
      */
+    @Parameter(property = "port")
     protected String defaultPort;
 
     /**
      * If true, the context will be restarted after a line feed on
      * the input console. Disabled by default.
-     *
-     * @parameter expression="${jetty.consoleForceReload}" default-value="true"
      */
+    @Parameter(property = "jetty.consoleForceReload", defaultValue = "true")
     protected boolean consoleForceReload;
 
-    /**
-     * @component
-     */
+    @Component
     protected MavenProjectBuilder projectBuilder;
 
     /**
      * Optional string that represents "groupId:artifactId" of Jenkins core jar.
      * If left unspecified, the default groupId/artifactId pair for Jenkins is looked for.
      *
-     * @parameter
      * @since 1.65
      */
+    @Parameter
     protected String jenkinsCoreId;
 
     /**
      * Optional string that represents "groupId:artifactId" of Jenkins war.
      * If left unspecified, the default groupId/artifactId pair for Jenkins is looked for.
      *
-     * @parameter
      * @since 1.68
      */
+    @Parameter
     protected String jenkinsWarId;
 
     /**
@@ -184,32 +176,31 @@ public class RunMojo extends AbstractJetty6Mojo {
      * <p>
      * Tokens in this list is prefix-matched against the fully-qualified class name, so add
      * "." to the end of each package name, like "com.foo. com.bar."
-     *
-     * @parameter
      */
+    @Parameter
     protected String maskClasses;
 
     /**
      * @since 1.94
-     * @parameter
      */
+    @Parameter
     protected boolean pluginFirstClassLoader = false;
 
     /**
-     * List of additionnal System properties to set
+     * List of additional System properties to set
      *
-     * @parameter
      * @since 1.85
      */
+    @Parameter
     private Map<String, String> systemProperties;
 
     /**
      * List of loggers to define.
      * Keys are logger names (usually package or class names);
      * values are level names (such as {@code FINE}).
-     * @parameter
      * @since 1.98
      */
+    @Parameter
     private Map<String,String> loggers;
 
     private Collection<Logger> loggerReferences; // just to prevent GC
@@ -219,7 +210,14 @@ public class RunMojo extends AbstractJetty6Mojo {
 
         // compute hudsonHome
         if(jenkinsHome ==null) {
-            String h = System.getenv("HUDSON_HOME");
+            if (hudsonHome != null) {
+                getLog().warn("Please use the `jenkinsHome` configuration parameter in place of the deprecated `hudsonHome` parameter");
+                jenkinsHome = hudsonHome;
+            }
+            String h = System.getenv("JENKINS_HOME");
+            if (h == null) {
+                h = System.getenv("HUDSON_HOME");
+            }
             if(h!=null)
                 jenkinsHome = new File(h);
             else
@@ -395,7 +393,7 @@ public class RunMojo extends AbstractJetty6Mojo {
     private void generateHpl() throws MojoExecutionException, MojoFailureException {
         HplMojo hpl = new HplMojo();
         hpl.project = getProject();
-        hpl.setHudsonHome(jenkinsHome);
+        hpl.setJenkinsHome(jenkinsHome);
         hpl.setLog(getLog());
         hpl.pluginName = getProject().getName();
         hpl.warSourceDirectory = warSourceDirectory;

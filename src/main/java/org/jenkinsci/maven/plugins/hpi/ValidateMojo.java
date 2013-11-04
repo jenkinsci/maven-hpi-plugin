@@ -2,14 +2,15 @@ package org.jenkinsci.maven.plugins.hpi;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
 
 /**
  * Make sure that we are running in the right environment.
  *
  * @author Kohsuke Kawaguchi
- * @goal validate
- * @phase validate
  */
+@Mojo(name = "validate", defaultPhase = LifecyclePhase.VALIDATE)
 public class ValidateMojo extends AbstractJenkinsMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
         if (!isMustangOrAbove())

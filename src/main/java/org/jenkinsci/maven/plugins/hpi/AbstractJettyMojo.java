@@ -17,6 +17,8 @@ package org.jenkinsci.maven.plugins.hpi;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Component;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.mortbay.jetty.plugin.util.JettyPluginServer;
 import org.mortbay.jetty.plugin.util.JettyPluginWebApplication;
@@ -48,31 +50,24 @@ public abstract class AbstractJettyMojo extends AbstractMojo {
 
     /**
      * The maven project.
-     *
-     * @parameter expression="${project}"
-     * @required
-     * @readonly
      */
+    @Component
     private MavenProject project;
 
 
 
     /**
      * The context path for the webapp. Defaults to "/"
-     *
-     * @parameter expression="${hpi.prefix}" default-value="/"
-     * @required
      */
+    @Parameter(property = "hpi.prefix", defaultValue = "/")
     private String contextPath;
 
 
     /**
      * The temporary directory to use for the webapp.
      * Defaults to target/jetty-tmp
-     *
-     * @parameter expression="${project.build.directory}/work"
-     * @required
      */
+    @Parameter(defaultValue = "${project.build.directory}/work")
     private File tmpDirectory;
 
 
@@ -80,9 +75,8 @@ public abstract class AbstractJettyMojo extends AbstractMojo {
     /**
      * A webdefault.xml file to use instead
      * of the default for the webapp. Optional.
-     *
-     * @parameter
      */
+    @Parameter
     private File webDefaultXml;
 
 
@@ -90,10 +84,8 @@ public abstract class AbstractJettyMojo extends AbstractMojo {
     /**
      * The interval in seconds to scan the webapp for changes
      * and restart the context if necessary. Disabled by default.
-     *
-     * @parameter expression="${scanIntervalSeconds}" default-value="0"
-     * @required
      */
+    @Parameter(property = "scanIntervalSeconds", defaultValue = "0")
     private int scanIntervalSeconds;
 
 
@@ -101,8 +93,8 @@ public abstract class AbstractJettyMojo extends AbstractMojo {
      * System properties to set before execution.
      * Note that these properties will NOT override System properties
      * that have been set on the command line or by the JVM. Optional.
-     * @parameter
      */
+    @Parameter
     private SystemProperty[] systemProperties;
 
 
@@ -110,8 +102,8 @@ public abstract class AbstractJettyMojo extends AbstractMojo {
     /**
      * Location of a jetty xml configuration file whose contents
      * will be applied before any plugin configuration. Optional.
-     * @parameter
      */
+    @Parameter
     private String jettyConfig;
 
 

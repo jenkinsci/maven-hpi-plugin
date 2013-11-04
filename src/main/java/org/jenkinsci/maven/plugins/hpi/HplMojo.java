@@ -6,6 +6,9 @@ import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.codehaus.plexus.archiver.jar.Manifest;
 import org.codehaus.plexus.archiver.jar.Manifest.Attribute;
 import org.codehaus.plexus.archiver.jar.Manifest.Section;
@@ -24,25 +27,43 @@ import java.util.Set;
  * Generate .hpl file.
  *
  * @author Kohsuke Kawaguchi
- * @goal hpl
- * @requiresDependencyResolution runtime
  */
+@Mojo(name="hpl", requiresDependencyResolution = ResolutionScope.RUNTIME)
 public class HplMojo extends AbstractHpiMojo {
     /**
      * Path to <tt>$JENKINS_HOME</tt>. A .hpl file will be generated to this location.
-     *
-     * @parameter expression="${hudsonHome}
+     * @deprecated Use {@link #jenkinsHome}.
      */
+    @Deprecated
+    @Parameter(property = "hudsonHome")
     private File hudsonHome;
 
+    /**
+     * Path to <tt>$JENKINS_HOME</tt>. A .hpl file will be generated to this location.
+     */
+    @Parameter(property = "jenkinsHome")
+    private File jenkinsHome;
+
+    @Deprecated
     public void setHudsonHome(File hudsonHome) {
-        this.hudsonHome = hudsonHome;
+        this.hudsonHome = null;
+        this.jenkinsHome = hudsonHome;
+    }
+
+    public void setJenkinsHome(File jenkinsHome) {
+        this.hudsonHome = null;
+        this.jenkinsHome = jenkinsHome;
     }
 
     public void execute() throws MojoExecutionException, MojoFailureException {
         if(!project.getPackaging().equals("hpi")) {
             getLog().info("Skipping "+project.getName()+" because it's not <packaging>hpi</packaging>");
             return;
+        }
+        if (jenkinsHome == null) {
+            if (hudsonHome != null) {
+                getLog().warn("Please use the `jenkinsHome` configuration parameter in place of the deprecated `hudsonHome` parameter");
+            }
         }
 
         File hplFile = computeHplFile();
@@ -128,14 +149,17 @@ public class HplMojo extends AbstractHpiMojo {
      * Determine where to produce the .hpl file.
      */
     protected File computeHplFile() throws MojoExecutionException {
-        if(hudsonHome==null) {
+        if (jenkinsHome == null) {
+            jenkinsHome = hudsonHome;
+        }
+        if(jenkinsHome==null) {
             throw new MojoExecutionException(
-                "Property hudsonHome needs to be set to $HUDSON_HOME. Please use 'mvn -DhudsonHome=...' or" +
-                "put <settings><profiles><profile><properties><property><hudsonHome>...</...>"
+                "Property jenkinsHome needs to be set to $JENKINS_HOME. Please use 'mvn -DjenkinsHome=...' or" +
+                "put <settings><profiles><profile><properties><property><jenkinsHome>...</...>"
             );
         }
 
-        File hplFile = new File(hudsonHome, "plugins/" + project.getBuild().getFinalName() + ".hpl");
+        File hplFile = new File(jenkinsHome, "plugins/" + project.getBuild().getFinalName() + ".hpl");
         return hplFile;
     }
 }

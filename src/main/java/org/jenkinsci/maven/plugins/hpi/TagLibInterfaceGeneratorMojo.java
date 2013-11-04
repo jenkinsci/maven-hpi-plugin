@@ -18,6 +18,10 @@ import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Component;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -42,31 +46,25 @@ import java.util.Map;
  * Generates the strongly-typed Java interfaces for Groovy taglibs.
  *
  * @author Kohsuke Kawaguchi
- * @goal generate-taglib-interface
- * @phase generate-resources
  */
+@Mojo(name="generate-taglib-interface", defaultPhase = LifecyclePhase.GENERATE_RESOURCES)
 public class TagLibInterfaceGeneratorMojo extends AbstractMojo {
     /**
      * The maven project.
-     *
-     * @parameter expression="${project}"
-     * @required
-     * @readonly
      */
+    @Component
     protected MavenProject project;
 
     /**
      * The directory for the generated WAR.
-     *
-     * @parameter expression="${project.basedir}/target/generated-sources/taglib-interface"
-     * @required
      */
+    @Parameter(defaultValue = "${project.basedir}/target/generated-sources/taglib-interface")
     protected File outputDirectory;
 
     /**
      * The encoding to use for generated files.
-     * @parameter expression="${project.build.sourceEncoding}"
      */
+    @Parameter(property = "project.build.sourceEncoding")
     protected String encoding;
 
     private SAXReader saxReader = new SAXReader();

@@ -20,7 +20,13 @@ import org.apache.maven.archiver.MavenArchiveConfiguration;
 import org.apache.maven.archiver.MavenArchiver;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugins.annotations.Component;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProjectHelper;
+import org.codehaus.plexus.archiver.Archiver;
 import org.codehaus.plexus.archiver.ArchiverException;
 import org.codehaus.plexus.archiver.jar.JarArchiver;
 import org.codehaus.plexus.archiver.jar.Manifest;
@@ -41,41 +47,32 @@ import java.io.PrintWriter;
  *
  * @author <a href="evenisse@apache.org">Emmanuel Venisse</a>
  * @version $Id: HpiMojo.java 33552 2010-08-03 23:28:55Z olamy $
- * @goal hpi
- * @phase package
- * @requiresDependencyResolution runtime
  */
+@Mojo(name="hpi", defaultPhase = LifecyclePhase.PACKAGE, requiresDependencyResolution = ResolutionScope.RUNTIME)
 public class HpiMojo extends AbstractHpiMojo {
 
     /**
      * The name of the generated hpi.
-     *
-     * @parameter expression="${project.build.finalName}"
-     * @required
      */
+    @Parameter(defaultValue = "${project.build.finalName}")
     private String hpiName;
 
     /**
      * Used to create .jar archive.
-     *
-     * @component role="org.codehaus.plexus.archiver.Archiver" role-hint="jar"
-     * @required
      */
+    @Component(role = Archiver.class, hint = "jar")
     private JarArchiver jarArchiver;
 
     /**
      * Used to create .hpi archive.
-     *
-     * @component role="org.codehaus.plexus.archiver.Archiver" role-hint="jar"
-     * @required
      */
+    @Component(role = Archiver.class, hint = "jar")
     private JarArchiver hpiArchiver;
 
     /**
      * The maven archive configuration to use.
-     *
-     * @parameter
      */
+    @Parameter
     private MavenArchiveConfiguration archive = new MavenArchiveConfiguration();
 
     // ----------------------------------------------------------------------
