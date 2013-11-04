@@ -34,7 +34,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                     continue;
 
                 getLog().debug("Copying "+a.getId()+" as a test dependency");
-                File dst = new File(testDir, a.getArtifactId() + ".jpi");
+                File dst = new File(testDir, a.getArtifactId() + ".hpi");
                 FileUtils.copyFile(a.getFile(),dst);
                 w.write(a.getArtifactId()+"\n");
             }
