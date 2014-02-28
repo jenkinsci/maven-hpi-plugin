@@ -11,6 +11,13 @@
   <!-- $ --><version>1.0-SNAPSHOT</version><!-- /$ -->
   <packaging>hpi</packaging>
 
+  <licenses>
+    <license>
+      <name>MIT License</name>
+      <url>http://www.opensource.org/licenses/mit-license.php</url>
+    </license>
+  </licenses>
+
   <!-- get every artifact through repo.jenkins-ci.org, which proxies all the artifacts that we need -->
   <repositories>
     <repository>
