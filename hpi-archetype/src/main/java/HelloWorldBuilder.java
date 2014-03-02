@@ -103,6 +103,10 @@ public class HelloWorldBuilder extends Builder {
          *      This parameter receives the value that the user has typed.
          * @return
          *      Indicates the outcome of the validation. This is sent to the browser.
+         *      <p>
+         *      Note that returning {@link FormValidation#error(String)} does not
+         *      prevent the form from being saved. It just means that a message
+         *      will be displayed to the user. 
          */
         public FormValidation doCheckName(@QueryParameter String value)
                 throws IOException, ServletException {
