@@ -208,6 +208,8 @@ public class RunMojo extends AbstractJetty6Mojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
         getProject().setArtifacts(resolveDependencies(dependencyResolution));
 
+        File basedir = getProject().getBasedir();
+
         // compute hudsonHome
         if(jenkinsHome ==null) {
             if (hudsonHome != null) {
@@ -221,7 +223,7 @@ public class RunMojo extends AbstractJetty6Mojo {
             if(h!=null)
                 jenkinsHome = new File(h);
             else
-                jenkinsHome = new File("./work");
+                jenkinsHome = new File(basedir, "work");
         }
 
         // auto-enable stapler trace, unless otherwise configured already.
@@ -235,7 +237,7 @@ public class RunMojo extends AbstractJetty6Mojo {
         // this adds 3 secs to the shutdown time. Skip it.
         setSystemPropertyIfEmpty("hudson.DNSMultiCast.disabled","true");
         // expose the current top-directory of the plugin
-        setSystemPropertyIfEmpty("jenkins.moduleRoot",new File(".").getAbsolutePath());
+        setSystemPropertyIfEmpty("jenkins.moduleRoot", basedir.getAbsolutePath());
 
         if (systemProperties != null && !systemProperties.isEmpty()) {
             for (Map.Entry<String,String> entry : systemProperties.entrySet()) {
