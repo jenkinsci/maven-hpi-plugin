@@ -33,6 +33,12 @@
   </ciManagement>
   <distributionManagement>
     <site>
+      <!-- if this deployment fails, it's probably you are missing the entry to set the username in ~/.m2/settings.xml
+               <server>
+                 <id>github.com</id>
+                 <username>git</username>
+               </server>
+      -->
       <id>github.com</id>
       <url>gitsite:git@github.com/jenkinsci/maven-hpi-plugin.git</url>
     </site>
