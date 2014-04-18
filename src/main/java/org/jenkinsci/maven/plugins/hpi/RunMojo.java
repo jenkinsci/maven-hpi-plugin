@@ -113,7 +113,7 @@ public class RunMojo extends AbstractJetty6Mojo {
      * running Jenkins.
      */
     @Parameter(defaultValue = "test")
-    private String dependencyResolution;
+    protected String dependencyResolution;
 
     /**
      * Single directory for extra files to include in the WAR.
@@ -619,7 +619,7 @@ public class RunMojo extends AbstractJetty6Mojo {
      * so that we can choose the scope at runtime.
      * @param scope
      */
-    private Set<Artifact> resolveDependencies(String scope) throws MojoExecutionException {
+    protected Set<Artifact> resolveDependencies(String scope) throws MojoExecutionException {
         try {
             ArtifactResolutionResult result = artifactResolver.resolveTransitively(
                     getProject().getDependencyArtifacts(),
