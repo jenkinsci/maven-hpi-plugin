@@ -82,9 +82,12 @@ public class HplMojo extends AbstractHpiMojo {
             // we want resources to be picked up before target/classes,
             // so that the original (not in the copy) will be picked up first.
             for (Resource r : (List<Resource>) project.getBuild().getResources()) {
-                if(new File(project.getBasedir(),r.getDirectory()).exists()) {
+                File dir = new File(r.getDirectory());
+                if (!dir.isAbsolute())
+                    dir = new File(project.getBasedir(),r.getDirectory());
+                if(dir.exists()) {
                     buf.append(',');
-                    buf.append(r.getDirectory());
+                    buf.append(dir);
                 }
             }
 
