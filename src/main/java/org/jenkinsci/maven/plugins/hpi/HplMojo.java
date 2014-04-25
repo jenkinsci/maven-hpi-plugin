@@ -1,5 +1,6 @@
 package org.jenkinsci.maven.plugins.hpi;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
@@ -19,6 +20,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -76,8 +78,7 @@ public class HplMojo extends AbstractHpiMojo {
             setAttributes(mainSection);
 
             // compute Libraries entry
-            StringBuilder buf = new StringBuilder();
-            buf.append(project.getBuild().getOutputDirectory());
+            List<String> paths = new ArrayList<String>();
 
             // we want resources to be picked up before target/classes,
             // so that the original (not in the copy) will be picked up first.
@@ -86,14 +87,15 @@ public class HplMojo extends AbstractHpiMojo {
                 if (!dir.isAbsolute())
                     dir = new File(project.getBasedir(),r.getDirectory());
                 if(dir.exists()) {
-                    buf.append(',');
-                    buf.append(dir);
+                    paths.add(dir.getPath());
                 }
             }
 
-            buildLibraries(buf);
+            paths.add(project.getBuild().getOutputDirectory());
 
-            mainSection.addAttributeAndCheck(new Attribute("Libraries",buf.toString()));
+            buildLibraries(paths);
+
+            mainSection.addAttributeAndCheck(new Attribute("Libraries", StringUtils.join(paths, ",")));
 
             // compute Resource-Path entry
             mainSection.addAttributeAndCheck(new Attribute("Resource-Path",warSourceDirectory.getAbsolutePath()));
@@ -117,7 +119,7 @@ public class HplMojo extends AbstractHpiMojo {
      * puts into WEB-INF/lib should be the same so that the plugins see consistent
      * environment.
      */
-    private void buildLibraries(StringBuilder buf) throws IOException {
+    private void buildLibraries(List<String> paths) throws IOException {
         Set<MavenArtifact> artifacts = getProjectArtfacts();
 
         // List up IDs of Jenkins plugin dependencies
@@ -142,8 +144,7 @@ public class HplMojo extends AbstractHpiMojo {
 
             ScopeArtifactFilter filter = new ScopeArtifactFilter(Artifact.SCOPE_RUNTIME);
             if (!artifact.isOptional() && filter.include(artifact.artifact)) {
-                buf.append(',');
-                buf.append(artifact.getFile());
+                paths.add(artifact.getFile().getPath());
             }
         }
     }
