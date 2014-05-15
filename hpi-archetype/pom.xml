@@ -3,34 +3,47 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>1.554.1</version><!-- which version of Jenkins is this plugin built against? Users must have at least this Jenkins version to use this plugin. -->
+    <!-- Baseline Jenkins version you use to build and test the plugin. Users must have this version or newer to run. -->
+    <version>1.554.1</version>
   </parent>
-
   <!-- $ --><groupId>org.jenkins-ci.tools</groupId><!-- /$ -->
   <!-- $ --><artifactId>hpi-archetype</artifactId><!-- /$ -->
   <!-- $ --><version>1.0-SNAPSHOT</version><!-- /$ -->
   <packaging>hpi</packaging>
-
+  <name>TODO Plugin</name>
+  <description>TODO</description>
+  <url>https://wiki.jenkins-ci.org/display/JENKINS/TODO+Plugin</url>
   <licenses>
     <license>
       <name>MIT License</name>
       <url>http://opensource.org/licenses/MIT</url>
     </license>
   </licenses>
-
-  <!-- get every artifact through repo.jenkins-ci.org, which proxies all the artifacts that we need -->
   <repositories>
     <repository>
       <id>repo.jenkins-ci.org</id>
       <url>http://repo.jenkins-ci.org/public/</url>
     </repository>
   </repositories>
-
   <pluginRepositories>
     <pluginRepository>
       <id>repo.jenkins-ci.org</id>
       <url>http://repo.jenkins-ci.org/public/</url>
     </pluginRepository>
   </pluginRepositories>
-
+  <!-- If you want to depend on other plugins:
+  <dependencies>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>credentials</artifactId>
+      <version>1.9.4</version>
+    </dependency>
+  </dependencies>
+  -->
+  <!-- Assuming you want to host on @jenkinsci: -->
+  <scm>
+    <connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
+    <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
+    <url>http://github.com/jenkinsci/${project.artifactId}-plugin</url>
+  </scm>
 </project>
