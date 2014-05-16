@@ -19,6 +19,15 @@
       <url>http://opensource.org/licenses/MIT</url>
     </license>
   </licenses>
+  <!-- If you want this to appear on the wiki page:
+  <developers>
+    <developer>
+      <id>bhacker</id>
+      <name>Bob Q. Hacker</name>
+      <email>bhacker@nowhere.net</email>
+    </developer>
+  </developers>
+  -->
   <repositories>
     <repository>
       <id>repo.jenkins-ci.org</id>
