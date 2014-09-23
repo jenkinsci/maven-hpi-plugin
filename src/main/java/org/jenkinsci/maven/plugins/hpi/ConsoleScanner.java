@@ -1,7 +1,6 @@
 package org.jenkinsci.maven.plugins.hpi;
 
-import org.mortbay.jetty.plugin.util.Scanner;
-import org.mortbay.jetty.plugin.util.Scanner.Listener;
+import org.eclipse.jetty.util.Scanner;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -87,8 +86,8 @@ public class ConsoleScanner extends Thread {
     private void restartWebApp() {
         try
         {
-            for (Listener sc : (List<Listener>)mojo.getScannerListeners()) {
-                sc.changesDetected(dummy, Collections.emptyList());
+            for (Scanner.BulkListener sc : (List<Scanner.BulkListener>)mojo.getScannerListeners()) {
+                sc.filesChanged(Collections.<String>emptyList());
             }
 
             // Clear input buffer to discard anything entered on the console
