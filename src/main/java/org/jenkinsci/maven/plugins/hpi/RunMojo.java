@@ -228,8 +228,6 @@ public class RunMojo extends AbstractJetty6Mojo {
 
         // auto-enable stapler trace, unless otherwise configured already.
         setSystemPropertyIfEmpty("stapler.trace", "true");
-        // run YUI in the debug mode, unless otherwise configured
-        setSystemPropertyIfEmpty("debug.YUI","true");
         // allow Jetty to accept a bigger form so that it can handle update center JSON post
         setSystemPropertyIfEmpty("org.mortbay.jetty.Request.maxFormContentSize","-1");
         // general-purpose system property so that we can tell from Jenkins if we are running in the hpi:run mode.
