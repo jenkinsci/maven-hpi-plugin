@@ -39,7 +39,7 @@ public class TestInsertionMojo extends AbstractJenkinsMojo {
     /**
      * If true, verify that all the jelly scripts have the Jelly XSS PI in them.
      */
-    @Parameter(property = "jelly.requirePI")
+    @Parameter(property = "jelly.requirePI", defaultValue = "true")
     private boolean requirePI;
 
     private static String quote(String s) {
