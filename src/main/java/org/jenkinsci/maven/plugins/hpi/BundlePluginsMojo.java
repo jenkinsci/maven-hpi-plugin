@@ -68,7 +68,7 @@ public class BundlePluginsMojo extends AbstractJenkinsMojo {
             // This would be unnecessary and trivial if the hpi packaging was defined correctly
             ArtifactResolutionResult r = resolver.resolveTransitively(artifacts, project.getArtifact(), remoteRepos, localRepository, artifactMetadataSource);
 
-            List<Artifact> hpis = new ArrayList<Artifact>();
+            List<MavenArtifact> hpis = new ArrayList<MavenArtifact>();
             int artifactIdLength = 0; // how many chars does it take to print artifactId?
             int versionLength = 0;
 
@@ -96,11 +96,9 @@ public class BundlePluginsMojo extends AbstractJenkinsMojo {
             outputDirectory.mkdirs();
 
             for (MavenArtifact a : selected.values()) {
-                getLog().debug("Copying " + a.getFile());
+                MavenArtifact hpi = a.getHpi();
+                getLog().debug("Copying " + hpi.getFile());
 
-                Artifact hpi = artifactFactory
-                        .createArtifact(a.getGroupId(), a.getArtifactId(), a.getVersion(), SCOPE_COMPILE, "hpi");
-                resolver.resolve(hpi, remoteRepos, localRepository);
 
                 FileUtils.copyFile(hpi.getFile(), new File(outputDirectory, hpi.getArtifactId() + ".hpi"));
                 hpis.add(hpi);
@@ -108,12 +106,12 @@ public class BundlePluginsMojo extends AbstractJenkinsMojo {
                 versionLength = Math.max(versionLength, hpi.getVersion().length());
             }
 
-            Collections.sort(hpis, new Comparator<Artifact>() {
-                public int compare(Artifact o1, Artifact o2) {
+            Collections.sort(hpis, new Comparator<MavenArtifact>() {
+                public int compare(MavenArtifact o1, MavenArtifact o2) {
                     return map(o1).compareTo(map(o2));
                 }
 
-                private String map(Artifact a) {
+                private String map(MavenArtifact a) {
                     return a.getArtifactId();
                 }
             });
@@ -122,7 +120,7 @@ public class BundlePluginsMojo extends AbstractJenkinsMojo {
             list.getParentFile().mkdirs();
             PrintWriter w = new PrintWriter(list);
             try {
-                for (Artifact hpi : hpis) {
+                for (MavenArtifact hpi : hpis) {
                     getLog().info(String.format("%" + (-artifactIdLength) + "s    %" + (-versionLength) + "s    %s",
                             hpi.getArtifactId(), hpi.getVersion(), hpi.getGroupId()));
                     w.println(hpi.getId());

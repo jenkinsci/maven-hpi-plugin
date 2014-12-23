@@ -1,7 +1,12 @@
 package org.jenkinsci.maven.plugins.hpi;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.artifact.resolver.AbstractArtifactResolutionException;
+import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
+import org.apache.maven.artifact.resolver.ArtifactResolutionException;
+import org.apache.maven.artifact.resolver.ArtifactResolver;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.OverConstrainedVersionException;
 import org.apache.maven.project.MavenProject;
@@ -13,6 +18,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import static org.apache.maven.artifact.Artifact.SCOPE_COMPILE;
+
 /**
  * {@link Artifact} is a bare data structure without any behavior and therefore
  * hard to write OO programs around it.
@@ -22,13 +29,17 @@ import java.util.List;
  * @author Kohsuke Kawaguchi
  */
 public class MavenArtifact {
+    public final ArtifactFactory artifactFactory;
     public final MavenProjectBuilder builder;
     public final List<ArtifactRepository> remoteRepositories;
     public final ArtifactRepository localRepository;
     public final Artifact artifact;
+    public final ArtifactResolver resolver;
 
-    public MavenArtifact(Artifact artifact, MavenProjectBuilder builder, List<ArtifactRepository> remoteRepositories, ArtifactRepository localRepository) {
+    public MavenArtifact(Artifact artifact, ArtifactResolver resolver, ArtifactFactory artifactFactory, MavenProjectBuilder builder, List<ArtifactRepository> remoteRepositories, ArtifactRepository localRepository) {
         this.artifact = artifact;
+        this.resolver = resolver;
+        this.artifactFactory = artifactFactory;
         this.builder = builder;
         this.remoteRepositories = remoteRepositories;
         this.localRepository = localRepository;
@@ -79,9 +90,26 @@ public class MavenArtifact {
         return artifact.getType();
     }
 
+    /**
+     * Resolves to the jar file that contains the code of the plugin.
+     */
     public File getFile() {
-        // TODO: should we resolve?
+        if (artifact.getFile()==null)
+            try {
+                resolver.resolve(artifact, remoteRepositories, localRepository);
+            } catch (AbstractArtifactResolutionException e) {
+                throw new RuntimeException("Failed to resolve "+getId(),e);
+            }
         return artifact.getFile();
+    }
+
+    /**
+     * Returns {@link MavenArtifact} for the hpi variant of this artifact.
+     */
+    public MavenArtifact getHpi() {
+        Artifact a = artifactFactory
+                .createArtifact(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), SCOPE_COMPILE, "hpi");
+        return new MavenArtifact(a,resolver,artifactFactory,builder,remoteRepositories,localRepository);
     }
 
     public List<String/* of IDs*/> getDependencyTrail() {

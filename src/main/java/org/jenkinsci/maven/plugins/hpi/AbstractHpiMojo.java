@@ -457,10 +457,6 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         return r;
     }
 
-    protected MavenArtifact wrap(Artifact a) {
-        return new MavenArtifact(a,projectBuilder,project.getRemoteArtifactRepositories(),localRepository);
-    }
-
     /**
      * Builds the webapp for the specified project.
      * <p/>

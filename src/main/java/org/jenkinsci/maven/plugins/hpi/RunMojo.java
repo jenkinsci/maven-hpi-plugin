@@ -644,7 +644,7 @@ public class RunMojo extends AbstractJetty6Mojo {
     }
 
     protected MavenArtifact wrap(Artifact a) {
-        return new MavenArtifact(a,projectBuilder,getProject().getRemoteArtifactRepositories(),localRepository);
+        return new MavenArtifact(a,artifactResolver,artifactFactory,projectBuilder,getProject().getRemoteArtifactRepositories(),localRepository);
     }
 
     protected Artifact getJenkinsWarArtifact() throws MojoExecutionException {
