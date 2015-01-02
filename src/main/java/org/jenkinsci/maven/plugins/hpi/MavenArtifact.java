@@ -42,6 +42,7 @@ public class MavenArtifact {
         this.artifactFactory = artifactFactory;
         this.builder = builder;
         this.remoteRepositories = remoteRepositories;
+        remoteRepositories.size(); // null check
         this.localRepository = localRepository;
     }
 

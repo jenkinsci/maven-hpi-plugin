@@ -127,6 +127,9 @@ public class RunMojo extends AbstractJetty6Mojo {
     @Component
     protected ArtifactFactory artifactFactory;
 
+    @Parameter(defaultValue = "${project.remoteArtifactRepositories}", readonly = true, required = true)
+    protected List<ArtifactRepository> remoteRepos;
+
     @Parameter(defaultValue = "${localRepository}")
     protected ArtifactRepository localRepository;
 
@@ -385,6 +388,7 @@ public class RunMojo extends AbstractJetty6Mojo {
      * <p>
      * All I want to do here is to invoke the hpl target.
      * there must be a better way to do this!
+     * (jglick: perhaps https://github.com/TimMoore/mojo-executor would work?)
      *
      * <p>
      * Besides, if the user wants to change the plugin name, etc,
@@ -403,6 +407,12 @@ public class RunMojo extends AbstractJetty6Mojo {
         hpl.jenkinsCoreId = this.jenkinsCoreId;
         hpl.pluginFirstClassLoader = this.pluginFirstClassLoader;
         hpl.maskClasses = this.maskClasses;
+        hpl.remoteRepos = this.remoteRepos;
+        /* As needed:
+        hpl.artifactFactory = this.artifactFactory;
+        hpl.artifactResolver = this.artifactResolver;
+        hpl.artifactMetadataSource = this.artifactMetadataSource;
+        */
         hpl.execute();
     }
 
