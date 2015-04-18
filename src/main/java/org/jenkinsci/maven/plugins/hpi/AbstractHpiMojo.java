@@ -443,7 +443,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
     }
 
     /**
-     * Returns all just the direct dependencies.
+     * Returns just the direct dependencies.
      */
     public Set<MavenArtifact> getDirectDependencyArtfacts() {
         return wrap(Artifacts.ofDirectDependencies(project));
