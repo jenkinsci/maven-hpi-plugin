@@ -4,8 +4,6 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.AbstractArtifactResolutionException;
-import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
-import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.artifact.resolver.ArtifactResolver;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.OverConstrainedVersionException;
@@ -18,7 +16,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import static org.apache.maven.artifact.Artifact.SCOPE_COMPILE;
+import static org.apache.maven.artifact.Artifact.*;
 
 /**
  * {@link Artifact} is a bare data structure without any behavior and therefore
@@ -125,6 +123,19 @@ public class MavenArtifact {
         return artifact.getScope();
     }
 
+    /**
+     * Returns true if the artifacts has one of the given scopes (including null.)
+     */
+    public boolean hasScope(String... scopes) {
+        for (String s : scopes) {
+            if (s==null && artifact.getScope()==null)
+                return true;
+            if (s!=null && s.equals(artifact.getScope()))
+                return true;
+        }
+        return false;
+    }
+
     public String getArtifactId() {
         return artifact.getArtifactId();
     }
@@ -142,5 +153,14 @@ public class MavenArtifact {
      */
     public boolean hasSameGAAs(MavenProject project) {
         return getGroupId().equals(project.getGroupId()) && getArtifactId().equals(project.getArtifactId());
+    }
+
+    public boolean isNewerThan(MavenArtifact rhs) {
+        return new VersionNumber(this.getVersion()).compareTo(new VersionNumber(rhs.getVersion())) > 0;
+    }
+
+    @Override
+    public String toString() {
+        return getId();
     }
 }
