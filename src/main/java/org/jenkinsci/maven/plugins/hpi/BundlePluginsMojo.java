@@ -33,6 +33,12 @@ import java.util.Set;
 import static org.apache.maven.artifact.Artifact.SCOPE_COMPILE;
 
 /**
+ * Take the current project, list up all the transitive dependencies, then copy them
+ * into a specified directory.
+ *
+ * <p>
+ * Used to assemble <tt>jenkins.war</tt> by bundling all the necessary plugins.
+ *
  * @author Stephen Connolly
  */
 @Mojo(name = "bundle-plugins",
