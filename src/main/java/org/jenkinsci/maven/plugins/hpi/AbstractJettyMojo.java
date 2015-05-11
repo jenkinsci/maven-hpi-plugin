@@ -632,7 +632,7 @@ public abstract class AbstractJettyMojo extends AbstractMojo
      * files change.
      *
      */
-    protected void startScanner() throws Exception
+    private void startScanner() throws Exception
     {
         // check if scanning is enabled
         if (getScanIntervalSeconds() <= 0) return;

@@ -94,7 +94,7 @@
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-groovy</artifactId>
-      <version>1.169</version>
+      <version>1.237</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
@@ -119,7 +119,7 @@
     <dependency>
       <groupId>org.mortbay.jetty</groupId>
       <artifactId>jetty-maven-plugin</artifactId>
-      <version>8.1.14.v20131031</version>
+      <version>8.1.16.v20140903</version>
     </dependency>
     <dependency>
       <groupId>net.java.sezpoz</groupId>
