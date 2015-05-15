@@ -1,4 +1,3 @@
-
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     
     <modelVersion>4.0.0</modelVersion>
@@ -17,16 +16,13 @@
 
     <name>MyNewPlugin</name>
 
-  <properties>
-    <hpiPluginVersion>@pom.version@</hpiPluginVersion>
-  </properties>
   <build>
     <pluginManagement>
       <plugins>
         <plugin>
-          <groupId>org.jenkins-ci.tools</groupId>
-          <artifactId>maven-hpi-plugin</artifactId>
-          <version>${hpiPluginVersion}</version>
+          <groupId>@project.groupId@</groupId>
+          <artifactId>@project.artifactId@</artifactId>
+          <version>@project.version@</version>
         </plugin>
         <plugin>
           <groupId>org.kohsuke</groupId>
@@ -37,9 +33,9 @@
     </pluginManagement>
     <plugins>
       <plugin>
-        <groupId>org.jenkins-ci.tools</groupId>
-        <artifactId>maven-hpi-plugin</artifactId>
-        <version>${hpiPluginVersion}</version>
+        <groupId>@project.groupId@</groupId>
+        <artifactId>@project.artifactId@</artifactId>
+        <version>@project.version@</version>
       </plugin>
     </plugins>
   </build>
