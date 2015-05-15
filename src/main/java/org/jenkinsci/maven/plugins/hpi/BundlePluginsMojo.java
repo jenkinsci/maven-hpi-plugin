@@ -160,7 +160,7 @@ public class BundlePluginsMojo extends AbstractJenkinsMojo {
             // so much simpler to force the user to explicitly resolve the conflict by adding an explicit
             // dependency
             
-            Set<String> optionalDepenencyIssue = new LinkedHashSet<String>();
+            Set<String> optionalDependencyIssue = new LinkedHashSet<String>();
             for (MavenArtifact a: selected.values()) {
                 try {
                     final MavenProject pom = a.resolvePom();
@@ -174,7 +174,7 @@ public class BundlePluginsMojo extends AbstractJenkinsMojo {
                                     "%s: optional dependency of %s version %s conflicts with the bundled version %s",
                                     a.getArtifactId(), d.getArtifactId(), d.getVersion(), matching.getVersion());
                             getLog().error(message);
-                            optionalDepenencyIssue.add(message);
+                            optionalDependencyIssue.add(message);
                         }
                     }
                 } catch (ProjectBuildingException e) {
@@ -182,13 +182,13 @@ public class BundlePluginsMojo extends AbstractJenkinsMojo {
                             a.getGroupId(), a.getArtifactId(), a.getVersion()), e);
                 }
             }
-            if (!optionalDepenencyIssue.isEmpty()) {
+            if (!optionalDependencyIssue.isEmpty()) {
                 if (ignoreOptionalDepenencyConflicts) {
                     getLog().warn("Ignoring optional dependency conflicts");
                 } else {
                     throw new MojoFailureException(
                             "Optional dependencies are incompatible with bundled dependencies:\n  " + StringUtils
-                                    .join(optionalDepenencyIssue, "\n  "));
+                                    .join(optionalDependencyIssue, "\n  "));
                 }
             }
 
