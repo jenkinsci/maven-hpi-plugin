@@ -1,6 +1,7 @@
 package org.jenkinsci.maven.plugins.hpi;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.resolver.ArtifactCollector;
@@ -26,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -62,6 +64,21 @@ public class BundlePluginsMojo extends AbstractJenkinsMojo {
 
 
     public void execute() throws MojoExecutionException, MojoFailureException {
+        Set<String> badDependencies = new LinkedHashSet<String>();
+        for (Artifact a: (Set<Artifact>)project.getDependencyArtifacts()) {
+            try {
+                if (StringUtils.isBlank(a.getType()) || StringUtils.equals("jar", a.getType()) && wrap(a).isPlugin()) {
+                    final String gav = String.format("%s:%s:%s", a.getGroupId(), a.getArtifactId(), a.getVersion());
+                    getLog().error(String.format("Dependency on plugin %s does not include <type> tag", gav));
+                    badDependencies.add(gav);
+                }
+            } catch (IOException e) {
+                throw new MojoExecutionException("Failed to check plugin dependencies", e);
+            }
+        }
+        if (!badDependencies.isEmpty()) {
+            throw new MojoExecutionException("The following plugin dependencies are missing the <type> tag required by the bundle-plugins goal: " + badDependencies );
+        }
         TypeFilter typeFilter = new TypeFilter("hpi,jpi", null);
         // the HPI packaging type is brain-dead... since nobody lists plugin dependencies with <type>hpi</type>
         // we loose all transitive information, so we need to throw away all the good stuff maven would give us
