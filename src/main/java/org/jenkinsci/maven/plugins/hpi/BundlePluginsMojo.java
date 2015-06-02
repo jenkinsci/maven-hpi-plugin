@@ -60,6 +60,7 @@ public class BundlePluginsMojo extends AbstractJenkinsMojo {
 
     /**
      * Where to copy optional plugins into.
+     * @see <a href="https://github.com/jenkinsci/optional-plugin-helper-module">optional-plugin-helper-module</a>
      */
     @Parameter(defaultValue = "${project.build.directory}/${project.build.finalName}/WEB-INF/optional-plugins/")
     private File optionalOutputDirectory;
@@ -198,7 +199,7 @@ public class BundlePluginsMojo extends AbstractJenkinsMojo {
             }
 
             int artifactIdLength = "Artifact ID".length(); // how many chars does it take to print artifactId?
-            int groupIdLength = "Group ID".length(); // how many chars does it take to print artifactId?
+            int groupIdLength = "Group ID".length(); // how many chars does it take to print groupId?
             int versionLength = "Version".length();
             for (MavenArtifact a : selected.values()) {
                 MavenArtifact hpi = a.getHpi();
