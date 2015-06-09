@@ -59,7 +59,7 @@ public class TestInsertionMojo extends AbstractJenkinsMojo {
         }
 
         try {
-            File f = new File(project.getBasedir(), "target/inject-tests");
+            File f = new File(project.getBasedir(), "target/generated-test-sources/injected");
             f.mkdirs();
             File javaFile = new File(f, injectedTestName + ".java");
             PrintWriter w = new PrintWriter(new OutputStreamWriter(new FileOutputStream(javaFile)));
