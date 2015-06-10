@@ -253,7 +253,9 @@ public class RunMojo extends AbstractJetty6Mojo {
                 .groupIdIs("org.jenkins-ci.main","org.jvnet.hudson.main")
                 .artifactIdIsNot("remoting");       // remoting moved to its own release cycle
 
-        webApp = getJenkinsWarArtifact().getFile();
+        if (webApp == null) {
+            webApp = getJenkinsWarArtifact().getFile();
+        }
 
         // make sure all the relevant Jenkins artifacts have the same version
         for (Artifact a : jenkinsArtifacts) {
