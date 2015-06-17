@@ -68,6 +68,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Collection;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -184,6 +185,16 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
      */
     @Parameter
     private String dependentWarExcludes;
+    
+    /**
+     * The comma-separated list of library files, which should not be copied to
+     * the target HPI file.
+     * The following file types will be processed: jar, ejb, ejb-client, tld, par. 
+     * A file must be specified as a full name without a path (e.g. docker-java-1.3.0.jar)
+     * @since TODO
+     */
+    @Parameter
+    private String warLibExcludes;
 
     /**
      * [ws|tab|CR|LF]+ separated list of package prefixes that your plugin doesn't want to see
@@ -306,6 +317,23 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         }
         return excludes;
     }
+    
+    /**
+     * Returns a set of JAR files, which should be excluded from the target
+     * HPI file.
+     * @return a set of JAR file names to exclude
+     * @since TODO
+     */
+    protected Set<String> getLibExcludes() {
+        String[] excludes;
+        if (StringUtils.isNotEmpty(warLibExcludes)) {
+            excludes = StringUtils.split(warLibExcludes, ",");
+        } else {
+            excludes = EMPTY_STRING_ARRAY;
+        }
+        final Set<String> res = new TreeSet<String>(Arrays.asList(excludes));
+        return res;
+    }
 
     /**
      * Returns a string array of the includes to be used
@@ -348,7 +376,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
 
             buildWebapp(project, webappDirectory);
 
-            copyFileIfModified(jarFile, new File(getWebappDirectory(),"WEB-INF/lib/"+jarFile.getName()));
+            copyLibFileIfModified(jarFile, new File(getWebappDirectory(), "WEB-INF/lib/" + jarFile.getName()));
         }
         catch (IOException e) {
             throw new MojoExecutionException("Could not explode webapp...", e);
@@ -518,10 +546,10 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
             if (!artifact.isOptional() && filter.include(artifact.artifact)) {
                 String type = artifact.getType();
                 if ("tld".equals(type)) {
-                    copyFileIfModified(artifact.getFile(), new File(tldDirectory, targetFileName));
+                    copyLibFileIfModified(artifact.getFile(), new File(tldDirectory, targetFileName));
                 } else {
                     if ("jar".equals(type) || "ejb".equals(type) || "ejb-client".equals(type)) {
-                        copyFileIfModified(artifact.getFile(), new File(libDirectory, targetFileName));
+                        copyLibFileIfModified(artifact.getFile(), new File(libDirectory, targetFileName));
                     } else {
                         if ("par".equals(type)) {
                             targetFileName = targetFileName.substring(0, targetFileName.lastIndexOf('.')) + ".jar";
@@ -529,7 +557,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
                             getLog().debug(
                                 "Copying " + artifact.getFile() + " to " + new File(libDirectory, targetFileName));
 
-                            copyFileIfModified(artifact.getFile(), new File(libDirectory, targetFileName));
+                            copyLibFileIfModified(artifact.getFile(), new File(libDirectory, targetFileName));
                         } else {
                             if ("war".equals(type)) {
                                 dependentWarDirectories.add(unpackWarToTempDirectory(artifact));
@@ -821,6 +849,21 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         // to plexus-utils 1.2.
         if (destination.lastModified() < source.lastModified()) {
             FileUtils.copyFile(source, destination);
+        }
+    }
+       
+    /**
+     * Copies a library file if it is not excluded.
+     * @param libFile Library file to be copied (JAR, EJP, etc.)
+     * @param target Copy destination
+     * @throws IOException Copy error
+     */
+    private void copyLibFileIfModified(File libFile, File target) throws IOException {
+        if (!getLibExcludes().contains(libFile.getName())) {
+            getLog().debug("Adding library file: " + libFile.getName());
+            copyFileIfModified(libFile, target);
+        } else {
+            getLog().info("Ignoring excluded library file: " + libFile.getName());
         }
     }
 
