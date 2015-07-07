@@ -260,8 +260,9 @@ public class RunMojo extends AbstractJettyMojo {
                 throw new MojoExecutionException("Version of "+a.getId()+" is inconsistent with "+ba.getId());
         }
 
-        // set HUDSON_HOME
+        // set JENKINS_HOME
         setSystemPropertyIfEmpty("HUDSON_HOME",jenkinsHome.getAbsolutePath());
+        setSystemPropertyIfEmpty("JENKINS_HOME",jenkinsHome.getAbsolutePath());
         File pluginsDir = new File(jenkinsHome, "plugins");
         pluginsDir.mkdirs();
 
