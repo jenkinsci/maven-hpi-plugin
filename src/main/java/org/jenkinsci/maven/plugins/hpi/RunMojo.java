@@ -417,7 +417,7 @@ public class RunMojo extends AbstractJettyMojo {
         getWebAppConfig().setWar(webAppFile.getCanonicalPath());
         // cf. https://wiki.jenkins-ci.org/display/JENKINS/Jetty
         HashLoginService hashLoginService = (new HashLoginService("Jenkins Realm"));
-        hashLoginService.setConfig(System.getProperty("jetty.home", ".") + "/etc/realm.properties");
+        hashLoginService.setConfig(System.getProperty("jetty.home", "work") + "/etc/realm.properties");
         getWebAppConfig().getSecurityHandler().setLoginService(hashLoginService);
     }
 
