@@ -211,7 +211,7 @@ public class RunMojo extends AbstractJettyMojo {
 
         File basedir = getProject().getBasedir();
 
-        // compute hudsonHome
+        // compute jenkinsHome
         if(jenkinsHome ==null) {
             if (hudsonHome != null) {
                 getLog().warn("Please use the `jenkinsHome` configuration parameter in place of the deprecated `hudsonHome` parameter");
@@ -261,7 +261,6 @@ public class RunMojo extends AbstractJettyMojo {
         }
 
         // set JENKINS_HOME
-        setSystemPropertyIfEmpty("HUDSON_HOME",jenkinsHome.getAbsolutePath());
         setSystemPropertyIfEmpty("JENKINS_HOME",jenkinsHome.getAbsolutePath());
         File pluginsDir = new File(jenkinsHome, "plugins");
         pluginsDir.mkdirs();
