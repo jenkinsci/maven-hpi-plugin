@@ -14,6 +14,7 @@
 //========================================================================
 package org.jenkinsci.maven.plugins.hpi;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
@@ -32,22 +33,20 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProjectBuilder;
-import org.apache.commons.io.FileUtils;
-import org.mortbay.jetty.nio.SelectChannelConnector;
-import org.mortbay.jetty.plugin.Jetty6PluginServer;
-import org.mortbay.jetty.plugin.util.JettyPluginServer;
-import org.mortbay.jetty.plugin.util.Scanner;
-import org.mortbay.jetty.plugin.util.Scanner.Listener;
-import org.mortbay.jetty.plugin.util.SystemProperty;
-import org.mortbay.jetty.webapp.WebAppClassLoader;
-import org.mortbay.jetty.webapp.WebAppContext;
+import org.eclipse.jetty.security.HashLoginService;
+import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.nio.SelectChannelConnector;
+import org.eclipse.jetty.util.Scanner;
+import org.eclipse.jetty.webapp.WebAppClassLoader;
+import org.eclipse.jetty.webapp.WebAppContext;
+import org.mortbay.jetty.plugin.JettyServer;
+import org.mortbay.jetty.plugin.JettyWebAppContext;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -81,7 +80,7 @@ import java.util.zip.ZipFile;
  */
 @Mojo(name="run")
 @Execute(phase = LifecyclePhase.COMPILE)
-public class RunMojo extends AbstractJetty6Mojo {
+public class RunMojo extends AbstractJettyMojo {
 
     /**
      * The location of the war file.
@@ -92,7 +91,7 @@ public class RunMojo extends AbstractJetty6Mojo {
      * </p>
      */
     @Parameter
-    private File webApp;
+    private File webAppFile;
 
     /**
      * Path to <tt>$JENKINS_HOME</tt>. The launched Jenkins will use this directory as the workspace.
@@ -213,7 +212,21 @@ public class RunMojo extends AbstractJetty6Mojo {
 
         File basedir = getProject().getBasedir();
 
-        // compute hudsonHome
+        if (webApp == null || webApp.getContextPath() == null) {
+            if (contextPath != null) {
+                getLog().warn("Please use `webApp/contextPath` configuration parameter in place of the deprecated `contextPath` parameter");
+                if (webApp == null) {
+                    try {
+                        webApp = new JettyWebAppContext();
+                    } catch (Exception e) {
+                        throw new MojoExecutionException("Failed to initialize webApp configuration", e);
+                    }
+                }
+                webApp.setContextPath(contextPath);
+            }
+        }
+
+        // compute jenkinsHome
         if(jenkinsHome ==null) {
             if (hudsonHome != null) {
                 getLog().warn("Please use the `jenkinsHome` configuration parameter in place of the deprecated `hudsonHome` parameter");
@@ -232,7 +245,7 @@ public class RunMojo extends AbstractJetty6Mojo {
         // auto-enable stapler trace, unless otherwise configured already.
         setSystemPropertyIfEmpty("stapler.trace", "true");
         // allow Jetty to accept a bigger form so that it can handle update center JSON post
-        setSystemPropertyIfEmpty("org.mortbay.jetty.Request.maxFormContentSize","-1");
+        setSystemPropertyIfEmpty("org.eclipse.jetty.Request.maxFormContentSize","-1");
         // general-purpose system property so that we can tell from Jenkins if we are running in the hpi:run mode.
         setSystemPropertyIfEmpty("hudson.hpi.run","true");
         // this adds 3 secs to the shutdown time. Skip it.
@@ -253,7 +266,7 @@ public class RunMojo extends AbstractJetty6Mojo {
                 .groupIdIs("org.jenkins-ci.main","org.jvnet.hudson.main")
                 .artifactIdIsNot("remoting");       // remoting moved to its own release cycle
 
-        webApp = getJenkinsWarArtifact().getFile();
+        webAppFile = getJenkinsWarArtifact().getFile();
 
         // make sure all the relevant Jenkins artifacts have the same version
         for (Artifact a : jenkinsArtifacts) {
@@ -262,28 +275,19 @@ public class RunMojo extends AbstractJetty6Mojo {
                 throw new MojoExecutionException("Version of "+a.getId()+" is inconsistent with "+ba.getId());
         }
 
-        // set HUDSON_HOME
-        SystemProperty sp = new SystemProperty();
-        sp.setName("HUDSON_HOME");
-        sp.setValue(jenkinsHome.getAbsolutePath());
-        sp.setIfNotSetAlready();
+        // set JENKINS_HOME
+        setSystemPropertyIfEmpty("JENKINS_HOME",jenkinsHome.getAbsolutePath());
         File pluginsDir = new File(jenkinsHome, "plugins");
         pluginsDir.mkdirs();
 
         // enable view auto refreshing via stapler
-        sp = new SystemProperty();
-        sp.setName("stapler.jelly.noCache");
-        sp.setValue("true");
-        sp.setIfNotSetAlready();
+        setSystemPropertyIfEmpty("stapler.jelly.noCache","true");
 
-        List res = getProject().getBuild().getResources();
+        List<Resource> res = getProject().getBuild().getResources();
         if(!res.isEmpty()) {
             // pick up the first one and use it
-            Resource r = (Resource) res.get(0);
-            sp = new SystemProperty();
-            sp.setName("stapler.resourcePath");
-            sp.setValue(r.getDirectory());
-            sp.setIfNotSetAlready();
+            Resource r = res.get(0);
+            setSystemPropertyIfEmpty("stapler.resourcePath",r.getDirectory());
         }
 
 
@@ -419,12 +423,16 @@ public class RunMojo extends AbstractJetty6Mojo {
     public void configureWebApplication() throws Exception {
         // Jetty tries to do this in WebAppContext.resolveWebApp but it failed to delete the directory.
         File extractedWebAppDir= new File(getTmpDirectory(), "webapp");
-        if (isExtractedWebAppDirStale(extractedWebAppDir, webApp)) {
+        if (isExtractedWebAppDirStale(extractedWebAppDir, webAppFile)) {
             FileUtils.deleteDirectory(extractedWebAppDir);
         }
         
         super.configureWebApplication();
-        getWebApplication().setWebAppSrcDir(webApp);
+        getWebAppConfig().setWar(webAppFile.getCanonicalPath());
+        // cf. https://wiki.jenkins-ci.org/display/JENKINS/Jetty
+        HashLoginService hashLoginService = (new HashLoginService("Jenkins Realm"));
+        hashLoginService.setConfig(System.getProperty("jetty.home", "work") + "/etc/realm.properties");
+        getWebAppConfig().getSecurityHandler().setLoginService(hashLoginService);
     }
 
     private static final String VERSION_PATH = "META-INF/maven/org.jenkins-ci.main/jenkins-war/pom.properties";
@@ -489,33 +497,13 @@ public class RunMojo extends AbstractJetty6Mojo {
     }
 
     public void configureScanner() throws MojoExecutionException {
-        setUpScanList(new ArrayList());
+        setUpScanList(new ArrayList<File>());
 
-        ArrayList<Listener> listeners = new ArrayList<Listener>();
-        listeners.add(new Listener() {
-            public void changesDetected(Scanner scanner, List changes) {
+        ArrayList<Scanner.BulkListener> listeners = new ArrayList<Scanner.BulkListener>();
+        listeners.add(new Scanner.BulkListener() {
+            public void filesChanged(List<String> changes) {
                 try {
-                    getLog().info("Restarting webapp ...");
-                    getLog().debug("Stopping webapp ...");
-                    getWebApplication().stop();
-                    getLog().debug("Reconfiguring webapp ...");
-
-                    checkPomConfiguration();
-
-                    // check if we need to reconfigure the scanner,
-                    // which is if the pom changes
-                    if (changes.contains(getProject().getFile().getCanonicalPath())) {
-                        getLog().info("Reconfiguring scanner after change to pom.xml ...");
-                        generateHpl(); // regenerate hpl if POM changes.
-                        ArrayList scanList = getScanList();
-                        scanList.clear();
-                        setUpScanList(scanList);
-                        scanner.setRoots(scanList);
-                    }
-
-                    getLog().debug("Restarting webapp ...");
-                    getWebApplication().start();
-                    getLog().info("Restart completed.");
+                    restartWebApp(changes.contains(getProject().getFile().getCanonicalPath()));
                 } catch (Exception e) {
                     getLog().error("Error reconfiguring/restarting webapp after change in watched files", e);
                 }
@@ -525,42 +513,63 @@ public class RunMojo extends AbstractJetty6Mojo {
 
     }
 
-    private void setUpScanList(ArrayList scanList) {
+    @Override
+    public void restartWebApp(boolean reconfigureScanner) throws Exception {
+        getLog().info("Restarting webapp ...");
+        getLog().debug("Stopping webapp ...");
+        getWebAppConfig().stop();
+        getLog().debug("Reconfiguring webapp ...");
+
+        checkPomConfiguration();
+
+        // check if we need to reconfigure the scanner,
+        // which is if the pom changes
+        if (reconfigureScanner) {
+            getLog().info("Reconfiguring scanner after change to pom.xml ...");
+            generateHpl(); // regenerate hpl if POM changes.
+            ArrayList<File> scanList = getScanList();
+            scanList.clear();
+            setUpScanList(scanList);
+            getScanner().setScanDirs(scanList);
+        }
+
+        getLog().debug("Restarting webapp ...");
+        getWebAppConfig().start();
+        getLog().info("Restart completed.");
+    }
+
+    private void setUpScanList(ArrayList<File> scanList) {
         scanList.add(getProject().getFile());
-        scanList.add(webApp);
+        scanList.add(webAppFile);
         scanList.add(new File(getProject().getBuild().getOutputDirectory()));
         setScanList(scanList);
     }
 
     @Override
-    protected void startScanner() {
-        super.startScanner();
-
+    protected void startConsoleScanner() throws Exception {
         if (consoleForceReload) {
             getLog().info("Console reloading is ENABLED. Hit ENTER on the console to restart the context.");
-            new ConsoleScanner(this).start();
+            consoleScanner = new ConsoleScanner(this);
+            consoleScanner.start();
         }
     }
 
     public void checkPomConfiguration() throws MojoExecutionException {
     }
 
-    public void finishConfigurationBeforeStart() {
-        // working around JETTY-1226. This bug affects those who use Axis from plugins, for example.
-        WebAppContext wac = (WebAppContext)getWebApplication().getProxiedObject();
-        List<String> sc = new ArrayList<String>(Arrays.asList(wac.getSystemClasses()));
-        sc.add("javax.activation.");
-        wac.setSystemClasses(sc.toArray(new String[sc.size()]));
-
+    public void finishConfigurationBeforeStart() throws Exception {
+        super.finishConfigurationBeforeStart();
+        WebAppContext wac = getWebAppConfig();
         // to allow the development environment to run multiple "mvn hpi:run" with different port,
         // use different session cookie names. Otherwise they can mix up. See
         // http://stackoverflow.com/questions/1612177/are-http-cookies-port-specific
-        wac.getSessionHandler().getSessionManager().setSessionCookie("JSESSIONID."+UUID.randomUUID().toString().replace("-","").substring(0,8));
+        wac.getSessionHandler().getSessionManager().getSessionCookieConfig()
+                .setName("JSESSIONID." + UUID.randomUUID().toString().replace("-", "").substring(0, 8));
 
         try {
             // for Jenkins modules, swap the component from jenkins.war by target/classes
             // via classloader magic
-            WebAppClassLoader wacl = new WebAppClassLoader(new ServletApiOnlyClassLoader(null,getClass().getClassLoader()),wac) {
+            WebAppClassLoader wacl = new WebAppClassLoader(new JettyAndServletApiOnlyClassLoader(null,getClass().getClassLoader()),wac) {
                 private final Pattern exclusionPattern;
                 {
                     if (getProject().getPackaging().equals("jenkins-module")) {
@@ -592,7 +601,7 @@ public class RunMojo extends AbstractJetty6Mojo {
                 }
 
                 @Override
-                public void addJars(org.mortbay.resource.Resource lib) {
+                public void addJars(org.eclipse.jetty.util.resource.Resource lib) {
                     super.addJars(lib);
                 }
             };
@@ -602,20 +611,15 @@ public class RunMojo extends AbstractJetty6Mojo {
         }
     }
 
-    @Override
-    protected String getDefaultHttpPort() {
-        if (defaultPort!=null)
-            return defaultPort;
-        return super.getDefaultHttpPort();
-    }
-
-    public JettyPluginServer createServer() throws Exception {
-        return new Jetty6PluginServer() {
+    public JettyServer createServer() throws Exception {
+        return new JettyServer() {
             @Override
-            public Object createDefaultConnector(String portnum) throws Exception {
+            public Connector createDefaultConnector(String portnum) throws Exception {
+                if ((portnum == null || portnum.equals("")) && defaultPort != null) {
+                    portnum = defaultPort;
+                }
                 SelectChannelConnector con = (SelectChannelConnector)super.createDefaultConnector(portnum);
-
-                con.setHeaderBufferSize(12*1024); // use a bigger buffer as Stapler traces can get pretty large on deeply nested URL
+                con.setResponseHeaderSize(12*1024);// use a bigger buffer as Stapler traces can get pretty large on deeply nested URL
 
                 return con;
             }
