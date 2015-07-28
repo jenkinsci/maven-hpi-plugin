@@ -51,6 +51,7 @@
     <dollar>$</dollar>
     <openbracket>{</openbracket>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <java.level>6</java.level>
   </properties>
 
   <repositories>
@@ -291,6 +292,32 @@
           <filterProperties>
             <repository.proxy.url>${repository.proxy.url}</repository.proxy.url>
           </filterProperties>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>animal-sniffer-maven-plugin</artifactId>
+        <version>1.14</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <signature>
+            <groupId>org.codehaus.mojo.signature</groupId>
+            <artifactId>java1${java.level}</artifactId>
+            <version>1.0</version>
+          </signature>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.${java.level}</source>
+          <target>1.${java.level}</target>
         </configuration>
       </plugin>
     </plugins>
