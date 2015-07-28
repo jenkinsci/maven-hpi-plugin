@@ -52,19 +52,8 @@ public class MavenArtifact {
      * Is this a Jenkins plugin?
      */
     public boolean isPlugin() throws IOException {
-        try {
-            String t = artifact.getType();
-
-            if(t.equals("hpi") || t.equals("jpi"))    return true;
-
-            // some artifacts aren't even Java, so ignore those.
-            if(!t.equals("jar"))    return false;
-
-            // when a plugin depends on another plugin, it doesn't specify the type as hpi, so we need to resolve its POM to see it
-            return resolvePom().getPackaging().equals("hpi");
-        } catch (ProjectBuildingException e) {
-            throw new IOException2("Failed to open artifact "+artifact.toString()+" at "+artifact.getFile(),e);
-        }
+        String type = getResolvedType();
+        return type.equals("hpi") || type.equals("jpi");
     }
 
     public String getId() {
@@ -105,9 +94,9 @@ public class MavenArtifact {
     /**
      * Returns {@link MavenArtifact} for the hpi variant of this artifact.
      */
-    public MavenArtifact getHpi() {
+    public MavenArtifact getHpi() throws IOException {
         Artifact a = artifactFactory
-                .createArtifact(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), SCOPE_COMPILE, "hpi");
+                .createArtifact(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), SCOPE_COMPILE, getResolvedType());
         return new MavenArtifact(a,resolver,artifactFactory,builder,remoteRepositories,localRepository);
     }
 
@@ -162,5 +151,25 @@ public class MavenArtifact {
     @Override
     public String toString() {
         return getId();
+    }
+
+    /**
+     * Tries to detect the original packaging type by eventually resolving the POM.
+     * This is necessary when a plugin depends on another plugin and it doesn't specify the type as hpi or jpi.
+     */
+    private String getResolvedType() throws IOException {
+        try {
+            String type = artifact.getType();
+
+            // only resolve the POM if the packaging type is jar, because that's the default if no type has been specified
+            if(!type.equals("jar")) {
+                return type;
+            }
+
+            // when a plugin depends on another plugin, it doesn't specify the type as hpi or jpi, so we need to resolve its POM to see it
+            return resolvePom().getPackaging();
+        } catch (ProjectBuildingException e) {
+            throw new IOException2("Failed to open artifact "+artifact.toString()+" at "+artifact.getFile(),e);
+        }
     }
 }
