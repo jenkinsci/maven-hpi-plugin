@@ -40,6 +40,7 @@ import org.eclipse.jetty.util.Scanner;
 import org.eclipse.jetty.webapp.WebAppClassLoader;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.mortbay.jetty.plugin.JettyServer;
+import org.mortbay.jetty.plugin.JettyWebAppContext;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -210,6 +211,20 @@ public class RunMojo extends AbstractJettyMojo {
         getProject().setArtifacts(resolveDependencies(dependencyResolution));
 
         File basedir = getProject().getBasedir();
+
+        if (webApp == null || webApp.getContextPath() == null) {
+            if (contextPath != null) {
+                getLog().warn("Please use `webApp/contextPath` configuration parameter in place of the deprecated `contextPath` parameter");
+                if (webApp == null) {
+                    try {
+                        webApp = new JettyWebAppContext();
+                    } catch (Exception e) {
+                        throw new MojoExecutionException("Failed to initialize webApp configuration", e);
+                    }
+                }
+                webApp.setContextPath(contextPath);
+            }
+        }
 
         // compute jenkinsHome
         if(jenkinsHome ==null) {
