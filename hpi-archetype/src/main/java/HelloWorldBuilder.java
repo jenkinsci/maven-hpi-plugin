@@ -2,8 +2,6 @@ import hudson.Launcher;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.util.FormValidation;
-import hudson.model.AbstractBuild;
-import hudson.model.BuildListener;
 import hudson.model.AbstractProject;
 import hudson.model.Run;
 import hudson.model.TaskListener;
@@ -30,8 +28,7 @@ import java.io.IOException;
  * to remember the configuration.
  *
  * <p>
- * When a build is performed, the {@link #perform(AbstractBuild, Launcher, BuildListener)}
- * method will be invoked. 
+ * When a build is performed, the {@link #perform} method will be invoked. 
  *
  * @author Kohsuke Kawaguchi
  */
