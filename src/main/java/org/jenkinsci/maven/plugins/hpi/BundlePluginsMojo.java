@@ -69,8 +69,8 @@ public class BundlePluginsMojo extends AbstractJenkinsMojo {
      * By default the build will fail if one of the bundled plugins has an optional dependency on a newer version
      * of another bundled plugin.
      */
-    @Parameter(property = "hpi.ignoreOptionalDepenencyConflicts")
-    private boolean ignoreOptionalDepenencyConflicts;
+    @Parameter(property = "hpi.ignoreOptionalDependencyConflicts")
+    private boolean ignoreOptionalDependencyConflicts;
 
     @Component
     protected ArtifactResolver resolver;
@@ -184,7 +184,7 @@ public class BundlePluginsMojo extends AbstractJenkinsMojo {
                 }
             }
             if (!optionalDependencyIssue.isEmpty()) {
-                if (ignoreOptionalDepenencyConflicts) {
+                if (ignoreOptionalDependencyConflicts) {
                     getLog().warn("Ignoring optional dependency conflicts");
                 } else {
                     throw new MojoFailureException(
