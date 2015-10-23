@@ -22,7 +22,6 @@
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
       <version>2.6.3</version>
-      <!--TODO we mark it as optional to exclude from the WEB-INF/lib but when shade is fixed need to verify that it shades in these optional dependencies-->
       <optional>true</optional>
     </dependency>
   </dependencies>
