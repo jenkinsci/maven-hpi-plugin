@@ -1,3 +1,5 @@
+import java.util.zip.ZipInputStream
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -34,6 +36,42 @@ assert new File(basedir, 'target/generated-sources/localizer/org/jenkinsci/tools
 content = new File(basedir, 'target/generated-sources/localizer/org/jenkinsci/tools/hpi/its/Messages.java').text;
 assert content.contains(" holder.format(\"it.msg\");");
 
-// TODO add some test on hpi file content
+File.metaClass.unzip = { File outputFolder ->
+    byte[] buffer = new byte[8192];
+    def zis = new ZipInputStream(new FileInputStream(delegate));
+    try {
+        def ze = zis.getNextEntry();
+        try {
+            while (ze != null) {
+                File newFile = new File(outputFolder, ze.getName());
+                newFile.getParentFile().mkdirs();
+                if (ze.isDirectory()) {
+                    newFile.mkdirs();
+                } else {
+                    FileOutputStream fos = new FileOutputStream(newFile);
+                    int len;
+                    while ((len = zis.read(buffer)) > 0) {
+                        fos.write(buffer, 0, len);
+                    }
+                    fos.close();
+                }
+                ze = zis.getNextEntry();
+            }
+        } finally {
+            zis.closeEntry();
+        }
+    } finally {
+        zis.close();
+    }
+}
+
+new File(basedir, "target/verify-hpi").deleteDir()
+new File(basedir, "target/verify-jar").deleteDir()
+assert new File(basedir, 'target/process-jar.hpi').exists();
+new File(basedir, "target/process-jar.hpi").unzip(new File(basedir, "target/verify-hpi"))
+assert new File(basedir, 'target/verify-hpi/WEB-INF/lib/process-jar.jar').exists();
+
+new File(basedir, "target/verify-hpi/WEB-INF/lib/process-jar.jar").unzip(new File(basedir, "target/verify-jar"));
+assert new File(basedir, 'target/verify-jar/META-INF/KEY.SF').exists();
 
 return true;
