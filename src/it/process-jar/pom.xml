@@ -1,0 +1,116 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.jenkins-ci.plugins</groupId>
+    <artifactId>plugin</artifactId>
+    <version>1.424</version>
+  </parent>
+
+  <groupId>org.jenkins-ci.tools.hpi.its</groupId>
+  <artifactId>process-jar</artifactId>
+  <version>1.0-SNAPSHOT</version>
+
+  <packaging>hpi</packaging>
+
+  <name>MyNewPlugin</name>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>2.6.3</version>
+      <!--TODO we mark it as optional to exclude from the WEB-INF/lib but when shade is fixed need to verify that it shades in these optional dependencies-->
+      <optional>true</optional>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>@project.groupId@</groupId>
+          <artifactId>@project.artifactId@</artifactId>
+          <version>@project.version@</version>
+        </plugin>
+        <plugin>
+          <groupId>org.kohsuke</groupId>
+          <artifactId>access-modifier-checker</artifactId>
+          <version>1.0</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>@project.groupId@</groupId>
+        <artifactId>@project.artifactId@</artifactId>
+        <version>@project.version@</version>
+        <executions>
+          <execution>
+            <phase>prepare-package</phase>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+            <!-- TODO the shade plugin doesn't like shading the non-main attached artifacts yet -->
+            <!--<configuration>-->
+              <!--<jarClassifier>unshaded</jarClassifier>-->
+            <!--</configuration>-->
+          </execution>
+        </executions>
+        <configuration>
+          <jarClassifier>shaded</jarClassifier>
+        </configuration>
+      </plugin>
+      <!-- TODO the shade plugin doesn't like shading the non-main attached artifacts yet -->
+      <!--<plugin>-->
+        <!--<artifactId>maven-shade-plugin</artifactId>-->
+        <!--<version>2.4.1</version>-->
+        <!--<executions>-->
+          <!--<execution>-->
+            <!--<phase>prepare-package</phase>-->
+            <!--<goals>-->
+              <!--<goal>shade</goal>-->
+            <!--</goals>-->
+            <!--<configuration>-->
+              <!-- TODO something to tell it to process the artifact with classifier `unshaded` -->
+              <!--<shadedArtifactAttached>true</shadedArtifactAttached>-->
+              <!--<shadedClassifierName>shaded</shadedClassifierName>-->
+              <!--<minimizeJar>true</minimizeJar>-->
+              <!--<relocations>-->
+                <!--<relocation>-->
+                  <!--<pattern>com.fasterxml</pattern>-->
+                  <!--<shadedPattern>internal.com.fasterxml</shadedPattern>-->
+                <!--</relocation>-->
+              <!--</relocations>-->
+            <!--</configuration>-->
+          <!--</execution>-->
+        <!--</executions>-->
+      <!--</plugin>-->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jarsigner-plugin</artifactId>
+        <version>1.4</version>
+        <executions>
+          <execution>
+            <id>sign</id>
+            <goals>
+              <goal>sign</goal>
+            </goals>
+            <phase>prepare-package</phase>
+          </execution>
+        </executions>
+        <configuration>
+          <keystore>${basedir}/src/keystore/testing.jks</keystore>
+          <alias>key</alias>
+          <storepass>default</storepass>
+          <keypass>default</keypass>
+          <processAttachedArtifacts>true</processAttachedArtifacts>
+          <processMainArtifact>false</processMainArtifact>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

@@ -17,12 +17,17 @@ package org.jenkinsci.maven.plugins.hpi;
  */
 
 import hudson.Extension;
+import java.io.PrintWriter;
 import jenkins.YesNoMaybe;
 import net.java.sezpoz.Index;
 import net.java.sezpoz.IndexItem;
 import org.apache.commons.io.IOUtils;
+import org.apache.maven.archiver.MavenArchiveConfiguration;
+import org.apache.maven.archiver.MavenArchiver;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.model.Resource;
 import org.apache.maven.model.Developer;
@@ -31,8 +36,10 @@ import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectBuilder;
+import org.apache.maven.shared.artifact.filter.PatternExcludesArtifactFilter;
 import org.codehaus.plexus.archiver.ArchiverException;
 import org.codehaus.plexus.archiver.UnArchiver;
+import org.codehaus.plexus.archiver.jar.Manifest;
 import org.codehaus.plexus.archiver.jar.Manifest.Attribute;
 import org.codehaus.plexus.archiver.jar.Manifest.Section;
 import org.codehaus.plexus.archiver.jar.ManifestException;
@@ -1044,6 +1051,47 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
 
 
         return buf.toString();
+    }
+
+    protected Manifest loadManifest(File f) throws IOException, ManifestException {
+        InputStreamReader r = new InputStreamReader(new FileInputStream(f), "UTF-8");
+        try {
+            return new Manifest(r);
+        } finally {
+            IOUtil.close(r);
+        }
+    }
+
+    /**
+     * Generates a manifest file to be included in the .hpi file
+     */
+    protected void generateManifest(MavenArchiveConfiguration archive, File manifestFile) throws MojoExecutionException {
+        // create directory if it doesn't exist yet
+        if (!manifestFile.getParentFile().exists())
+            manifestFile.getParentFile().mkdirs();
+
+        getLog().info("Generating " + manifestFile);
+
+        MavenArchiver ma = new MavenArchiver();
+        ma.setOutputFile(manifestFile);
+
+        PrintWriter printWriter = null;
+        try {
+            Manifest mf = ma.getManifest(project, archive.getManifest());
+            Section mainSection = mf.getMainSection();
+            setAttributes(mainSection);
+
+            printWriter = new PrintWriter(new OutputStreamWriter(new FileOutputStream(manifestFile), "UTF-8"));
+            mf.write(printWriter);
+        } catch (ManifestException e) {
+            throw new MojoExecutionException("Error preparing the manifest: " + e.getMessage(), e);
+        } catch (DependencyResolutionRequiredException e) {
+            throw new MojoExecutionException("Error preparing the manifest: " + e.getMessage(), e);
+        } catch (IOException e) {
+            throw new MojoExecutionException("Error preparing the manifest: " + e.getMessage(), e);
+        } finally {
+            IOUtil.close(printWriter);
+        }
     }
 
     private static final Logger LOGGER = Logger.getLogger(AbstractHpiMojo.class.getName());
