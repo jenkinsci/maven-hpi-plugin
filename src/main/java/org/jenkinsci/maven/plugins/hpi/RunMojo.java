@@ -47,6 +47,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -441,6 +442,16 @@ public class RunMojo extends AbstractJettyMojo {
         
         super.configureWebApplication();
         getWebAppConfig().setWar(webAppFile.getCanonicalPath());
+        for (Artifact a : (Set<Artifact>) project.getArtifacts()) {
+            if (a.getGroupId().equals("org.jenkins-ci.main") && a.getArtifactId().equals("jenkins-core")) {
+                File coreBasedir = TestHplMojo.readMap(a.getId());
+                if (coreBasedir != null) {
+                    List<File> additions = Arrays.asList(new File(coreBasedir, "src/main/resources"), new File(coreBasedir, "target/classes"));
+                    getLog().info("Will load directly from " + additions);
+                    getWebAppConfig().setWebInfLib(additions);
+                }
+            }
+        }
         // cf. https://wiki.jenkins-ci.org/display/JENKINS/Jetty
         HashLoginService hashLoginService = (new HashLoginService("Jenkins Realm"));
         hashLoginService.setConfig(System.getProperty("jetty.home", "work") + "/etc/realm.properties");

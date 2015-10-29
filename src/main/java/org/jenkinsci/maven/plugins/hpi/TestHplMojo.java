@@ -28,10 +28,9 @@ public class TestHplMojo extends HplMojo {
         File testDir = new File(project.getBuild().getTestOutputDirectory());
         testDir.mkdirs();
         File theHpl = new File(testDir,"the.hpl");
-        String id = project.getArtifact().getId();
         if (project.getArtifact().isSnapshot()) {
             try {
-                writeMap(id, theHpl);
+                writeMap(project.getArtifact().getId(), theHpl);
             } catch (IOException x) {
                 getLog().error(x);
             }
@@ -61,7 +60,7 @@ public class TestHplMojo extends HplMojo {
             if (entry.getValue().equals(id)) {
                 String path = (String) entry.getKey();
                 File f = new File(path);
-                if (f.isFile()) {
+                if (f.exists()) {
                     return f;
                 }
             }
@@ -69,10 +68,10 @@ public class TestHplMojo extends HplMojo {
         return null;
     }
 
-    private void writeMap(String id, File theHpl) throws IOException {
+    static void writeMap(String id, File f) throws IOException {
         File mapFile = mapFile();
         Properties p = loadMap(mapFile());
-        p.setProperty(theHpl.getAbsolutePath(), id);
+        p.setProperty(f.getAbsolutePath(), id);
         OutputStream os = new FileOutputStream(mapFile);
         try {
             p.store(os, " List of development files for Jenkins plugins that have been built.");
