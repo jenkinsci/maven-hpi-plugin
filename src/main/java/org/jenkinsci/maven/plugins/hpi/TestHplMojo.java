@@ -75,7 +75,7 @@ public class TestHplMojo extends HplMojo {
         p.setProperty(theHpl.getAbsolutePath(), id);
         OutputStream os = new FileOutputStream(mapFile);
         try {
-            p.store(os, "List of development files for Jenkins plugins that have been built.");
+            p.store(os, " List of development files for Jenkins plugins that have been built.");
         } finally {
             os.close();
         }

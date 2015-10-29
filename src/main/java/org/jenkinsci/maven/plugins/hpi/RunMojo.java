@@ -393,7 +393,7 @@ public class RunMojo extends AbstractJettyMojo {
 
     private void copyHpl(File src, File pluginsDir, String shortName) throws IOException {
         File dst = new File(pluginsDir, shortName + ".jpl");
-        getLog().info("Copying dependency Jenkins plugin " + src);
+        getLog().info("Copying snapshot dependency Jenkins plugin " + src);
         FileUtils.copyFile(src, dst);
         FileUtils.writeStringToFile(new File(pluginsDir, shortName + ".jpi.pinned"), "pinned");
     }
