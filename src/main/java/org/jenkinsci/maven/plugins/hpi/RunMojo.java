@@ -311,7 +311,12 @@ public class RunMojo extends AbstractJettyMojo {
                 if (hpi.getFile().isDirectory())
                     throw new UnsupportedOperationException(hpi.getFile()+" is a directory and not packaged yet. this isn't supported");
 
-                copyPlugin(hpi.getFile(), pluginsDir, a.getArtifactId());
+                File upstreamHpl = TestHplMojo.readMap(hpi.getId());
+                if (upstreamHpl != null) {
+                    copyHpl(upstreamHpl, pluginsDir, a.getArtifactId());
+                } else {
+                    copyPlugin(hpi.getFile(), pluginsDir, a.getArtifactId());
+                }
             }
         } catch (IOException e) {
             throw new MojoExecutionException("Unable to copy dependency plugin",e);
@@ -384,6 +389,13 @@ public class RunMojo extends AbstractJettyMojo {
         } finally {
             j.close();
         }
+    }
+
+    private void copyHpl(File src, File pluginsDir, String shortName) throws IOException {
+        File dst = new File(pluginsDir, shortName + ".jpl");
+        getLog().info("Copying dependency Jenkins plugin " + src);
+        FileUtils.copyFile(src, dst);
+        FileUtils.writeStringToFile(new File(pluginsDir, shortName + ".jpi.pinned"), "pinned");
     }
 
     /**
