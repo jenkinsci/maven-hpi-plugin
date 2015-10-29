@@ -10,6 +10,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -28,10 +29,12 @@ public class TestHplMojo extends HplMojo {
         testDir.mkdirs();
         File theHpl = new File(testDir,"the.hpl");
         String id = project.getArtifact().getId();
-        try {
-            writeMap(id, theHpl);
-        } catch (IOException x) {
-            getLog().error(x);
+        if (project.getArtifact().isSnapshot()) {
+            try {
+                writeMap(id, theHpl);
+            } catch (IOException x) {
+                getLog().error(x);
+            }
         }
         return theHpl;
     }
@@ -54,18 +57,22 @@ public class TestHplMojo extends HplMojo {
     }
 
     static /*@CheckForNull*/ File readMap(String id) throws IOException {
-        String path = loadMap(mapFile()).getProperty(id);
-        if (path == null) {
-            return null;
+        for (Map.Entry<Object,Object> entry : loadMap(mapFile()).entrySet()) {
+            if (entry.getValue().equals(id)) {
+                String path = (String) entry.getKey();
+                File f = new File(path);
+                if (f.isFile()) {
+                    return f;
+                }
+            }
         }
-        File f = new File(path);
-        return f.isFile() ? f : null;
+        return null;
     }
 
     private void writeMap(String id, File theHpl) throws IOException {
         File mapFile = mapFile();
         Properties p = loadMap(mapFile());
-        p.setProperty(id, theHpl.getAbsolutePath());
+        p.setProperty(theHpl.getAbsolutePath(), id);
         OutputStream os = new FileOutputStream(mapFile);
         try {
             p.store(os, "List of development files for Jenkins plugins that have been built.");
