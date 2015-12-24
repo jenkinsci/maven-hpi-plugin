@@ -29,6 +29,7 @@ public class CheckForHostingMojo extends AbstractMojo {
 		rules.add(new NoDashPluginOrJenkins());
 		rules.add(new SpecifyLicense());
 		rules.add(new PreferLTS());
+		rules.add(new BadMavenReleasePluginVersion());
 
 		List<VerificationMessage> validationMessages = new ArrayList<VerificationMessage>();
 		for (VerificationRule rule : rules) {
