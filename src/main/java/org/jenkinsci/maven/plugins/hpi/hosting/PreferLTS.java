@@ -9,14 +9,14 @@ public class PreferLTS implements VerificationRule {
 		MavenProject jenkinsParent = findJenkinsParentPom(project);
 		if (jenkinsParent == null) {
 			return new VerificationMessage(
-					"Your plugin doesn't seem to have the Jenkins parent pom in its POM hierarchy, "
-							+ "it's generally not a normal situation",
+					"Your plugin doesn't seem to have the Jenkins parent pom in its POM hierarchy. "
+							+ "Jenkins plugins generally inherit from the Jenkins parent POM.",
 					Severity.WARNING);
 		}
 		System.out.println(jenkinsParent);
 		if (jenkinsParent.getVersion().split("\\.").length != 3) {
-			return new VerificationMessage("Your plugin does not seem to have a LTS Jenkins release. In general "
-					+ "it's preferrable to use a LTS version as parent version.",
+			return new VerificationMessage("Your plugin does not seem to have a LTS Jenkins release. In general, "
+					+ "it's preferrable to use an LTS version as parent version.",
 					Severity.INFO);
 		}
 		return null;
