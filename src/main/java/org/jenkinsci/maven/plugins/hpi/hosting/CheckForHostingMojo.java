@@ -26,7 +26,7 @@ public class CheckForHostingMojo extends AbstractMojo {
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		// TODO : inject?
 		List<VerificationRule> rules = new ArrayList<VerificationRule>();
-		rules.add(new NoDashPluginOrJenkins());
+		rules.add(new BasicAttributesCheck());
 		rules.add(new SpecifyLicense());
 		rules.add(new PreferLTS());
 		rules.add(new BadMavenReleasePluginVersion());
