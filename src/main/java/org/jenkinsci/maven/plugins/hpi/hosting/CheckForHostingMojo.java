@@ -45,7 +45,7 @@ public class CheckForHostingMojo extends AbstractMojo {
 	private void displayMessages(List<VerificationMessage> validationMessages) {
 		if (!validationMessages.isEmpty()) {
 			getLog().info("There were some issues found during the verification of your plugin. Please refer to "
-					+ HOSTING_JIRA_PROJECT
+					+ HOSTING_WIKI_PAGE
 					+ " and/or the jenkinsci-dev ML to get help if you don't understand the following message(s).");
 		}
 		else {
