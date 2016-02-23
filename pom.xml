@@ -118,9 +118,9 @@
       <version>2.2.0</version>
     </dependency>
     <dependency>
-      <groupId>org.mortbay.jetty</groupId>
+      <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-maven-plugin</artifactId>
-      <version>8.1.16.v20140903</version>
+      <version>9.2.15.v20160210</version>
     </dependency>
     <dependency>
       <groupId>net.java.sezpoz</groupId>
