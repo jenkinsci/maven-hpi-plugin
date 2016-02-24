@@ -450,16 +450,6 @@ public class RunMojo extends AbstractJettyMojo {
         HashLoginService hashLoginService = (new HashLoginService("Jenkins Realm"));
         hashLoginService.setConfig(System.getProperty("jetty.home", "work") + "/etc/realm.properties");
         getWebAppConfig().getSecurityHandler().setLoginService(hashLoginService);
-
-        // use a bigger buffer as Stapler traces can get pretty large on deeply nested URL
-        for (Connector con : server.getConnectors()) {
-            for (ConnectionFactory cf : con.getConnectionFactories()) {
-                if (cf instanceof HttpConnectionFactory) {
-                    HttpConnectionFactory hcf = (HttpConnectionFactory) cf;
-                    hcf.getHttpConfiguration().setResponseHeaderSize(12*1024);
-                }
-            }
-        }
     }
 
     private static final String VERSION_PATH = "META-INF/maven/org.jenkins-ci.main/jenkins-war/pom.properties";
@@ -525,6 +515,18 @@ public class RunMojo extends AbstractJettyMojo {
     }
 
     public void configureScanner() throws MojoExecutionException {
+        // use a bigger buffer as Stapler traces can get pretty large on deeply nested URL
+        // this can only be done after server.start() is called, which happens in AbstractJettyMojo.startJetty()
+        // and this configureScanner method is one of the few places that are run afterward.
+        for (Connector con : server.getConnectors()) {
+            for (ConnectionFactory cf : con.getConnectionFactories()) {
+                if (cf instanceof HttpConnectionFactory) {
+                    HttpConnectionFactory hcf = (HttpConnectionFactory) cf;
+                    hcf.getHttpConfiguration().setResponseHeaderSize(12*1024);
+                }
+            }
+        }
+
         setUpScanList();
 
         scannerListeners = new ArrayList<Scanner.BulkListener>();
