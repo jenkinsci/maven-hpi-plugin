@@ -63,73 +63,73 @@ import org.mortbay.jetty.plugin.SystemProperty;
  */
 public abstract class AbstractJettyMojo extends AbstractMojo
 {
-
-
+  
+    
     /**
      * Whether or not to include dependencies on the plugin's classpath with &lt;scope&gt;provided&lt;/scope&gt;
      * Use WITH CAUTION as you may wind up with duplicate jars/classes.
-     *
+     * 
      * @since jetty-7.5.2
      * @parameter  default-value="false"
      */
     @Parameter(defaultValue = "false")
     protected boolean useProvidedScope;
-
-
+    
+    
     /**
      * List of goals that are NOT to be used
-     *
+     * 
      * @since jetty-7.5.2
      * @parameter
      */
     @Parameter
     protected String[] excludedGoals;
+    
 
-
-
+    
     /**
      * List of connectors to use. If none are configured
      * then the default is a single SelectChannelConnector at port 8080. You can
      * override this default port number by using the system property jetty.port
      * on the command line, eg:  mvn -Djetty.port=9999 jetty:run. Consider using instead
      * the &lt;jettyXml&gt; element to specify external jetty xml config file. 
-     *
-     * @parameter
+     * 
+     * @parameter 
      */
     @Parameter
     protected Connector[] connectors;
-
-
+    
+    
     /**
      * List of other contexts to set up. Consider using instead
      * the &lt;jettyXml&gt; element to specify external jetty xml config file. 
      * Optional.
-     *
-     *
+     * 
+     * 
      * @parameter
      */
     @Parameter
     protected ContextHandler[] contextHandlers;
-
-
+    
+    
     /**
      * List of security realms to set up. Consider using instead
      * the &lt;jettyXml&gt; element to specify external jetty xml config file. 
      * Optional.
-     *
-     *
+     * 
+     * 
      * @parameter
      */
     @Parameter
     protected LoginService[] loginServices;
-
+    
 
 
     /**
      * A RequestLog implementation to use for the webapp at runtime.
      * Consider using instead the &lt;jettyXml&gt; element to specify external jetty xml config file. 
      * Optional.
-     *
+     * 
      *
      * @parameter
      */
@@ -143,7 +143,7 @@ public abstract class AbstractJettyMojo extends AbstractMojo
      * Use any of its setters to configure the webapp. This is the preferred and most
      * flexible method of configuration, rather than using the (deprecated) individual
      * parameters like "tmpDirectory", "contextPath" etc.
-     *
+     * 
      * @parameter alias="webAppConfig"
      */
     @Parameter
@@ -183,32 +183,32 @@ public abstract class AbstractJettyMojo extends AbstractMojo
      * The interval in seconds to scan the webapp for changes 
      * and restart the context if necessary. Ignored if reload
      * is enabled. Disabled by default.
-     *
+     * 
      * @parameter expression="${jetty.scanIntervalSeconds}" default-value="0"
      * @required
      */
     @Parameter(defaultValue = "${jetty.scanIntervalSeconds}")
     protected int scanIntervalSeconds;
-
-
+    
+    
     /**
      * reload can be set to either 'automatic' or 'manual'
      *
      * if 'manual' then the context can be reloaded by a linefeed in the console
      * if 'automatic' then traditional reloading on changed files is enabled.
-     *
+     * 
      * @parameter expression="${jetty.reload}" default-value="automatic"
      */
     @Parameter(defaultValue = "${jetty.reload}")
     protected String reload = "automatic";
-
+    
     /**
      * File containing system properties to be set before execution
      *
      * Note that these properties will NOT override System properties
      * that have been set on the command line, by the JVM, or directly 
      * in the POM via systemProperties. Optional.
-     *
+     * 
      * @parameter expression="${jetty.systemPropertiesFile}"
      */
     @Parameter(defaultValue = "${jetty.systemPropertiesFile}")
@@ -224,14 +224,14 @@ public abstract class AbstractJettyMojo extends AbstractMojo
      */
     @Parameter
     protected SystemProperties systemProperties;
-
-
-
+    
+    
+    
     /**
      * Comma separated list of a jetty xml configuration files whose contents 
      * will be applied before any plugin configuration. Optional.
-     *
-     *
+     * 
+     * 
      * @parameter alias="jettyConfig"
      */
     @Parameter(alias = "jettyConfig")
@@ -241,7 +241,7 @@ public abstract class AbstractJettyMojo extends AbstractMojo
     /**
      * Port to listen to stop jetty on executing -DSTOP.PORT=&lt;stopPort&gt; 
      * -DSTOP.KEY=&lt;stopKey&gt; -jar start.jar --stop
-     *
+     * 
      * @parameter
      */
     @Parameter
@@ -250,7 +250,7 @@ public abstract class AbstractJettyMojo extends AbstractMojo
     /**
      * Key to provide when stopping jetty on executing java -DSTOP.KEY=&lt;stopKey&gt; 
      * -DSTOP.PORT=&lt;stopPort&gt; -jar start.jar --stop
-     *
+     * 
      * @parameter
      */
     @Parameter
@@ -267,26 +267,26 @@ public abstract class AbstractJettyMojo extends AbstractMojo
      * processes in an automated build environment. This can be facilitated by setting
      * daemon to true.
      * </p>
-     *
+     * 
      * @parameter expression="${jetty.daemon}" default-value="false"
      */
     @Parameter (defaultValue = "${jetty.daemon}")
     protected boolean daemon;
-
-    /**
+    
+    /**  
      * Skip this mojo execution.
-     *
+     * 
      * @parameter expression="${jetty.skip}" default-value="false"
      */
     @Parameter(defaultValue = "${jetty.skip}")
     protected boolean skip;
 
-
+    
     /**
      * Location of a context xml configuration file whose contents
      * will be applied to the webapp AFTER anything in &lt;webApp&gt;.Optional.
-     *
-     *
+     * 
+     * 
      * @parameter alias="webAppXml"
      */
     @Parameter(alias="webAppXml")
@@ -385,7 +385,7 @@ public abstract class AbstractJettyMojo extends AbstractMojo
         if (isExcluded(execution.getMojoDescriptor().getGoal()))
         {
             getLog().info("The goal \""+execution.getMojoDescriptor().getFullGoalName()+
-                    "\" has been made unavailable for this web application by an <excludedGoal> configuration.");
+                          "\" has been made unavailable for this web application by an <excludedGoal> configuration.");
             return;
         }
 
