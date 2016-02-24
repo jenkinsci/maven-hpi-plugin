@@ -151,34 +151,6 @@ public abstract class AbstractJettyMojo extends AbstractMojo
 
 
     /**
-     * The context path for the webapp. Defaults to the
-     * name of the webapp's artifact.
-     *
-     * @deprecated Use &lt;webApp&gt;&lt;contextPath&gt; instead.
-     * @parameter expression="/${project.artifactId}"
-     * @required
-     * @readonly
-     */
-    @Parameter(readonly = true, required = true, defaultValue = "/${project.artifactId}")
-    protected String contextPath;
-
-
-    /**
-     * The temporary directory to use for the webapp.
-     * Defaults to target/tmp.  
-     *
-     * @deprecated Use %lt;webApp&gt;&lt;tempDirectory&gt; instead.
-     * @parameter expression="${project.build.directory}/tmp"
-     * @required
-     * @readonly
-     */
-    @Deprecated
-    @Parameter(defaultValue = "${project.build.directory}/tmp", required = true, readonly = true)
-    protected File tmpDirectory;
-
-
-
-    /**
      * The interval in seconds to scan the webapp for changes 
      * and restart the context if necessary. Ignored if reload
      * is enabled. Disabled by default.
