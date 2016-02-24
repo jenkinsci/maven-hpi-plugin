@@ -16,7 +16,7 @@
 //  ========================================================================
 //
 
-package org.eclipse.jetty.maven.plugin;
+package org.jenkinsci.maven.plugins.hpi;
 
 import java.io.IOException;
 
