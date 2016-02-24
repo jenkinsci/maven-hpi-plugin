@@ -1,0 +1,3 @@
+# Jetty source files come with lots of random trailing whitespace
+# and we need to preserve them as-is to keep Jetty upgrade manageable
+trim_trailing_whitespace = false
