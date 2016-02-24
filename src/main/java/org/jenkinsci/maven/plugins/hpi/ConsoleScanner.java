@@ -15,11 +15,9 @@
 /**
  * 
  */
-package org.mortbay.jetty.plugin;
+package org.jenkinsci.maven.plugins.hpi;
 
 import java.io.IOException;
-
-import org.mortbay.jetty.plugin.AbstractJettyMojo;
 
 public class ConsoleScanner extends Thread 
 {

@@ -14,7 +14,7 @@
 //========================================================================
 
 
-package org.mortbay.jetty.plugin;
+package org.jenkinsci.maven.plugins.hpi;
 
 
 import java.io.File;
@@ -39,7 +39,6 @@ import org.codehaus.plexus.util.FileUtils;
 import org.eclipse.jetty.security.LoginService;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.RequestLog;
-import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ShutdownMonitor;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
@@ -47,7 +46,11 @@ import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.util.Scanner;
 import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.xml.XmlConfiguration;
-
+import org.mortbay.jetty.plugin.JettyServer;
+import org.mortbay.jetty.plugin.JettyWebAppContext;
+import org.mortbay.jetty.plugin.PluginLog;
+import org.mortbay.jetty.plugin.SystemProperties;
+import org.mortbay.jetty.plugin.SystemProperty;
 
 
 /**
