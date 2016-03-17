@@ -420,7 +420,7 @@ public class RunMojo extends AbstractJettyMojo {
         hpl.setLog(getLog());
         hpl.pluginName = getProject().getName();
         hpl.warSourceDirectory = warSourceDirectory;
-        hpl.scopeFilter = new ScopeArtifactFilter(dependencyResolution);
+        hpl.scopeFilter = new ScopeArtifactFilter("runtime");
         hpl.projectBuilder = this.projectBuilder;
         hpl.localRepository = this.localRepository;
         hpl.jenkinsCoreId = this.jenkinsCoreId;
