@@ -47,6 +47,11 @@ public class TestInsertionMojo extends AbstractJenkinsMojo {
     }
 
     public void execute() throws MojoExecutionException, MojoFailureException {
+        if (!project.getPackaging().equals("hpi")) {
+            getLog().info("Skipping " + project.getName() + " because it's not <packaging>hpi</packaging>");
+            return;
+        }
+        
         if (disabledTestInjection) {
             getLog().info("Skipping auto-test generation");
             return;
