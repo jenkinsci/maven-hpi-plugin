@@ -1,6 +1,8 @@
 Maven plugin to build Jenkins plugins.
 See the [Extend Jenkins](https://wiki.jenkins-ci.org/display/JENKINS/Extend+Jenkins) wiki page for details.
 
+[Mojo documentation](http://jenkinsci.github.io/maven-hpi-plugin/)
+
 [![Build Status](https://jenkins.ci.cloudbees.com/job/plugins/job/maven-hpi-plugin/badge/icon)](https://jenkins.ci.cloudbees.com/job/plugins/job/maven-hpi-plugin/)
 
 Before releasing, to sanity test, try
