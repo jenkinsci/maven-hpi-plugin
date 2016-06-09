@@ -3,6 +3,7 @@
   <id>hudson-plugin</id>
   <sources>
     <source>src/main/java/HelloWorldBuilder.java</source>
+    <source>src/main/java/HelloWorldStep.java</source>
   </sources>
   <resources>
     <resource>pom.xml</resource>
