@@ -49,7 +49,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -463,9 +462,9 @@ public class RunMojo extends AbstractJettyMojo {
             if (a.getGroupId().equals("org.jenkins-ci.main") && a.getArtifactId().equals("jenkins-core")) {
                 File coreBasedir = TestHplMojo.readMap(a.getId());
                 if (coreBasedir != null) {
-                    List<File> additions = Arrays.asList(new File(coreBasedir, "src/main/resources"), new File(coreBasedir, "target/classes"));
-                    getLog().info("Will load directly from " + additions);
-                    getWebAppConfig().setWebInfLib(additions);
+                    String extraCP = new File(coreBasedir, "src/main/resources").toURI() + "," + new File(coreBasedir, "target/classes").toURI();
+                    getLog().info("Will load directly from " + extraCP);
+                    getWebAppConfig().setExtraClasspath(extraCP);
                 }
             }
         }
@@ -658,8 +657,9 @@ public class RunMojo extends AbstractJettyMojo {
 
                 @Override
                 public void addClassPath(String classPath) throws IOException {
-                    if (exclusionPattern.matcher(classPath).find())
+                    if (exclusionPattern != null && exclusionPattern.matcher(classPath).find()) {
                         return;
+                    }
                     super.addClassPath(classPath);
                 }
 
