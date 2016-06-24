@@ -1044,7 +1044,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         }
 
         // check any "provided" scope plugin dependencies that are probably not what the user intended.
-        // see http://www.nabble.com/Classloading-problem-when-referencing-classes-from-another-plugin-during-the-initialization-phase-of-a-plugin-%28ClassicPluginStrategy%29-td25426117.html
+        // see http://jenkins-ci.361315.n4.nabble.com/Classloading-problem-when-referencing-classes-from-another-plugin-during-the-initialization-phase-of-td394967.html
         for (Artifact a : (Collection<Artifact>)project.getDependencyArtifacts())
             if ("provided".equals(a.getScope()) && wrap(a).isPlugin())
                 throw new MojoExecutionException(a.getId()+" is marked as 'provided' scope dependency, but it should be the 'compile' scope.");

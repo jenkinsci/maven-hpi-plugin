@@ -1,54 +1,103 @@
+//
+//  ========================================================================
+//  Copyright (c) 1995-2016 Mort Bay Consulting Pty. Ltd.
+//  ------------------------------------------------------------------------
+//  All rights reserved. This program and the accompanying materials
+//  are made available under the terms of the Eclipse Public License v1.0
+//  and Apache License v2.0 which accompanies this distribution.
+//
+//      The Eclipse Public License is available at
+//      http://www.eclipse.org/legal/epl-v10.html
+//
+//      The Apache License v2.0 is available at
+//      http://www.opensource.org/licenses/apache2.0.php
+//
+//  You may elect to redistribute this code under either of these licenses.
+//  ========================================================================
+//
+
 package org.jenkinsci.maven.plugins.hpi;
 
-import org.eclipse.jetty.util.Scanner;
-
 import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
 
-public class ConsoleScanner extends Thread {
 
+
+
+/**
+ * ConsoleScanner
+ *
+ * Read input from stdin
+ */
+public class ConsoleScanner extends Thread 
+{
+    
     private final AbstractJettyMojo mojo;
-    private final Scanner dummy = new Scanner();
-
-    public ConsoleScanner(AbstractJettyMojo mojo) {
+    
+    
+    
+    
+    
+    /**
+     * @param mojo
+     */
+    public ConsoleScanner(AbstractJettyMojo mojo) 
+    {
         this.mojo = mojo;
         setName("Console scanner");
         setDaemon(true);
     }
-
-    public void run() {
-
-        try
+    
+    
+    
+    
+    /** 
+     * @see java.lang.Thread#run()
+     */
+    public void run() 
+    {  
+        try 
         {
-            while (true)
+            while (true) 
             {
                 checkSystemInput();
                 getSomeSleep();
             }
-        }
-        catch (IOException e)
+        } 
+        catch (IOException e) 
         {
             mojo.getLog().warn(e);
         }
     }
-
-    private void getSomeSleep() {
-        try
+    
+    
+    
+    
+    /**
+     * 
+     */
+    private void getSomeSleep() 
+    {
+        try 
         {
             Thread.sleep(500);
-        }
-        catch (InterruptedException e)
+        } 
+        catch (InterruptedException e) 
         {
             mojo.getLog().debug(e);
         }
     }
-
-    private void checkSystemInput() throws IOException {
-
+    
+    
+    
+    
+    /**
+     * @throws IOException
+     */
+    private void checkSystemInput() throws IOException 
+    {     
         while (System.in.available() > 0) {
             int inputByte = System.in.read();
-            if (inputByte >= 0)
+            if (inputByte >= 0) 
             {
                 char c = (char)inputByte;
                 if (c == '\n') {
@@ -57,46 +106,56 @@ public class ConsoleScanner extends Thread {
             }
         }
     }
-
-
+    
+    
+    
+    
     /**
      * Skip buffered bytes of system console.
      */
-    private void clearInputBuffer() {
-
-        try {
+    private void clearInputBuffer() 
+    {
+        try
+        {
             while (System.in.available() > 0)
             {
                 // System.in.skip doesn't work properly. I don't know why
                 long available = System.in.available();
-                for (int i = 0; i < available; i++) {
+                for (int i = 0; i < available; i++)
+                {
                     if (System.in.read() == -1)
                     {
                         break;
                     }
                 }
             }
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             mojo.getLog().warn("Error discarding console input buffer", e);
-        }
-
+        }      
     }
-
-    private void restartWebApp() {
+    
+    
+    
+    
+    /**
+     * 
+     */
+    private void restartWebApp()
+    {
         try
         {
-            for (Scanner.BulkListener sc : (List<Scanner.BulkListener>)mojo.getScannerListeners()) {
-                sc.filesChanged(Collections.<String>emptyList());
-            }
-
+            mojo.restartWebApp(false);
             // Clear input buffer to discard anything entered on the console
             // while the application was being restarted.
             clearInputBuffer();
         }
         catch (Exception e)
         {
-            mojo.getLog().error("Error reconfiguring/restarting webapp after a new line on the console", e);
+            mojo.getLog().error(
+                            "Error reconfiguring/restarting webapp after a new line on the console",
+                            e);
         }
     }
 }

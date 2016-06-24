@@ -9,7 +9,7 @@
 
   <groupId>org.jenkins-ci.tools</groupId>
   <artifactId>maven-hpi-plugin</artifactId>
-  <version>1.116-SNAPSHOT</version>
+  <version>1.118-SNAPSHOT</version>
   <packaging>maven-plugin</packaging>
 
   <name>Maven Jenkins Plugin</name>
@@ -51,7 +51,7 @@
     <dollar>$</dollar>
     <openbracket>{</openbracket>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <java.level>6</java.level>
+    <java.level>7</java.level>
   </properties>
 
   <repositories>
@@ -71,7 +71,7 @@
     <dependency>
       <groupId>org.apache.maven.plugin-tools</groupId>
       <artifactId>maven-plugin-annotations</artifactId>
-      <version>3.2</version>
+      <version>3.4</version>
       <!-- annotations are not needed for plugin execution, so exclude using provided scope -->
       <scope>provided</scope>
     </dependency>
@@ -118,9 +118,9 @@
       <version>2.2.0</version>
     </dependency>
     <dependency>
-      <groupId>org.mortbay.jetty</groupId>
+      <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-maven-plugin</artifactId>
-      <version>8.1.16.v20140903</version>
+      <version>9.2.15.v20160210</version>
     </dependency>
     <dependency>
       <groupId>net.java.sezpoz</groupId>
@@ -243,7 +243,7 @@
       </plugin>
       <plugin>
         <artifactId>maven-plugin-plugin</artifactId>
-        <version>3.2</version>
+        <version>3.4</version>
         <configuration>
           <goalPrefix>hpi</goalPrefix>
           <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
@@ -335,7 +335,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-plugin-plugin</artifactId>
-        <version>3.2</version>
+        <version>3.4</version>
       </plugin>
     </plugins>
   </reporting>

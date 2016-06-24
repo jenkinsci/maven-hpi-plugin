@@ -32,15 +32,17 @@ import org.apache.maven.plugins.annotations.Execute;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectBuilder;
+import org.eclipse.jetty.maven.plugin.JettyWebAppContext;
+import org.eclipse.jetty.maven.plugin.MavenServerConnector;
 import org.eclipse.jetty.security.HashLoginService;
+import org.eclipse.jetty.server.ConnectionFactory;
 import org.eclipse.jetty.server.Connector;
-import org.eclipse.jetty.server.nio.SelectChannelConnector;
+import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.util.Scanner;
 import org.eclipse.jetty.webapp.WebAppClassLoader;
 import org.eclipse.jetty.webapp.WebAppContext;
-import org.mortbay.jetty.plugin.JettyServer;
-import org.mortbay.jetty.plugin.JettyWebAppContext;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -49,6 +51,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -142,7 +145,7 @@ public class RunMojo extends AbstractJettyMojo {
      * If connectors are configured in the Mojo, that'll take precedence.
      */
     @Parameter(property = "port")
-    protected String defaultPort;
+    protected int defaultPort;
 
     /**
      * If true, the context will be restarted after a line feed on
@@ -207,6 +210,18 @@ public class RunMojo extends AbstractJettyMojo {
     private Map<String,String> loggers;
 
     private Collection<Logger> loggerReferences; // just to prevent GC
+
+    /**
+     * The context path for the webapp. Defaults to the
+     * name of the webapp's artifact.
+     *
+     * @deprecated Use &lt;webApp&gt;&lt;contextPath&gt; instead.
+     * @parameter expression="/${project.artifactId}"
+     * @required
+     * @readonly
+     */
+    @Parameter(readonly = true, required = true, defaultValue = "/${project.artifactId}")
+    protected String contextPath;
 
     public void execute() throws MojoExecutionException, MojoFailureException {
         getProject().setArtifacts(resolveDependencies(dependencyResolution));
@@ -418,7 +433,7 @@ public class RunMojo extends AbstractJettyMojo {
         hpl.setLog(getLog());
         hpl.pluginName = getProject().getName();
         hpl.warSourceDirectory = warSourceDirectory;
-        hpl.scopeFilter = new ScopeArtifactFilter(dependencyResolution);
+        hpl.scopeFilter = new ScopeArtifactFilter("runtime");
         hpl.projectBuilder = this.projectBuilder;
         hpl.localRepository = this.localRepository;
         hpl.jenkinsCoreId = this.jenkinsCoreId;
@@ -435,7 +450,9 @@ public class RunMojo extends AbstractJettyMojo {
 
     public void configureWebApplication() throws Exception {
         // Jetty tries to do this in WebAppContext.resolveWebApp but it failed to delete the directory.
-        File extractedWebAppDir= new File(getTmpDirectory(), "webapp");
+        File t = webApp.getTempDirectory();
+        if (t==null)    t = new File(getProject().getBuild().getDirectory(),"tmp");
+        File extractedWebAppDir= new File(t, "webapp");
         if (isExtractedWebAppDirStale(extractedWebAppDir, webAppFile)) {
             FileUtils.deleteDirectory(extractedWebAppDir);
         }
@@ -513,6 +530,7 @@ public class RunMojo extends AbstractJettyMojo {
         getLog().info(extractedWebAppDir + " already up to date with respect to " + webApp);
         return false;
     }
+
     private String loadVersion(InputStream is) throws IOException {
         Properties props = new Properties();
         props.load(is);
@@ -520,10 +538,22 @@ public class RunMojo extends AbstractJettyMojo {
     }
 
     public void configureScanner() throws MojoExecutionException {
-        setUpScanList(new ArrayList<File>());
+        // use a bigger buffer as Stapler traces can get pretty large on deeply nested URL
+        // this can only be done after server.start() is called, which happens in AbstractJettyMojo.startJetty()
+        // and this configureScanner method is one of the few places that are run afterward.
+        for (Connector con : server.getConnectors()) {
+            for (ConnectionFactory cf : con.getConnectionFactories()) {
+                if (cf instanceof HttpConnectionFactory) {
+                    HttpConnectionFactory hcf = (HttpConnectionFactory) cf;
+                    hcf.getHttpConfiguration().setResponseHeaderSize(12*1024);
+                }
+            }
+        }
 
-        ArrayList<Scanner.BulkListener> listeners = new ArrayList<Scanner.BulkListener>();
-        listeners.add(new Scanner.BulkListener() {
+        setUpScanList();
+
+        scannerListeners = new ArrayList<Scanner.BulkListener>();
+        scannerListeners.add(new Scanner.BulkListener() {
             public void filesChanged(List<String> changes) {
                 try {
                     restartWebApp(changes.contains(getProject().getFile().getCanonicalPath()));
@@ -532,40 +562,49 @@ public class RunMojo extends AbstractJettyMojo {
                 }
             }
         });
-        setScannerListeners(listeners);
-
     }
 
     @Override
     public void restartWebApp(boolean reconfigureScanner) throws Exception {
-        getLog().info("Restarting webapp ...");
+        getLog().info("restarting "+webApp);
         getLog().debug("Stopping webapp ...");
-        getWebAppConfig().stop();
+        webApp.stop();
         getLog().debug("Reconfiguring webapp ...");
 
         checkPomConfiguration();
+        configureWebApplication();
 
         // check if we need to reconfigure the scanner,
         // which is if the pom changes
-        if (reconfigureScanner) {
+        if (reconfigureScanner)
+        {
             getLog().info("Reconfiguring scanner after change to pom.xml ...");
             generateHpl(); // regenerate hpl if POM changes.
-            ArrayList<File> scanList = getScanList();
+
             scanList.clear();
-            setUpScanList(scanList);
-            getScanner().setScanDirs(scanList);
+            if (webApp.getDescriptor() != null)
+                scanList.add(new File(webApp.getDescriptor()));
+            if (webApp.getJettyEnvXml() != null)
+                scanList.add(new File(webApp.getJettyEnvXml()));
+            scanList.add(project.getFile());
+            if (webApp.getTestClasses() != null)
+                scanList.add(webApp.getTestClasses());
+            if (webApp.getClasses() != null)
+            scanList.add(webApp.getClasses());
+            scanList.addAll(webApp.getWebInfLib());
+            scanner.setScanDirs(scanList);
         }
 
         getLog().debug("Restarting webapp ...");
-        getWebAppConfig().start();
-        getLog().info("Restart completed.");
+        webApp.start();
+        getLog().info("Restart completed at " + new Date().toString());
     }
 
-    private void setUpScanList(ArrayList<File> scanList) {
+    private void setUpScanList() {
+        scanList = new ArrayList<File>();
         scanList.add(getProject().getFile());
         scanList.add(webAppFile);
         scanList.add(new File(getProject().getBuild().getOutputDirectory()));
-        setScanList(scanList);
     }
 
     @Override
@@ -635,19 +674,13 @@ public class RunMojo extends AbstractJettyMojo {
         }
     }
 
-    public JettyServer createServer() throws Exception {
-        return new JettyServer() {
-            @Override
-            public Connector createDefaultConnector(String portnum) throws Exception {
-                if ((portnum == null || portnum.equals("")) && defaultPort != null) {
-                    portnum = defaultPort;
-                }
-                SelectChannelConnector con = (SelectChannelConnector)super.createDefaultConnector(portnum);
-                con.setResponseHeaderSize(12*1024);// use a bigger buffer as Stapler traces can get pretty large on deeply nested URL
-
-                return con;
-            }
-        };
+    @Override
+    public void startJetty() throws MojoExecutionException {
+        if (httpConnector==null && defaultPort!=0) {
+            httpConnector = new MavenServerConnector();
+            httpConnector.setPort(defaultPort);
+        }
+        super.startJetty();
     }
 
     /**
@@ -712,5 +745,14 @@ public class RunMojo extends AbstractJettyMojo {
             );
         }
         throw new MojoExecutionException("Unable to find jenkins.war");
+    }
+
+    protected MavenProject getProject() {
+        return project;
+    }
+
+
+    public WebAppContext getWebAppConfig() {
+        return webApp;
     }
 }
