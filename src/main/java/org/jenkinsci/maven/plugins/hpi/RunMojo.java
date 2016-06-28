@@ -222,6 +222,9 @@ public class RunMojo extends AbstractJettyMojo {
     @Parameter(readonly = true, required = true, defaultValue = "/${project.artifactId}")
     protected String contextPath;
 
+    @Component
+    protected PluginWorkspaceMap pluginWorkspaceMap;
+
     public void execute() throws MojoExecutionException, MojoFailureException {
         getProject().setArtifacts(resolveDependencies(dependencyResolution));
 
@@ -326,7 +329,7 @@ public class RunMojo extends AbstractJettyMojo {
                 if (hpi.getFile().isDirectory())
                     throw new UnsupportedOperationException(hpi.getFile()+" is a directory and not packaged yet. this isn't supported");
 
-                File upstreamHpl = TestHplMojo.readMap(hpi.getId());
+                File upstreamHpl = pluginWorkspaceMap.read(hpi.getId());
                 if (upstreamHpl != null) {
                     copyHpl(upstreamHpl, pluginsDir, a.getArtifactId());
                 } else {
@@ -460,7 +463,7 @@ public class RunMojo extends AbstractJettyMojo {
         getWebAppConfig().setWar(webAppFile.getCanonicalPath());
         for (Artifact a : (Set<Artifact>) project.getArtifacts()) {
             if (a.getGroupId().equals("org.jenkins-ci.main") && a.getArtifactId().equals("jenkins-core")) {
-                File coreBasedir = TestHplMojo.readMap(a.getId());
+                File coreBasedir = pluginWorkspaceMap.read(a.getId());
                 if (coreBasedir != null) {
                     String extraCP = new File(coreBasedir, "src/main/resources").toURI() + "," + new File(coreBasedir, "target/classes").toURI();
                     getLog().info("Will load directly from " + extraCP);
