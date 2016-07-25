@@ -102,7 +102,7 @@ public class JarMojo extends AbstractHpiMojo {
     }
 
     /**
-     * Generates the webapp according to the <tt>mode</tt> attribute.
+     * Generates the webapp according to the {@code mode} attribute.
      *
      * @throws IOException
      * @throws ArchiverException

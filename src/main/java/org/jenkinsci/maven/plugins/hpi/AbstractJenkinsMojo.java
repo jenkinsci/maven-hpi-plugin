@@ -34,7 +34,6 @@ public abstract class AbstractJenkinsMojo extends AbstractMojo {
      * Optional string that represents "groupId:artifactId" of Jenkins core jar.
      * If left unspecified, the default groupId/artifactId pair for Jenkins is looked for.
      *
-     * @parameter
      * @since 1.65
      */
     @Parameter

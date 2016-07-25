@@ -41,9 +41,8 @@ import java.util.Properties;
 
 /**
  * Builds a new plugin template.
- * <p/>
- * <p/>
- * Most of this is really just a rip-off from the <tt>archetype:create</tt> goal,
+ * <p>
+ * Most of this is really just a rip-off from the {@code archetype:create} goal,
  * but since Maven doesn't really let one Mojo calls another Mojo, this turns
  * out to be the easiest.
  *

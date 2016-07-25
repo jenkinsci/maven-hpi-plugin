@@ -28,8 +28,8 @@ import java.util.Properties;
 /**
  * @author <a href="mailto:kenney@neonics.com">Kenney Westerhof</a>
  * @version $Id: PropertyUtils.java 10807 2008-07-14 18:56:05Z btosabre $
- * @todo this is duplicated from the resources plugin - migrate to plexus-utils
  */
+// todo this is duplicated from the resources plugin-migrate to plexus-utils
 public final class PropertyUtils {
     private PropertyUtils() {
         // prevent instantiation
@@ -75,7 +75,7 @@ public final class PropertyUtils {
     /**
      * Retrieves a property value, replacing values like ${token}
      * using the Properties to look them up.
-     * <p/>
+     * <p>
      * It will leave unresolved properties alone, trying for System
      * properties, and implements reparsing (in the case that
      * the value of a property contains a key), and will

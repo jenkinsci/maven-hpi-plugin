@@ -41,7 +41,7 @@ import java.util.Set;
  * into a specified directory.
  *
  * <p>
- * Used to assemble <tt>jenkins.war</tt> by bundling all the necessary plugins.
+ * Used to assemble {@code jenkins.war} by bundling all the necessary plugins.
  *
  * @author Stephen Connolly
  */
