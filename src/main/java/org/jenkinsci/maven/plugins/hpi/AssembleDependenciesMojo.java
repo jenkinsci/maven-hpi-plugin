@@ -42,6 +42,12 @@ public class AssembleDependenciesMojo extends AbstractDependencyGraphTraversingM
     private boolean includesOptional;
 
     /**
+     * Copy files as .jpi instead of .hpi
+     */
+    @Parameter
+    private boolean useJpiExtension;
+
+    /**
      * Scopes to include.
      */
     // skip test scope as that's not meant to be bundled
@@ -99,10 +105,14 @@ public class AssembleDependenciesMojo extends AbstractDependencyGraphTraversingM
                 MavenArtifact hpi = a.getHpi();
                 getLog().debug("Copying " + hpi.getFile());
 
-                FileUtils.copyFile(hpi.getFile(), new File(outputDirectory, hpi.getArtifactId() + ".hpi"));
+                FileUtils.copyFile(hpi.getFile(), new File(outputDirectory, hpi.getArtifactId() + "." + getExtension()));
             } catch (IOException e) {
                 throw new MojoExecutionException("Failed to copy dependency: "+a, e);
             }
         }
+    }
+
+    private String getExtension() {
+        return useJpiExtension ? "jpi" : "hpi";
     }
 }
