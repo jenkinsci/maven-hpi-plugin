@@ -1,18 +1,21 @@
 package org.jenkinsci.maven.plugins.hpi;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.util.List;
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.versioning.ArtifactVersion;
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
+import org.apache.maven.artifact.versioning.OverConstrainedVersionException;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
-import org.apache.maven.project.MavenProject;
-
-import java.io.File;
-import java.io.PrintWriter;
-import java.io.FileOutputStream;
-import java.io.OutputStreamWriter;
-import java.io.FileNotFoundException;
 
 /**
  * Insert default test suite.
@@ -42,14 +45,51 @@ public class TestInsertionMojo extends AbstractJenkinsMojo {
     @Parameter(property = "jelly.requirePI", defaultValue = "true")
     private boolean requirePI;
 
+    /**
+     * Optional string that represents "groupId:artifactId" of the Jenkins test harness.
+     * If left unspecified, the default groupId/artifactId pair for the Jenkins test harness is looked for.
+     *
+     * @since 1.119
+     */
+    @Parameter(defaultValue = "org.jenkins-ci.main:jenkins-test-harness")
+    protected String jenkinsTestHarnessId;
+
     private static String quote(String s) {
         return '"'+s.replace("\\", "\\\\")+'"';
     }
 
     public void execute() throws MojoExecutionException, MojoFailureException {
         if (!project.getPackaging().equals("hpi")) {
-            getLog().info("Skipping " + project.getName() + " because it's not <packaging>hpi</packaging>");
-            return;
+            Artifact jenkinsTestHarness = null;
+            if (jenkinsTestHarnessId != null) {
+                for (Artifact b : (List<Artifact>) project.getTestArtifacts()) {
+                    if (jenkinsTestHarnessId.equals(b.getGroupId() +":"+b.getArtifactId())) {
+                        jenkinsTestHarness = b;
+                        break;
+                    }
+                }
+            }
+            if (jenkinsTestHarness != null) {
+                try {
+                    ArtifactVersion version = jenkinsTestHarness.getSelectedVersion();
+                    if (version == null || version.compareTo(new DefaultArtifactVersion("2.14")) == -1) {
+                        getLog().info(
+                                "Skipping " + project.getName()
+                                        + " because it's not <packaging>hpi</packaging> and the " + jenkinsTestHarnessId
+                                        + ", " + version + ", is less than 2.14");
+                        return;
+                    }
+                } catch (OverConstrainedVersionException e) {
+                    throw new MojoFailureException(
+                            "Build should be failed before we get here if there is an over-constrained version",
+                            e);
+                }
+            } else {
+                getLog().info("Skipping " + project.getName()
+                        + " because it's not <packaging>hpi</packaging> and we could not determine the version of "
+                        + jenkinsTestHarnessId + " used by this project");
+                return;
+            }
         }
         
         if (disabledTestInjection) {
@@ -79,10 +119,11 @@ public class TestInsertionMojo extends AbstractJenkinsMojo {
             w.println("    Map parameters = new HashMap();");
             w.println("    parameters.put(\"basedir\","+quote(project.getBasedir().getAbsolutePath())+");");
             w.println("    parameters.put(\"artifactId\","+quote(project.getArtifactId())+");");
+            w.println("    parameters.put(\"packaging\","+quote(project.getPackaging())+");");
             w.println("    parameters.put(\"outputDirectory\","+quote(project.getBuild().getOutputDirectory())+");");
             w.println("    parameters.put(\"testOutputDirectory\","+quote(project.getBuild().getTestOutputDirectory())+");");
             w.println("    parameters.put(\"requirePI\","+quote(String.valueOf(requirePI))+");");
-            w.println("    return new org.jvnet.hudson.test.PluginAutomaticTestBuilder().build(parameters);");
+            w.println("    return org.jvnet.hudson.test.PluginAutomaticTestBuilder.build(parameters);");
             w.println("  }");
             w.println("}");
             w.close();
