@@ -29,7 +29,7 @@ import java.util.Properties;
  * @author <a href="mailto:kenney@neonics.com">Kenney Westerhof</a>
  * @version $Id: PropertyUtils.java 10807 2008-07-14 18:56:05Z btosabre $
  */
-// todo this is duplicated from the resources plugin-migrate to plexus-utils
+// TODO this is duplicated from the resources plugin-migrate to plexus-utils
 public final class PropertyUtils {
     private PropertyUtils() {
         // prevent instantiation
