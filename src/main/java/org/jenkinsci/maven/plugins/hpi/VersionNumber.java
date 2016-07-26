@@ -46,16 +46,16 @@ import java.util.StringTokenizer;
  * <h2>Special tokens</h2>
  * <p>
  * We allow a component to be not just a number, but also "ea", "ea1", "ea2".
- * "ea" is treated as "ea0", and eaN &lt; M for any M > 0.
+ * "ea" is treated as "ea0", and eaN &lt; M for any M &gt; 0.
  *
  * <p>
- * '*' is also allowed as a component, and '*' > M for any M > 0.
+ * '*' is also allowed as a component, and '*' &gt; M for any M &gt; 0.
  *
  * <p>
  * 'SNAPSHOT' is also allowed as a component, and "N.SNAPSHOT" is interpreted as "N-1.*"
  *
  * <pre>
- * 2.0.* > 2.0.1 > 2.0.1-SNAPSHOT > 2.0.0.99 > 2.0.0 > 2.0.ea > 2.0
+ * 2.0.* &gt; 2.0.1 &gt; 2.0.1-SNAPSHOT &gt; 2.0.0.99 &gt; 2.0.0 &gt; 2.0.ea &gt; 2.0
  * </pre>
  *
  * @author

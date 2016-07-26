@@ -33,7 +33,7 @@ import java.util.Set;
 @Mojo(name="hpl", requiresDependencyResolution = ResolutionScope.RUNTIME)
 public class HplMojo extends AbstractHpiMojo {
     /**
-     * Path to <tt>$JENKINS_HOME</tt>. A .hpl file will be generated to this location.
+     * Path to {@code $JENKINS_HOME}. A .hpl file will be generated to this location.
      * @deprecated Use {@link #jenkinsHome}.
      */
     @Deprecated
@@ -41,7 +41,7 @@ public class HplMojo extends AbstractHpiMojo {
     private File hudsonHome;
 
     /**
-     * Path to <tt>$JENKINS_HOME</tt>. A .hpl file will be generated to this location.
+     * Path to {@code $JENKINS_HOME}. A .hpl file will be generated to this location.
      */
     @Parameter(property = "jenkinsHome")
     private File jenkinsHome;
