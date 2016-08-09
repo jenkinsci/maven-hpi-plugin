@@ -26,7 +26,7 @@ import static org.apache.maven.artifact.Artifact.*;
  *
  * @author Kohsuke Kawaguchi
  */
-public class MavenArtifact {
+public class MavenArtifact implements Comparable<MavenArtifact> {
     public final ArtifactFactory artifactFactory;
     public final MavenProjectBuilder builder;
     public final List<ArtifactRepository> remoteRepositories;
@@ -151,6 +151,11 @@ public class MavenArtifact {
     @Override
     public String toString() {
         return getId();
+    }
+
+    @Override
+    public int compareTo(MavenArtifact o) {
+        return getId().compareTo(o.getId());
     }
 
     /**

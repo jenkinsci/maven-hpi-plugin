@@ -26,8 +26,6 @@ import org.apache.maven.archiver.MavenArchiveConfiguration;
 import org.apache.maven.archiver.MavenArchiver;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
-import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.model.Resource;
 import org.apache.maven.model.Developer;
@@ -35,8 +33,6 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.MavenProjectBuilder;
-import org.apache.maven.shared.artifact.filter.PatternExcludesArtifactFilter;
 import org.codehaus.plexus.archiver.ArchiverException;
 import org.codehaus.plexus.archiver.UnArchiver;
 import org.codehaus.plexus.archiver.jar.Manifest;
@@ -75,6 +71,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Collection;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -457,7 +454,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
     }
 
     protected Set<MavenArtifact> wrap(Iterable<Artifact> artifacts) {
-        Set<MavenArtifact> r = new HashSet<MavenArtifact>();
+        Set<MavenArtifact> r = new TreeSet<>();
         for (Artifact a : artifacts) {
             r.add(wrap(a));
         }
