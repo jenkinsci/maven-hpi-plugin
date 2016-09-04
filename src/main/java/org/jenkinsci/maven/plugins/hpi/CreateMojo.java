@@ -32,8 +32,11 @@ import org.codehaus.plexus.util.StringUtils;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -73,6 +76,9 @@ public class CreateMojo extends AbstractMojo {
 
     @Parameter(property = "version", defaultValue = "1.0-SNAPSHOT")
     private String version;
+
+    @Parameter(property = "includeJavaScript")
+    private String includeJavaScript;
 
     @Parameter(property = "packageName", alias = "package")
     private String packageName;
@@ -119,6 +125,13 @@ public class CreateMojo extends AbstractMojo {
                 packageName = replaceInvalidPackageNameChars(groupId+'.'+artifactId);
             }
 
+            if (includeJavaScript != null && (!includeJavaScript.equals("Y") && !includeJavaScript.equals("n"))) {
+                includeJavaScript = null;
+            }
+            if (includeJavaScript == null) {
+                includeJavaScript = prompter.prompt("Include JavaScript project files?", Arrays.asList("Y", "n"), "Y");
+            }
+
             // TODO: context mojo more appropriate?
             Map<String, String> map = new HashMap<String, String>();
 
@@ -155,19 +168,29 @@ public class CreateMojo extends AbstractMojo {
             File outDir = new File( basedir, artifactId );
             char sep = File.separatorChar;
             File viewDir = new File( outDir, "src"+sep+"main"+sep+"resources"+sep+packageName.replace('.',sep)+sep+"HelloWorldBuilder" );
-            viewDir.mkdirs();
 
-            for( String s : new String[]{"config.jelly","global.jelly","help-name.html","help-useFrench.html"} ) {
-                InputStream in = getClass().getResourceAsStream("/archetype-resources/src/main/resources/HelloWorldBuilder/"+s);
-                FileWriter out = new FileWriter(new File(viewDir, s));
-                out.write(IOUtil.toString(in).replace("@artifactId@", artifactId));
-                in.close();
-                out.close();
+            copyResources(Arrays.asList("config.jelly","global.jelly","help-name.html","help-useFrench.html"),
+                    "/archetype-resources/src/main/resources/HelloWorldBuilder/", viewDir);
+
+            if (includeJavaScript.equals("Y")) {
+                copyResources(Arrays.asList("package.json","gulpfile.js"), "/archetype-resources/", outDir);
+
+                File jsDir = new File(outDir, "src" + sep + "main" + sep + "js");
+                copyResources(Arrays.asList("plugin.js"), "/archetype-resources/src/main/js/", jsDir);
             }
-
-
         } catch (Exception e) {
             throw new MojoExecutionException("Failed to create a new Jenkins plugin",e);
+        }
+    }
+
+    private void copyResources(Collection<String> fileNames, String fromPath, File toDir) throws IOException {
+        toDir.mkdirs();
+        for( String s : fileNames ) {
+            InputStream in = getClass().getResourceAsStream(fromPath + s);
+            FileWriter out = new FileWriter(new File(toDir, s));
+            out.write(IOUtil.toString(in).replace("@artifactId@", artifactId));
+            in.close();
+            out.close();
         }
     }
 
