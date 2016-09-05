@@ -15,6 +15,7 @@
  */
 package org.jenkinsci.maven.plugins.hpi;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.maven.archetype.Archetype;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.repository.ArtifactRepositoryFactory;
@@ -30,6 +31,8 @@ import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.StringUtils;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -48,7 +51,7 @@ public abstract class AbstractCreateMojo extends AbstractMojo {
     private Archetype archetype;
 
     @Component
-    private Prompter prompter;
+    Prompter prompter;
 
     @Component
     private ArtifactRepositoryFactory artifactRepositoryFactory;
@@ -148,9 +151,32 @@ public abstract class AbstractCreateMojo extends AbstractMojo {
                 props.getProperty("artifactId"),
                 props.getProperty("version"), localRepository,
                 archetypeRemoteRepositories, map);
+
+            injectPOMDependencies();
         } catch (Exception e) {
             throw new MojoExecutionException("Failed to create a new Jenkins plugin",e);
         }
+    }
+
+    private void injectPOMDependencies() throws IOException {
+        File pomFile = new File(getOutDir(), "pom.xml");
+        String pomString = FileUtils.readFileToString(pomFile, "UTF-8");
+
+        pomString = pomString.replace("<!-- @DEPENDENCIES_FRAG@ -->", getDependenciesPOMFrag());
+
+        FileUtils.writeStringToFile(pomFile, pomString, "UTF-8");
+    }
+
+    protected String getDependenciesPOMFrag() {
+        return "<!-- If you want to depend on other plugins:\n" +
+                "  <dependencies>\n" +
+                "    <dependency>\n" +
+                "      <groupId>org.jenkins-ci.plugins</groupId>\n" +
+                "      <artifactId>credentials</artifactId>\n" +
+                "      <version>1.9.4</version>\n" +
+                "    </dependency>\n" +
+                "  </dependencies>\n" +
+                "  -->\n";
     }
 
     File getOutDir() {

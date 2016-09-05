@@ -18,6 +18,8 @@ package org.jenkinsci.maven.plugins.hpi;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.codehaus.plexus.components.interactivity.PrompterException;
 
 import java.io.File;
 import java.util.Arrays;
@@ -27,7 +29,19 @@ import java.util.Arrays;
  */
 @Mojo(name="createboext", requiresProject = false)
 public class CreateBOExtMojo extends AbstractCreateMojo {
+
+    @Parameter(property = "blueOceanVersion")
+    String blueOceanVersion;
+
     public void execute() throws MojoExecutionException {
+        if(blueOceanVersion == null) {
+            try {
+                blueOceanVersion = prompter.prompt("Enter the Blue Ocean version");
+            } catch (PrompterException e) {
+                throw new MojoExecutionException("Failed to create a new Jenkins plugin",e);
+            }
+        }
+
         super.execute();
 
         try {
@@ -43,5 +57,16 @@ public class CreateBOExtMojo extends AbstractCreateMojo {
         } catch (Exception e) {
             throw new MojoExecutionException("Failed to create a new Jenkins plugin",e);
         }
+    }
+
+    @Override
+    protected String getDependenciesPOMFrag() {
+        return String.format("<dependencies>\n" +
+                "    <dependency>\n" +
+                "      <groupId>io.jenkins.blueocean</groupId>\n" +
+                "      <artifactId>blueocean</artifactId>\n" +
+                "      <version>%s</version>\n" +
+                "    </dependency>\n" +
+                "  </dependencies>\n", blueOceanVersion);
     }
 }
