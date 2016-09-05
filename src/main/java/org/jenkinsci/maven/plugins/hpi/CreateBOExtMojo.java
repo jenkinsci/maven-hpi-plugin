@@ -15,6 +15,7 @@
  */
 package org.jenkinsci.maven.plugins.hpi;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
 
@@ -22,25 +23,23 @@ import java.io.File;
 import java.util.Arrays;
 
 /**
- * Builds a new plugin template.
- * <p>
- * Most of this is really just a rip-off from the {@code archetype:create} goal,
- * but since Maven doesn't really let one Mojo calls another Mojo, this turns
- * out to be the easiest.
- *
+ * Builds a new Blue Ocean extension plugin template.
  */
-@Mojo(name="create", requiresProject = false)
-public class CreateMojo extends AbstractCreateMojo {
-
+@Mojo(name="createboext", requiresProject = false)
+public class CreateBOExtMojo extends AbstractCreateMojo {
     public void execute() throws MojoExecutionException {
         super.execute();
 
         try {
-            File viewDir = new File(getOutDir(), "src"+sep+"main"+sep+"resources"+sep+packageName.replace('.',sep)+sep+"HelloWorldBuilder" );
+            File outDir = getOutDir();
 
-            copyResources(Arrays.asList("config.jelly","global.jelly","help-name.html","help-useFrench.html"),
-                    "/archetype-resources/src/main/resources/HelloWorldBuilder/", viewDir);
+            // copy view resource files. So far maven archetype doesn't seem to be able to handle it.
+            FileUtils.deleteDirectory(new File(outDir, "src" + sep + "main" + sep + "java"));
 
+            copyResources(Arrays.asList("package.json", "gulpfile.js"), "/archetype-resources/", outDir);
+
+            File jsDir = new File(outDir, "src" + sep + "main" + sep + "js");
+            copyResources(Arrays.asList("plugin.js"), "/archetype-resources/src/main/js/", jsDir);
         } catch (Exception e) {
             throw new MojoExecutionException("Failed to create a new Jenkins plugin",e);
         }
