@@ -34,11 +34,14 @@ public class RecordCoreLocationMojo extends AbstractMojo  {
     @Component
     protected MavenProject project;
 
+    @Component
+    protected PluginWorkspaceMap pluginWorkspaceMap;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         if (project.getArtifact().isSnapshot()) {
             try {
-                TestHplMojo.writeMap(project.getArtifact().getId(), project.getBasedir());
+                pluginWorkspaceMap.write(project.getArtifact().getId(), project.getBasedir());
             } catch (IOException x) {
                 throw new MojoExecutionException("failed to write core location", x);
             }
