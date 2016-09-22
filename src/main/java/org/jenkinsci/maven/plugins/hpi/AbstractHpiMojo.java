@@ -26,8 +26,6 @@ import org.apache.maven.archiver.MavenArchiveConfiguration;
 import org.apache.maven.archiver.MavenArchiver;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
-import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.model.Resource;
 import org.apache.maven.model.Developer;
@@ -35,8 +33,6 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.MavenProjectBuilder;
-import org.apache.maven.shared.artifact.filter.PatternExcludesArtifactFilter;
 import org.codehaus.plexus.archiver.ArchiverException;
 import org.codehaus.plexus.archiver.UnArchiver;
 import org.codehaus.plexus.archiver.jar.Manifest;
@@ -75,6 +71,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Collection;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -204,7 +201,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
     protected String maskClasses;
 
     /**
-     * Like the <tt>maskClasses</tt> parameter, but it applies at the boundary between core and
+     * Like the {@code maskClasses} parameter, but it applies at the boundary between core and
      * all the plugins.
      *
      * <p>
@@ -385,10 +382,10 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
 
     /**
      * Copies webapp webResources from the specified directory.
-     * <p/>
-     * Note that the <tt>webXml</tt> parameter could be null and may
-     * specify a file which is not named <tt>web.xml<tt>. If the file
-     * exists, it will be copied to the <tt>META-INF</tt> directory and
+     * <p>
+     * Note that the {@code webXml} parameter could be null and may
+     * specify a file which is not named {@code web.xml}. If the file
+     * exists, it will be copied to the {@code META-INF} directory and
      * renamed accordingly.
      *
      * @param resource         the resource to copy
@@ -418,10 +415,10 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
 
     /**
      * Copies webapp webResources from the specified directory.
-     * <p/>
-     * Note that the <tt>webXml</tt> parameter could be null and may
-     * specify a file which is not named <tt>web.xml<tt>. If the file
-     * exists, it will be copied to the <tt>META-INF</tt> directory and
+     * <p>
+     * Note that the {@code webXml} parameter could be null and may
+     * specify a file which is not named {@code web.xml}. If the file
+     * exists, it will be copied to the {@code META-INF} directory and
      * renamed accordingly.
      *
      * @param sourceDirectory the source directory
@@ -457,7 +454,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
     }
 
     protected Set<MavenArtifact> wrap(Iterable<Artifact> artifacts) {
-        Set<MavenArtifact> r = new HashSet<MavenArtifact>();
+        Set<MavenArtifact> r = new TreeSet<>();
         for (Artifact a : artifacts) {
             r.add(wrap(a));
         }
@@ -466,9 +463,9 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
 
     /**
      * Builds the webapp for the specified project.
-     * <p/>
+     * <p>
      * Classes, libraries and tld files are copied to
-     * the <tt>webappDirectory</tt> during this phase.
+     * the {@code webappDirectory} during this phase.
      *
      * @param project         the maven project
      * @param webappDirectory
@@ -580,7 +577,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
     }
 
     /**
-     * Unpacks war artifacts into a temporary directory inside <tt>workDirectory</tt>
+     * Unpacks war artifacts into a temporary directory inside {@code workDirectory}
      * named with the name of the war.
      *
      * @param artifact War artifact to unpack.
@@ -638,7 +635,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
     }
 
     /**
-     * Recursively copies contents of <tt>srcDir</tt> into <tt>targetDir</tt>.
+     * Recursively copies contents of {@code srcDir} into {@code targetDir}.
      * This will not overwrite any existing files.
      *
      * @param srcDir    Directory containing unpacked dependent war contents
@@ -734,7 +731,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
      * @throws IllegalArgumentException      if <code>destinationDirectory</code> isn't a directory.
      * @throws java.io.IOException           if <code>source</code> does not exist, the file in
      *                                       <code>destinationDirectory</code> cannot be written to, or an IO error occurs during copying.
-     *                                       <p/>
+     *                                       <p>
      *                                       TO DO: Remove this method when Maven moves to plexus-utils version 1.4
      */
     private static void copyFileToDirectoryIfModified(File source, File destinationDirectory)
@@ -819,7 +816,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
      * @throws IOException                   if <code>source</code> does not exist, <code>destination</code> cannot be
      *                                       written to, or an IO error occurs during copying.
      * @throws java.io.FileNotFoundException if <code>destination</code> is a directory
-     *                                       <p/>
+     *                                       <p>
      *                                       TO DO: Remove this method when Maven moves to plexus-utils version 1.4
      */
     private static void copyFileIfModified(File source, File destination)
@@ -833,7 +830,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
 
     /**
      * Copies a entire directory structure but only source files with timestamp later than the destinations'.
-     * <p/>
+     * <p>
      * Note:
      * <ul>
      * <li>It will include empty directories.

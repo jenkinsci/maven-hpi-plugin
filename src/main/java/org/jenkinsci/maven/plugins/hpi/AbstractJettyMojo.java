@@ -83,7 +83,6 @@ public abstract class AbstractJettyMojo extends AbstractMojo
      * Use WITH CAUTION as you may wind up with duplicate jars/classes.
      * 
      * @since jetty-7.5.2
-     * @parameter  default-value="false"
      */
     @Parameter(defaultValue = "false")
     protected boolean useProvidedScope;
@@ -93,7 +92,6 @@ public abstract class AbstractJettyMojo extends AbstractMojo
      * List of goals that are NOT to be used
      * 
      * @since jetty-7.5.2
-     * @parameter
      */
     @Parameter
     protected String[] excludedGoals;
@@ -105,9 +103,6 @@ public abstract class AbstractJettyMojo extends AbstractMojo
      * List of other contexts to set up. Consider using instead
      * the &lt;jettyXml&gt; element to specify external jetty xml config file. 
      * Optional.
-     * 
-     * 
-     * @parameter
      */
     @Parameter
     protected ContextHandler[] contextHandlers;
@@ -117,9 +112,6 @@ public abstract class AbstractJettyMojo extends AbstractMojo
      * List of security realms to set up. Consider using instead
      * the &lt;jettyXml&gt; element to specify external jetty xml config file. 
      * Optional.
-     * 
-     * 
-     * @parameter
      */
     @Parameter
     protected LoginService[] loginServices;
@@ -129,9 +121,6 @@ public abstract class AbstractJettyMojo extends AbstractMojo
      * A RequestLog implementation to use for the webapp at runtime.
      * Consider using instead the &lt;jettyXml&gt; element to specify external jetty xml config file. 
      * Optional.
-     * 
-     *
-     * @parameter
      */
     @Parameter
     protected RequestLog requestLog;
@@ -142,10 +131,8 @@ public abstract class AbstractJettyMojo extends AbstractMojo
      * Use any of its setters to configure the webapp. This is the preferred and most
      * flexible method of configuration, rather than using the (deprecated) individual
      * parameters like "tmpDirectory", "contextPath" etc.
-     * 
-     * @parameter alias="webAppConfig"
      */
-    @Parameter
+    @Parameter(alias = "webAppConfig")
     protected JettyWebAppContext webApp;
 
 
@@ -154,11 +141,8 @@ public abstract class AbstractJettyMojo extends AbstractMojo
      * The interval in seconds to scan the webapp for changes 
      * and restart the context if necessary. Ignored if reload
      * is enabled. Disabled by default.
-     * 
-     * @parameter expression="${jetty.scanIntervalSeconds}" default-value="0"
-     * @required
      */
-    @Parameter(defaultValue = "${jetty.scanIntervalSeconds}")
+    @Parameter(property = "jetty.scanIntervalSeconds", defaultValue = "0")
     protected int scanIntervalSeconds;
     
     
@@ -167,11 +151,9 @@ public abstract class AbstractJettyMojo extends AbstractMojo
      *
      * if 'manual' then the context can be reloaded by a linefeed in the console
      * if 'automatic' then traditional reloading on changed files is enabled.
-     * 
-     * @parameter expression="${jetty.reload}" default-value="automatic"
      */
-    @Parameter(defaultValue = "${jetty.reload}")
-    protected String reload = "automatic";
+    @Parameter(property = "jetty.reload", defaultValue = "automatic")
+    protected String reload;
     
     
     /**
@@ -180,10 +162,8 @@ public abstract class AbstractJettyMojo extends AbstractMojo
      * Note that these properties will NOT override System properties
      * that have been set on the command line, by the JVM, or directly 
      * in the POM via systemProperties. Optional.
-     * 
-     * @parameter expression="${jetty.systemPropertiesFile}"
      */
-    @Parameter(defaultValue = "${jetty.systemPropertiesFile}")
+    @Parameter(property = "jetty.systemPropertiesFile")
     protected File systemPropertiesFile;
 
     
@@ -193,7 +173,6 @@ public abstract class AbstractJettyMojo extends AbstractMojo
      * that have been set on the command line or by the JVM. They WILL 
      * override System properties that have been set via systemPropertiesFile.
      * Optional.
-     * @parameter
      */
     @Parameter
     protected SystemProperties systemProperties;
@@ -202,9 +181,6 @@ public abstract class AbstractJettyMojo extends AbstractMojo
     /**
      * Comma separated list of a jetty xml configuration files whose contents 
      * will be applied before any plugin configuration. Optional.
-     * 
-     * 
-     * @parameter alias="jettyConfig"
      */
     @Parameter(alias = "jettyConfig")
     protected String jettyXml;
@@ -213,8 +189,6 @@ public abstract class AbstractJettyMojo extends AbstractMojo
     /**
      * Port to listen to stop jetty on executing -DSTOP.PORT=&lt;stopPort&gt; 
      * -DSTOP.KEY=&lt;stopKey&gt; -jar start.jar --stop
-     * 
-     * @parameter
      */
     @Parameter
     protected int stopPort;
@@ -223,18 +197,14 @@ public abstract class AbstractJettyMojo extends AbstractMojo
     /**
      * Key to provide when stopping jetty on executing java -DSTOP.KEY=&lt;stopKey&gt; 
      * -DSTOP.PORT=&lt;stopPort&gt; -jar start.jar --stop
-     * 
-     * @parameter
      */
     @Parameter
     protected String stopKey;
 
     /**
      * Use the dump() facility of jetty to print out the server configuration to logging
-     * 
-     * @parameter expression"${dumponStart}" default-value="false"
      */
-    @Parameter (defaultValue = "${dumponStart}")
+    @Parameter (property = "dumponStart", defaultValue = "false")
     protected boolean dumpOnStart;
     
    
@@ -242,19 +212,14 @@ public abstract class AbstractJettyMojo extends AbstractMojo
 
     /**  
      * Skip this mojo execution.
-     * 
-     * @parameter expression="${jetty.skip}" default-value="false"
      */
-    @Parameter(defaultValue = "${jetty.skip}")
+    @Parameter(property = "jetty.skip", defaultValue = "false")
     protected boolean skip;
 
     
     /**
      * Location of a context xml configuration file whose contents
      * will be applied to the webapp AFTER anything in &lt;webApp&gt;.Optional.
-     * 
-     * 
-     * @parameter alias="webAppXml"
      */
     @Parameter(alias="webAppXml")
     protected String contextXml;
@@ -262,9 +227,6 @@ public abstract class AbstractJettyMojo extends AbstractMojo
 
     /**
      * The maven project.
-     *
-     * @parameter expression="${project}"
-     * @readonly
      */
     @Component
     protected MavenProject project;
@@ -272,27 +234,17 @@ public abstract class AbstractJettyMojo extends AbstractMojo
 
     /**
      * The artifacts for the project.
-     *
-     * @parameter expression="${project.artifacts}"
-     * @readonly
      */
     @Parameter(defaultValue = "${project.artifacts}")
     protected Set projectArtifacts;
 
 
-    /**
-     * @parameter expression="${mojoExecution}" 
-     * @readonly
-     */
     @Parameter(defaultValue = "${mojoExecution}", readonly = true)
     protected org.apache.maven.plugin.MojoExecution execution;
 
 
     /**
      * The artifacts for the plugin itself.
-     *
-     * @parameter expression="${plugin.artifacts}"
-     * @readonly
      */
     @Parameter(defaultValue = "${plugin.artifacts}", readonly = true)
     protected List pluginArtifacts;
@@ -301,8 +253,6 @@ public abstract class AbstractJettyMojo extends AbstractMojo
 
     /**
      * A ServerConnector to use.
-     * 
-     * @parameter
      */
     @Parameter
     protected MavenServerConnector httpConnector;

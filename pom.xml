@@ -9,7 +9,7 @@
 
   <groupId>org.jenkins-ci.tools</groupId>
   <artifactId>maven-hpi-plugin</artifactId>
-  <version>1.118-SNAPSHOT</version>
+  <version>1.120-SNAPSHOT</version>
   <packaging>maven-plugin</packaging>
 
   <name>Maven Jenkins Plugin</name>

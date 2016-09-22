@@ -1,5 +1,6 @@
 package org.jenkinsci.maven.plugins.hpi;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
@@ -33,11 +34,18 @@ public abstract class AbstractJenkinsMojo extends AbstractMojo {
      * Optional string that represents "groupId:artifactId" of Jenkins core jar.
      * If left unspecified, the default groupId/artifactId pair for Jenkins is looked for.
      *
-     * @parameter
      * @since 1.65
      */
     @Parameter
     protected String jenkinsCoreId;
+
+    /**
+     * Optional string that represents the version of Jenkins core to report plugins as requiring.
+     * This parameter is only used when unbundling functionality from Jenkins core and the version specified
+     * will be ignored if older than the autodetected version.
+     */
+    @Parameter
+    private String jenkinsCoreVersionOverride;
 
 
     /**
@@ -75,8 +83,22 @@ public abstract class AbstractJenkinsMojo extends AbstractMojo {
                 match = (a.getGroupId().equals("org.jenkins-ci.main") || a.getGroupId().equals("org.jvnet.hudson.main"))
                      && (a.getArtifactId().equals("jenkins-core") || a.getArtifactId().equals("hudson-core"));
 
-            if (match)
+            if (match) {
+                if (StringUtils.isNotBlank(jenkinsCoreVersionOverride)) {
+                    VersionNumber v1 = new VersionNumber(a.getVersion());
+                    VersionNumber v2 = new VersionNumber(jenkinsCoreVersionOverride);
+                    if (v1.compareTo(v2) == -1) {
+                        return jenkinsCoreVersionOverride;
+                    }
+                    getLog().warn("Ignoring 'jenkinsCoreVersionOverride' of " + jenkinsCoreVersionOverride + " as the "
+                            + "autodetected version, " + a.getVersion() + ", is newer. Please remove the redundant "
+                            + "version override.");
+                }
                 return a.getVersion();
+            }
+        }
+        if (StringUtils.isNotBlank(jenkinsCoreVersionOverride)) {
+            return jenkinsCoreVersionOverride;
         }
         throw new MojoExecutionException("Failed to determine Jenkins version this plugin depends on.");
     }

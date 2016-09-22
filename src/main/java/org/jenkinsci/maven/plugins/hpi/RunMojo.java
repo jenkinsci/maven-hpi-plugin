@@ -97,13 +97,13 @@ public class RunMojo extends AbstractJettyMojo {
     private File webAppFile;
 
     /**
-     * Path to <tt>$JENKINS_HOME</tt>. The launched Jenkins will use this directory as the workspace.
+     * Path to {@code $JENKINS_HOME}. The launched Jenkins will use this directory as the workspace.
      */
     @Parameter(property = "hudsonHome", defaultValue = "${HUDSON_HOME}")
     private File hudsonHome;
 
     /**
-     * Path to <tt>$JENKINS_HOME</tt>. The launched Jenkins will use this directory as the workspace.
+     * Path to {@code $JENKINS_HOME}. The launched Jenkins will use this directory as the workspace.
      */
     @Parameter(property = "jenkinsHome", defaultValue = "${JENKINS_HOME}")
     private File jenkinsHome;
@@ -215,9 +215,6 @@ public class RunMojo extends AbstractJettyMojo {
      * name of the webapp's artifact.
      *
      * @deprecated Use &lt;webApp&gt;&lt;contextPath&gt; instead.
-     * @parameter expression="/${project.artifactId}"
-     * @required
-     * @readonly
      */
     @Parameter(readonly = true, required = true, defaultValue = "/${project.artifactId}")
     protected String contextPath;
