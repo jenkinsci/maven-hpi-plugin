@@ -219,6 +219,9 @@ public class RunMojo extends AbstractJettyMojo {
     @Parameter(readonly = true, required = true, defaultValue = "/${project.artifactId}")
     protected String contextPath;
 
+    @Component
+    protected PluginWorkspaceMap pluginWorkspaceMap;
+
     public void execute() throws MojoExecutionException, MojoFailureException {
         getProject().setArtifacts(resolveDependencies(dependencyResolution));
 
@@ -323,7 +326,12 @@ public class RunMojo extends AbstractJettyMojo {
                 if (hpi.getFile().isDirectory())
                     throw new UnsupportedOperationException(hpi.getFile()+" is a directory and not packaged yet. this isn't supported");
 
-                copyPlugin(hpi.getFile(), pluginsDir, a.getArtifactId());
+                File upstreamHpl = pluginWorkspaceMap.read(hpi.getId());
+                if (upstreamHpl != null) {
+                    copyHpl(upstreamHpl, pluginsDir, a.getArtifactId());
+                } else {
+                    copyPlugin(hpi.getFile(), pluginsDir, a.getArtifactId());
+                }
             }
         } catch (IOException e) {
             throw new MojoExecutionException("Unable to copy dependency plugin",e);
@@ -398,6 +406,13 @@ public class RunMojo extends AbstractJettyMojo {
         }
     }
 
+    private void copyHpl(File src, File pluginsDir, String shortName) throws IOException {
+        File dst = new File(pluginsDir, shortName + ".jpl");
+        getLog().info("Copying snapshot dependency Jenkins plugin " + src);
+        FileUtils.copyFile(src, dst);
+        FileUtils.writeStringToFile(new File(pluginsDir, shortName + ".jpi.pinned"), "pinned");
+    }
+
     /**
      * Create a dot-hpl file.
      *
@@ -443,6 +458,16 @@ public class RunMojo extends AbstractJettyMojo {
         
         super.configureWebApplication();
         getWebAppConfig().setWar(webAppFile.getCanonicalPath());
+        for (Artifact a : (Set<Artifact>) project.getArtifacts()) {
+            if (a.getGroupId().equals("org.jenkins-ci.main") && a.getArtifactId().equals("jenkins-core")) {
+                File coreBasedir = pluginWorkspaceMap.read(a.getId());
+                if (coreBasedir != null) {
+                    String extraCP = new File(coreBasedir, "src/main/resources").toURI() + "," + new File(coreBasedir, "target/classes").toURI();
+                    getLog().info("Will load directly from " + extraCP);
+                    getWebAppConfig().setExtraClasspath(extraCP);
+                }
+            }
+        }
         // cf. https://wiki.jenkins-ci.org/display/JENKINS/Jetty
         HashLoginService hashLoginService = (new HashLoginService("Jenkins Realm"));
         hashLoginService.setConfig(System.getProperty("jetty.home", "work") + "/etc/realm.properties");
@@ -632,8 +657,9 @@ public class RunMojo extends AbstractJettyMojo {
 
                 @Override
                 public void addClassPath(String classPath) throws IOException {
-                    if (exclusionPattern.matcher(classPath).find())
+                    if (exclusionPattern != null && exclusionPattern.matcher(classPath).find()) {
                         return;
+                    }
                     super.addClassPath(classPath);
                 }
 
