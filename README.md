@@ -10,7 +10,7 @@ Before releasing, to sanity test, try
 ```bash
 mvn -Prun-its clean install
 # Find some plugin using the 2.x parent POM and run:
-mvn -f ../some-plugin -Dhpi-plugin.version=1.XXX-SNAPSHOT -Denforcer.fail=false -DskipTests clean package hpi:run
+mvn -f ../some-plugin -Dhpi-plugin.version=1.XXX-SNAPSHOT -Denforcer.fail=false -DskipTests -DjenkinsHome=/tmp/sanity-check-maven-hpi-plugin clean package hpi:run
 ```
 
 
