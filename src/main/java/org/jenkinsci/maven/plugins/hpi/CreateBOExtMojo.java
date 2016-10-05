@@ -66,6 +66,18 @@ public class CreateBOExtMojo extends AbstractCreateMojo {
         } catch (Exception e) {
             throw new MojoExecutionException("Failed to create a new Jenkins plugin",e);
         }
+
+        getLog().info("");
+        getLog().info("");
+        getLog().info("   *********************************************************************************");
+        getLog().info("   *                                                                               *");
+        getLog().info("   *  NOTE: Run the following command to pre-install NPM packages:                 *");
+        getLog().info("   *                                                                               *");
+        getLog().info("   *        npm run dopreinstalls                                                  *");
+        getLog().info("   *                                                                               *");
+        getLog().info("   *********************************************************************************");
+        getLog().info("");
+        getLog().info("");
     }
 
     @Override
