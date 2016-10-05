@@ -1,0 +1,10 @@
+#
+# Extension point implementations in this plugin.
+#
+# This file tells Blue Ocean what Extension Point components are in this
+# plugin + what extension points they implement.
+#
+
+extensions:
+  - component: Usain
+    extensionPoint: jenkins.pipeline.run.result

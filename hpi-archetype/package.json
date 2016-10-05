@@ -8,11 +8,10 @@
     "lint": "gulp lint",
     "lint:fix": "gulp lint --fixLint",
     "bundle": "gulp bundle",
-    "bundle:watch": "gulp bundle:watch"
+    "bundle:watch": "gulp bundle:watch",
+    "doinstalls": "npm install --save @jenkins-cd/design-language@latest @jenkins-cd/js-extensions@latest @jenkins-cd/js-modules@latest @jenkins-cd/sse-gateway@latest --save-dev @jenkins-cd/js-builder@latest @jenkins-cd/js-test@latest"
   },
   "devDependencies": {
-    "@jenkins-cd/js-builder": "latest",
-    "@jenkins-cd/js-test": "latest",
     "babel-eslint": "^6.0.2",
     "babel-plugin-transform-decorators-legacy": "^1.3.4",
     "babel-polyfill": "^6.13.0",
@@ -24,10 +23,12 @@
     "gulp": "^3.9.1"
   },
   "dependencies": {
-    "@jenkins-cd/design-language": "latest",
-    "@jenkins-cd/js-extensions": "latest",
-    "@jenkins-cd/js-modules": "latest",
     "react": "15.1.0",
     "react-dom": "15.1.0"
+  },
+  "jenkinscd": {
+    "import": [
+      "@jenkins-cd/sse-gateway@any"
+    ]
   }
 }

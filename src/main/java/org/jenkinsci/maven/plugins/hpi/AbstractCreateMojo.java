@@ -31,8 +31,7 @@ import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.StringUtils;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -162,9 +161,15 @@ public abstract class AbstractCreateMojo extends AbstractMojo {
         File pomFile = new File(getOutDir(), "pom.xml");
         String pomString = FileUtils.readFileToString(pomFile, "UTF-8");
 
+        pomString = pomString.replace("<!-- @PROPERIES_FRAG@ -->", getPropertiesPOMFrag());
         pomString = pomString.replace("<!-- @DEPENDENCIES_FRAG@ -->", getDependenciesPOMFrag());
 
         FileUtils.writeStringToFile(pomFile, pomString, "UTF-8");
+    }
+
+    protected String getPropertiesPOMFrag() {
+        return "<!-- Baseline Jenkins version you use to build the plugin. Users must have this version or newer to run. -->\n" +
+                "    <jenkins.version>1.625.3</jenkins.version>";
     }
 
     protected String getDependenciesPOMFrag() {
@@ -183,12 +188,37 @@ public abstract class AbstractCreateMojo extends AbstractMojo {
         return new File( basedir, artifactId );
     }
 
-    void copyResources(Collection<String> fileNames, String fromPath, File toDir) throws IOException {
+    void copyTextResources(Collection<String> fileNames, String fromPath, File toDir) throws IOException {
         toDir.mkdirs();
         for( String s : fileNames ) {
-            InputStream in = getClass().getResourceAsStream(fromPath + s);
+            String filePath = fromPath + s;
+            InputStream in = getClass().getResourceAsStream(filePath);
+
+            if (in == null) {
+                getLog().error("Failed to copy file '" + filePath + "'. File cannot be read.");
+                continue;
+            }
+
             FileWriter out = new FileWriter(new File(toDir, s));
             out.write(IOUtil.toString(in).replace("@artifactId@", artifactId));
+            in.close();
+            out.close();
+        }
+    }
+
+    void copyBinaryResources(Collection<String> fileNames, String fromPath, File toDir) throws IOException {
+        toDir.mkdirs();
+        for( String s : fileNames ) {
+            String filePath = fromPath + s;
+            InputStream in = getClass().getResourceAsStream(filePath);
+
+            if (in == null) {
+                getLog().error("Failed to copy file '" + filePath + "'. File cannot be read.");
+                continue;
+            }
+
+            FileOutputStream out = new FileOutputStream(new File(toDir, s));
+            out.write(IOUtil.toByteArray(in));
             in.close();
             out.close();
         }

@@ -30,6 +30,10 @@ import java.util.Arrays;
 @Mojo(name="createboext", requiresProject = false)
 public class CreateBOExtMojo extends AbstractCreateMojo {
 
+    private static final String JENKINS_VERSION = "2.7.3";
+    private static final String NODE_VERSION = "6.4.0";
+    private static final String NPM_VERSION = "3.10.3";
+
     @Parameter(property = "blueOceanVersion")
     String blueOceanVersion;
 
@@ -46,17 +50,34 @@ public class CreateBOExtMojo extends AbstractCreateMojo {
 
         try {
             File outDir = getOutDir();
+            File srcMainDir = new File(outDir, "src" + sep + "main");
 
-            // copy view resource files. So far maven archetype doesn't seem to be able to handle it.
-            FileUtils.deleteDirectory(new File(outDir, "src" + sep + "main" + sep + "java"));
+            // Remove the Java resources
+            FileUtils.deleteDirectory(new File(srcMainDir, "java"));
 
-            copyResources(Arrays.asList("package.json", "gulpfile.js"), "/archetype-resources/", outDir);
+            File jsDir = new File(srcMainDir, "js");
+            File lessDir = new File(srcMainDir, "less");
+            File imgDir = new File(lessDir, "images");
 
-            File jsDir = new File(outDir, "src" + sep + "main" + sep + "js");
-            copyResources(Arrays.asList("plugin.js"), "/archetype-resources/src/main/js/", jsDir);
+            copyTextResources(Arrays.asList("package.json", "gulpfile.js"), "/archetype-resources/", outDir);
+            copyTextResources(Arrays.asList("jenkins-js-extension.yaml", "Usain.jsx"), "/archetype-resources/src/main/js/", jsDir);
+            copyTextResources(Arrays.asList("extensions.less"), "/archetype-resources/src/main/less/", lessDir);
+            copyBinaryResources(Arrays.asList("running.gif", "finished.gif"), "/archetype-resources/src/main/less/images/", imgDir);
         } catch (Exception e) {
             throw new MojoExecutionException("Failed to create a new Jenkins plugin",e);
         }
+    }
+
+    @Override
+    protected String getPropertiesPOMFrag() {
+        return String.format("<!-- Baseline Jenkins version you use to build the plugin. Users must have this version or newer to run. -->\n" +
+                "    <jenkins.version>%s</jenkins.version>\n" +
+                "    <!-- Node and NPM versions. -->\n" +
+                "    <node.version>%s</node.version>\n" +
+                "    <npm.version>%s</npm.version>",
+                JENKINS_VERSION,
+                NODE_VERSION,
+                NPM_VERSION);
     }
 
     @Override

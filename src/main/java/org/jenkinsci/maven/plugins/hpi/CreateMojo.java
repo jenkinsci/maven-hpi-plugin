@@ -38,7 +38,7 @@ public class CreateMojo extends AbstractCreateMojo {
         try {
             File viewDir = new File(getOutDir(), "src"+sep+"main"+sep+"resources"+sep+packageName.replace('.',sep)+sep+"HelloWorldBuilder" );
 
-            copyResources(Arrays.asList("config.jelly","global.jelly","help-name.html","help-useFrench.html"),
+            copyTextResources(Arrays.asList("config.jelly","global.jelly","help-name.html","help-useFrench.html"),
                     "/archetype-resources/src/main/resources/HelloWorldBuilder/", viewDir);
 
         } catch (Exception e) {
