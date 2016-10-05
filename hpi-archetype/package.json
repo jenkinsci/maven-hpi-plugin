@@ -9,7 +9,7 @@
     "lint:fix": "gulp lint --fixLint",
     "bundle": "gulp bundle",
     "bundle:watch": "gulp bundle:watch",
-    "doinstalls": "npm install --save @jenkins-cd/design-language@latest @jenkins-cd/js-extensions@latest @jenkins-cd/js-modules@latest @jenkins-cd/sse-gateway@latest --save-dev @jenkins-cd/js-builder@latest @jenkins-cd/js-test@latest"
+    "doinstalls": "npm install && npm install --save @jenkins-cd/design-language@latest @jenkins-cd/js-extensions@latest @jenkins-cd/js-modules@latest @jenkins-cd/sse-gateway@latest && npm install --save-dev @jenkins-cd/js-builder@latest @jenkins-cd/js-test@latest"
   },
   "devDependencies": {
     "babel-eslint": "^6.0.2",
