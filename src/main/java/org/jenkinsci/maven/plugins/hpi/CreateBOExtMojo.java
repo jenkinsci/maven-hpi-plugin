@@ -59,25 +59,13 @@ public class CreateBOExtMojo extends AbstractCreateMojo {
             File lessDir = new File(srcMainDir, "less");
             File imgDir = new File(lessDir, "images");
 
-            copyTextResources(Arrays.asList("package.json", "gulpfile.js"), "/archetype-resources/", outDir);
+            copyTextResources(Arrays.asList("package.json", ".mvn_exec_node", "postinstall.js"), "/archetype-resources/", outDir);
             copyTextResources(Arrays.asList("jenkins-js-extension.yaml", "Usain.jsx"), "/archetype-resources/src/main/js/", jsDir);
             copyTextResources(Arrays.asList("extensions.less"), "/archetype-resources/src/main/less/", lessDir);
             copyBinaryResources(Arrays.asList("running.gif", "finished.gif"), "/archetype-resources/src/main/less/images/", imgDir);
         } catch (Exception e) {
             throw new MojoExecutionException("Failed to create a new Jenkins plugin",e);
         }
-
-        getLog().info("");
-        getLog().info("");
-        getLog().info("   *********************************************************************************");
-        getLog().info("   *                                                                               *");
-        getLog().info("   *  NOTE: Run the following command to pre-install NPM packages:                 *");
-        getLog().info("   *                                                                               *");
-        getLog().info("   *        npm run dopreinstalls                                                  *");
-        getLog().info("   *                                                                               *");
-        getLog().info("   *********************************************************************************");
-        getLog().info("");
-        getLog().info("");
     }
 
     @Override

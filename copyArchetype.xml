@@ -19,7 +19,8 @@
       <fileset dir="${src}">
         <include name="pom.xml" />
         <include name="package.json" />
-        <include name="gulpfile.js" />
+        <include name=".mvn_exec_node" />
+        <include name="postinstall.js" />
       </fileset>
       <filterchain>
         <replaceregex pattern="&lt;!-- \$$ --&gt;&lt;([^&gt;]+)&gt;.+&lt;!-- /\$$ --&gt;" replace="&lt;\1&gt;$$\{\1\}&lt;/\1&gt;" flags="g" />
@@ -53,7 +54,8 @@
       <fileset dir="${src}">
         <exclude name="pom.xml" />
         <exclude name="package.json" />
-        <exclude name="gulpfile.js" />
+        <exclude name=".mvn_exec_node" />
+        <exclude name="postinstall.js" />
         <exclude name="**/*.java" />
         <exclude name="**/*.js" />
         <exclude name="**/.svn" />

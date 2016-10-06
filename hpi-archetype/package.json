@@ -3,13 +3,16 @@
   "version": "0.0.1",
   "license": "MIT",
   "scripts": {
-    "build": "gulp",
-    "test": "gulp test",
-    "lint": "gulp lint",
-    "lint:fix": "gulp lint --fixLint",
-    "bundle": "gulp bundle",
-    "bundle:watch": "gulp bundle:watch",
-    "dopreinstalls": "npm install && npm install --save @jenkins-cd/design-language@latest @jenkins-cd/js-extensions@latest @jenkins-cd/js-modules@latest @jenkins-cd/sse-gateway@latest && npm install --save-dev @jenkins-cd/js-builder@latest @jenkins-cd/js-test@latest"
+    "build": "jjsbuilder",
+    "test": "jjsbuilder --tasks test",
+    "mvnbuild": "jjsbuilder --tasks bundle",
+    "mvntest": "jjsbuilder --tasks test,lint",
+    "lint": "jjsbuilder --tasks lint",
+    "bundle": "jjsbuilder --tasks bundle",
+    "bundle:watch": "jjsbuilder --tasks bundle:watch",
+    "postinstall": "node postinstall.js",
+    "do_prod_installs": "npm install --save @jenkins-cd/design-language @jenkins-cd/js-extensions @jenkins-cd/js-modules @jenkins-cd/sse-gateway",
+    "do_dev_installs": "npm install --save-dev @jenkins-cd/js-builder @jenkins-cd/js-test"
   },
   "devDependencies": {
     "babel-eslint": "^6.0.2",
