@@ -10,7 +10,7 @@
     "lint": "jjsbuilder --tasks lint",
     "bundle": "jjsbuilder --tasks bundle",
     "bundle:watch": "jjsbuilder --tasks bundle:watch",
-    "postinstall": "node postinstall.js",
+    "postinstall": "npm install npm && node postinstall.js",
     "do_prod_installs": "npm install --save @jenkins-cd/design-language @jenkins-cd/js-extensions @jenkins-cd/js-modules @jenkins-cd/sse-gateway",
     "do_dev_installs": "npm install --save-dev @jenkins-cd/js-builder @jenkins-cd/js-test"
   },
