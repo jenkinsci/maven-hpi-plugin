@@ -5,7 +5,18 @@ See the [Extend Jenkins](https://wiki.jenkins-ci.org/display/JENKINS/Extend+Jenk
 
 [![Build Status](https://jenkins.ci.cloudbees.com/job/plugins/job/maven-hpi-plugin/badge/icon)](https://jenkins.ci.cloudbees.com/job/plugins/job/maven-hpi-plugin/)
 
-Before releasing, to sanity test, try
+## Changelog
+
+### 1.120 (2016 Sep 26)
+
+* Allowing `hpi:run` to pick up compiled classes & saved resources from core or plugin snapshot dependencies in addition to the plugin under test itself.
+* Ensuring `Plugin-Dependencies` appears in a consistent order from build to build.
+
+### 1.119 and earlier
+
+Not recorded.
+
+## For maintainers
 
 ```bash
 mvn -Prun-its clean install
