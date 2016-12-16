@@ -7,6 +7,10 @@ See the [Extend Jenkins](https://wiki.jenkins-ci.org/display/JENKINS/Extend+Jenk
 
 ## Changelog
 
+### 1.121 (2016 Dec 16)
+
+* Fixing a problem with plugin dependency resolution affecting users of jitpack.io.
+
 ### 1.120 (2016 Sep 26)
 
 * Allowing `hpi:run` to pick up compiled classes & saved resources from core or plugin snapshot dependencies in addition to the plugin under test itself.
