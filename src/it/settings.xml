@@ -27,7 +27,7 @@ under the License.
       <id>mrm-maven-plugin</id>
       <name>Mock Repository Manager</name>
       <url>@repository.proxy.url@</url>
-      <mirrorOf>*</mirrorOf>
+      <mirrorOf>*,!jitpack.io</mirrorOf>
     </mirror>
   </mirrors>
   <profiles>
