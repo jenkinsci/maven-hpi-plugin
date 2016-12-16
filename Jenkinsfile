@@ -1,8 +1,12 @@
 node('docker') {
   checkout scm
   docker.image('maven:3.3.9-jdk-8').inside {
-    sh 'mvn -B -Prun-its clean install'
+    try {
+      sh 'mvn -B -Prun-its clean install'
+    } catch (e) {
+      // Too big (~25Mb) to archive for successful builds:
+      archiveArtifacts artifacts: 'target/its/*/build.log', allowEmptyArchive: true
+      throw e
+    }
   }
-  // Useful for debugging failures, but currently too big (~25Mb):
-  // archiveArtifacts 'target/its/*/build.log'
 }
