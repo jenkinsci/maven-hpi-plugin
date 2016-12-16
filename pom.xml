@@ -10,7 +10,7 @@
 
   <groupId>org.jenkins-ci.tools</groupId>
   <artifactId>maven-hpi-plugin</artifactId>
-  <version>1.121-SNAPSHOT</version>
+  <version>1.121</version>
   <packaging>maven-plugin</packaging>
 
   <name>Maven Jenkins Plugin</name>
@@ -26,7 +26,7 @@
     <connection>scm:git:git://github.com/jenkinsci/maven-hpi-plugin.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/jenkinsci/maven-hpi-plugin.git</developerConnection>
     <url>https://github.com/jenkinsci/maven-hpi-plugin</url>
-    <tag>HEAD</tag>
+    <tag>maven-hpi-plugin-1.121</tag>
   </scm>
   <ciManagement>
     <system>jenkins</system>
