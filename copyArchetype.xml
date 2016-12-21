@@ -14,10 +14,13 @@
       <replacestring from="hpi-archetype" to="@artifactId@" />
     </filterchain>
 
-    <!-- modify POM -->
+    <!-- modify POM and Javascript files -->
     <copy todir="${dst}">
       <fileset dir="${src}">
         <include name="pom.xml" />
+        <include name="package.json" />
+        <include name=".mvn_exec_node" />
+        <include name="postinstall.js" />
       </fileset>
       <filterchain>
         <replaceregex pattern="&lt;!-- \$$ --&gt;&lt;([^&gt;]+)&gt;.+&lt;!-- /\$$ --&gt;" replace="&lt;\1&gt;$$\{\1\}&lt;/\1&gt;" flags="g" />
@@ -38,11 +41,23 @@
     </copy>
     <delete file="${package.header.file}" />
 
+    <copy todir="${dst}">
+      <fileset dir="${src}">
+        <include name="**/js/*" />
+        <include name="**/less/extensions.less" />
+        <include name="**/less/images/*.gif" />
+      </fileset>
+    </copy>
+
     <!-- process the remaining files -->
     <copy todir="${dst}">
       <fileset dir="${src}">
         <exclude name="pom.xml" />
+        <exclude name="package.json" />
+        <exclude name=".mvn_exec_node" />
+        <exclude name="postinstall.js" />
         <exclude name="**/*.java" />
+        <exclude name="**/*.js" />
         <exclude name="**/.svn" />
         <exclude name="target" />
         <exclude name="hpi-archetype.*" />
