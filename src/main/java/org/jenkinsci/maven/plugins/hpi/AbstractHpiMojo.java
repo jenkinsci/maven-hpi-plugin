@@ -72,8 +72,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.Collection;
 import java.util.TreeSet;
-import java.util.jar.Attributes;
-import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -1033,13 +1031,9 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
             if(a.isPlugin() && scopeFilter.include(a.artifact) && !a.hasSameGAAs(project)) {
                 if(buf.length()>0)
                     buf.append(',');
-                // Do not rely on a.artifactId/version since that will be nonsense in the case of jitpack.io, for example.
-                try (JarFile jf = new JarFile(a.getFile())) { // TODO possibly this should be moved into MavenArtifact
-                    Attributes attr = jf.getManifest().getMainAttributes();
-                    buf.append(attr.getValue("Short-Name"));
-                    buf.append(':');
-                    buf.append(attr.getValue("Plugin-Version").replaceFirst(" [(].+[)]$", "")); // e.g. " (private-abcd1234-username)"; Implementation-Version is clean but seems less portable
-                }
+                buf.append(a.getActualArtifactId());
+                buf.append(':');
+                buf.append(a.getActualVersion());
                 if (a.isOptional()) {
                     buf.append(";resolution:=optional");
                 }

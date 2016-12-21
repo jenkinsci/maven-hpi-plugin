@@ -15,6 +15,7 @@ import org.kohsuke.stapler.framework.io.IOException2;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.jar.JarFile;
 
 import static org.apache.maven.artifact.Artifact.*;
 
@@ -125,12 +126,32 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
         return false;
     }
 
+    /** Gets the {@code artifactId} as used in a dependency declaration. For a plugin artifact this need not be be a plugin short name. */
     public String getArtifactId() {
         return artifact.getArtifactId();
     }
 
+    /** Gets the {@code version} as used in a dependency declaration. For a plugin artifact this need not be be a plugin version number. */
     public String getVersion() {
         return artifact.getVersion();
+    }
+
+    public String getClassifier() {
+        return artifact.getClassifier();
+    }
+
+    /** For a plugin artifact, unlike {@link #getArtifactId} this parses the plugin manifest. */
+    public String getActualArtifactId() throws IOException {
+        try (JarFile jf = new JarFile(getFile())) {
+            return jf.getManifest().getMainAttributes().getValue("Short-Name");
+        }
+    }
+
+    /** For a plugin artifact, unlike {@link #getVersion} this parses the plugin manifest. */
+    public String getActualVersion() throws IOException {
+        try (JarFile jf = new JarFile(getFile())) {
+            return jf.getManifest().getMainAttributes().getValue("Plugin-Version").replaceFirst(" [(].+[)]$", ""); // e.g. " (private-abcd1234-username)"; Implementation-Version is clean but seems less portable
+        }
     }
 
     public ArtifactVersion getVersionNumber() throws OverConstrainedVersionException {

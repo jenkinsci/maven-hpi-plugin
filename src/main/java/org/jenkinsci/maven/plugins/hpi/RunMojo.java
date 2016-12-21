@@ -328,9 +328,9 @@ public class RunMojo extends AbstractJettyMojo {
 
                 File upstreamHpl = pluginWorkspaceMap.read(hpi.getId());
                 if (upstreamHpl != null) {
-                    copyHpl(upstreamHpl, pluginsDir, a.getArtifactId());
+                    copyHpl(upstreamHpl, pluginsDir, a.getActualArtifactId());
                 } else {
-                    copyPlugin(hpi.getFile(), pluginsDir, a.getArtifactId());
+                    copyPlugin(hpi.getFile(), pluginsDir, a.getActualArtifactId());
                 }
             }
         } catch (IOException e) {
