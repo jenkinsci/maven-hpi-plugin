@@ -10,4 +10,8 @@ try {
     j.close()
 }
 
+File testDependencies = new File(basedir, 'target/test-classes/test-dependencies')
+assert new File(testDependencies, 'index').text.trim() == 'scm-api'
+assert new TreeSet<String>(Arrays.asList(testDependencies.list())).toString() == '[index, scm-api.hpi]'
+
 return true
