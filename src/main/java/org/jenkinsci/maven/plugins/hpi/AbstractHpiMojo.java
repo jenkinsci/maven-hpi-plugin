@@ -931,7 +931,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         if(url!=null)
             mainSection.addAttributeAndCheck(new Attribute("Url", url));
 
-        if (compatibleSinceVersion!=null)
+        if (StringUtils.isNotBlank(compatibleSinceVersion))
             mainSection.addAttributeAndCheck(new Attribute("Compatible-Since-Version", compatibleSinceVersion));
 
         if (sandboxStatus!=null)
