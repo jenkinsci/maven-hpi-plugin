@@ -227,7 +227,6 @@ public class RunMojo extends AbstractJettyMojo {
 
         if (webApp == null || webApp.getContextPath() == null) {
             if (contextPath != null) {
-                getLog().warn("Please use `webApp/contextPath` configuration parameter in place of the deprecated `contextPath` parameter");
                 if (webApp == null) {
                     try {
                         webApp = new JettyWebAppContext();
