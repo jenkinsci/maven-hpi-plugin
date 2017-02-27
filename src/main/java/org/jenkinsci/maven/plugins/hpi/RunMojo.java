@@ -213,10 +213,8 @@ public class RunMojo extends AbstractJettyMojo {
     /**
      * The context path for the webapp. Defaults to the
      * name of the webapp's artifact.
-     *
-     * @deprecated Use &lt;webApp&gt;&lt;contextPath&gt; instead.
      */
-    @Parameter(readonly = true, required = true, defaultValue = "/${project.artifactId}")
+    @Parameter(required = true, defaultValue = "/${project.artifactId}")
     protected String contextPath;
 
     @Component
