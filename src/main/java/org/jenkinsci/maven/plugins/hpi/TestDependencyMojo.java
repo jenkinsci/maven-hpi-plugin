@@ -33,10 +33,16 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                 if(!a.isPlugin())
                     continue;
 
-                getLog().debug("Copying "+a.getId()+" as a test dependency");
-                File dst = new File(testDir, a.getArtifactId() + ".hpi");
+                String artifactId = a.getActualArtifactId();
+                if (artifactId == null) {
+                    getLog().debug("Skipping " + artifactId + " with classifier " + a.getClassifier());
+                    continue;
+                }
+
+                getLog().debug("Copying " + artifactId + " as a test dependency");
+                File dst = new File(testDir, artifactId + ".hpi");
                 FileUtils.copyFile(a.getHpi().getFile(),dst);
-                w.write(a.getArtifactId()+"\n");
+                w.write(artifactId + "\n");
             }
 
             w.close();
