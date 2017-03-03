@@ -40,13 +40,7 @@ To rerun just the verification script:
 groovy -e "basedir='$(pwd)/target/its/parent-2x'; evaluate new File('src/it/parent-2x/verify.groovy')"
 ```
 
-Also make sure `project.parent.version` in `src/it/parent-2x/pom.xml` is the latest. To test a `SNAPSHOT` version of the parent POM, set that version and then
-
-```bash
-mvn -f ../plugin-pom install
-rm -rf target/local-repo/org/jenkins-ci/plugins/plugin
-mvn -Prun-its mrm:start invoker:run mrm:stop -Dinvoker.test=parent-2x
-```
+Also make sure `project.parent.version` in `src/it/parent-2x/pom.xml` is the latest.
 
 ## Updating Jetty
 `hpi:run` mojo is a variant of `jetty:run` mojo, and because of the way plugin descriptor is generated, this module copies some code from Jetty Maven plugin, specifically `AbstractJettyMojo.java` and `ConsoleScanner.java`.
