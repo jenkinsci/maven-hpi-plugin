@@ -8,7 +8,7 @@ Maven Jenkins Plugin
   This maven2 plugin provides various goals for developing Jenkins plugins.
 
 
-* Goals Overview
+* Common Goals Overview
 
   * {{{./create-mojo.html}hpi:create}} Creates a skeleton of a new plugin.
 
@@ -18,5 +18,6 @@ Maven Jenkins Plugin
 
   * {{{./run-mojo.html}hpi:run}} Runs Jenkins with the current plugin project
 
+  For a list of all goals see the full {{{./plugin-info.html}plugin documentation}}
 
   For more information about how to develop Jenkins plugins, refer to the {{{http://wiki.jenkins-ci.org/display/JENKINS/Extend+Jenkins}Wiki}}
