@@ -942,7 +942,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
                 dt = new SimpleDateFormat("MM/dd/yyyy HH:mm").format(new Date());
             pluginVersionDescription = "private-"+dt+"-"+System.getProperty("user.name");
         }
-        if (pluginVersionDescription!=null)
+        if (pluginVersionDescription!=null && !pluginVersionDescription.trim().isEmpty())
             v += " (" + pluginVersionDescription + ")";
 
         if (!project.getPackaging().equals("jenkins-module")) {
