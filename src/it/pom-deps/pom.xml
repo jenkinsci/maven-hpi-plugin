@@ -1,0 +1,37 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>plugin</artifactId>
+      <version>2.25</version>
+    </parent>
+
+    <groupId>org.jenkins-ci.tools.hpi.its</groupId>
+    <artifactId>pom-deps</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>hpi</packaging>
+    
+    <properties>
+      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+      <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+      <hpi-plugin.version>@project.version@</hpi-plugin.version>
+      <enforcer.skip>true</enforcer.skip>
+      <jenkins.version>2.7</jenkins.version>
+    </properties>
+
+
+    <name>PluginWithPomDependencues</name>
+
+    <dependencies>
+      <dependency>
+        <!-- https://issues.jenkins-ci.org/browse/JENKINS-24374 -->
+        <groupId>org.apache.maven.scm</groupId>
+        <artifactId>maven-scm-providers-standard</artifactId>
+        <version>1.4</version>
+        <type>pom</type>
+      </dependency>
+    </dependencies>
+      
+</project>
