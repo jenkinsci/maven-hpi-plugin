@@ -17,7 +17,10 @@ package org.jenkinsci.maven.plugins.hpi;
  */
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.archiver.MavenArchiveConfiguration;
@@ -159,6 +162,13 @@ public class HpiMojo extends AbstractHpiMojo {
 
         // generate war file
         buildExplodedWebapp(getWebappDirectory(),jarFile);
+
+        File hpiMfFile = getOutputFile(".hpi.mf");
+        getLog().info("Archiving hpi manifest" + hpiMfFile.getAbsolutePath());
+        try (PrintWriter printWriter = new PrintWriter(new OutputStreamWriter(new FileOutputStream(hpiMfFile), "UTF-8"))) {
+            manifest.write(printWriter);
+        }
+        projectHelper.attachArtifact(project, "hpi.mf", null, hpiMfFile);
 
         File hpiFile = getOutputFile(".hpi");
         getLog().info("Generating hpi " + hpiFile.getAbsolutePath());
