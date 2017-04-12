@@ -7,6 +7,13 @@ See the [Extend Jenkins](https://wiki.jenkins-ci.org/display/JENKINS/Extend+Jenk
 
 ## Changelog
 
+### 1.122 (2017 Apr 12)
+
+* Fixed HTML escaping for Javadoc created for taglibs so it can be processed by JDK 8.
+* Logging the current artifact for `InjectedTest`.
+* More fixes to mojos that assumed that plugin artifacts used a short name identical to the `artifactId`.
+* Minor archetype updates.
+
 ### 1.121 (2016 Dec 16)
 
 * Fixing a problem with plugin dependency resolution affecting users of jitpack.io.
