@@ -725,8 +725,15 @@ public class RunMojo extends AbstractJettyMojo {
                 match = (a.getGroupId()+':'+a.getArtifactId()).equals(jenkinsWarId);
             else
                 match = (a.getArtifactId().equals("jenkins-war") || a.getArtifactId().equals("hudson-war")) && (a.getType().equals("executable-war") || a.getType().equals("war"));
-            if(match)
+            if(match) {
+                if (a.getFile() == null) {
+                    // is this a bug in Maven 3.5.0 ?
+                    getLog().warn(String.format("File for artifact %s not resolved, triggering resolution again", a));
+                    a.setResolved(false);
+                    resolveDependencies("test");
+                }
                 return a;
+            }
         }
 
         if (jenkinsWarId!=null) {
