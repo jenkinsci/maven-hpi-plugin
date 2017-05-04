@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>2.28-20170503.193116-1</version> <!-- TODO https://github.com/jenkinsci/plugin-pom/pull/61 -->
+        <version>2.28</version>
         <relativePath/>
     </parent>
     <groupId>org.jenkins-ci.tools.hpi.its</groupId>
