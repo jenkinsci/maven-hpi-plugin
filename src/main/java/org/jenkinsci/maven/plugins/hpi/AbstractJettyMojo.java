@@ -21,6 +21,7 @@ package org.jenkinsci.maven.plugins.hpi;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -41,15 +42,19 @@ import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
-import org.eclipse.jetty.maven.plugin.JettyServer;
 import org.eclipse.jetty.maven.plugin.JettyWebAppContext;
 import org.eclipse.jetty.maven.plugin.MavenServerConnector;
 import org.eclipse.jetty.maven.plugin.PluginLog;
+import org.eclipse.jetty.maven.plugin.ServerSupport;
 import org.eclipse.jetty.maven.plugin.SystemProperties;
 import org.eclipse.jetty.maven.plugin.SystemProperty;
 import org.eclipse.jetty.security.LoginService;
 import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.NCSARequestLog;
+import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.RequestLog;
+import org.eclipse.jetty.server.Response;
+import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ShutdownMonitor;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
@@ -261,7 +266,7 @@ public abstract class AbstractJettyMojo extends AbstractMojo
     /**
      * A wrapper for the Server object
      */
-    protected JettyServer server = new JettyServer();
+    protected Server server = new Server();
     
 
     /**
@@ -437,8 +442,7 @@ public abstract class AbstractJettyMojo extends AbstractMojo
     {
         if (getJettyXmlFiles() == null)
             return;
-
-        this.server.applyXmlConfigurations(getJettyXmlFiles());
+        ServerSupport.applyXmlConfigurations( this.server, getJettyXmlFiles() );
     }
 
 
@@ -498,9 +502,18 @@ public abstract class AbstractJettyMojo extends AbstractMojo
                 this.server.setRequestLog(this.requestLog);
 
             //set up the webapp and any context provided
-            this.server.configureHandlers();
+            // access log only in debug
+            ServerSupport.configureHandlers( this.server, new NCSARequestLog()
+            {
+                @Override
+                public void write( String requestEntry )
+                    throws IOException
+                {
+                    getLog().debug( requestEntry );
+                }
+            } );
             configureWebApplication();
-            this.server.addWebApplication(webApp);
+            ServerSupport.addWebApplication( this.server, webApp );
 
             // set up security realms
             for (int i = 0; (this.loginServices != null) && i < this.loginServices.length; i++)
