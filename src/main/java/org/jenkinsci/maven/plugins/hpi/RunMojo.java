@@ -19,6 +19,7 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
 import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.artifact.resolver.AbstractArtifactResolutionException;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
@@ -32,6 +33,7 @@ import org.apache.maven.plugins.annotations.Execute;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectBuilder;
 import org.eclipse.jetty.maven.plugin.JettyWebAppContext;
@@ -81,7 +83,7 @@ import java.util.zip.ZipFile;
  * 
  * @author Kohsuke Kawaguchi
  */
-@Mojo(name="run")
+@Mojo(name="run", requiresDependencyResolution=ResolutionScope.TEST)
 @Execute(phase = LifecyclePhase.COMPILE)
 public class RunMojo extends AbstractJettyMojo {
 
@@ -281,7 +283,16 @@ public class RunMojo extends AbstractJettyMojo {
                 .groupIdIs("org.jenkins-ci.main","org.jvnet.hudson.main")
                 .artifactIdIsNot("remoting");       // remoting moved to its own release cycle
 
-        webAppFile = getJenkinsWarArtifact().getFile();
+        Artifact jenkinsWarArtifact = getJenkinsWarArtifact();
+        try {
+            artifactResolver.resolve(jenkinsWarArtifact, remoteRepos, localRepository);
+        } catch (AbstractArtifactResolutionException x) {
+            throw new MojoExecutionException("Could not resolve " + jenkinsWarArtifact + ": " + x, x);
+        }
+        webAppFile = jenkinsWarArtifact.getFile();
+        if (webAppFile == null || !webAppFile.isFile()) {
+            throw new MojoExecutionException("Could not find " + webAppFile + " from " + jenkinsWarArtifact);
+        }
 
         // make sure all the relevant Jenkins artifacts have the same version
         for (Artifact a : jenkinsArtifacts) {
