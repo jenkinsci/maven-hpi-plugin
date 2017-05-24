@@ -184,6 +184,11 @@
               <artifactId>wagon-gitsite</artifactId>
               <version>0.4.1</version>
             </dependency>
+            <dependency> <!-- TODO https://maven.apache.org/plugins/maven-site-plugin/migrate.html 1.7 fails with: org.apache.velocity.exception.ParseErrorException: Encountered "source" at META-INF/maven/site.vm[line 1039, column 52] -->
+              <groupId>org.apache.velocity</groupId>
+              <artifactId>velocity</artifactId>
+              <version>1.5</version>
+            </dependency>
           </dependencies>
         </plugin>
         <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
