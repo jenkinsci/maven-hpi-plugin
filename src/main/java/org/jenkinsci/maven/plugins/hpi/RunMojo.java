@@ -636,8 +636,8 @@ public class RunMojo extends AbstractJettyMojo {
         // to allow the development environment to run multiple "mvn hpi:run" with different port,
         // use different session cookie names. Otherwise they can mix up. See
         // http://stackoverflow.com/questions/1612177/are-http-cookies-port-specific
-        wac.getSessionHandler().getSessionManager().getSessionCookieConfig()
-                .setName("JSESSIONID." + UUID.randomUUID().toString().replace("-", "").substring(0, 8));
+        wac.getSessionHandler().getSessionCookieConfig()
+            .setName(  "JSESSIONID." + UUID.randomUUID().toString().replace("-", "").substring(0, 8));
 
         try {
             // for Jenkins modules, swap the component from jenkins.war by target/classes
