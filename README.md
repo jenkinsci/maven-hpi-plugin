@@ -1,11 +1,14 @@
 Maven plugin to build Jenkins plugins.
-See the [Extend Jenkins](https://wiki.jenkins-ci.org/display/JENKINS/Extend+Jenkins) wiki page for details.
+See the [developer guide](https://jenkins.io/doc/developer/plugin-development/) for details.
 
 [Mojo documentation](http://jenkinsci.github.io/maven-hpi-plugin/)
 
-[![Build Status](https://jenkins.ci.cloudbees.com/job/plugins/job/maven-hpi-plugin/badge/icon)](https://jenkins.ci.cloudbees.com/job/plugins/job/maven-hpi-plugin/)
-
 ## Changelog
+
+### 2.0 (2017 May 25)
+
+* Updated integrated Jetty server to 9.x. This means that JDK 8 is now required at build time. (Plugins may continue to target older Java baselines using the `java.level` property in the 2.x parent POM.)
+* [JENKINS-24064](https://issues.jenkins-ci.org/browse/JENKINS-24064) Added `executable-war` artifact type, permitting Jenkins to stop deploying the wasteful `jenkins-war-*-war-for-test.jar` artifact, which was identical to `jenkins-war-*.war`.
 
 ### 1.122 (2017 Apr 12)
 
@@ -32,7 +35,7 @@ Not recorded.
 ```bash
 mvn -Prun-its clean install
 # Find some plugin using the 2.x parent POM and run:
-mvn -f ../some-plugin -Dhpi-plugin.version=1.XXX-SNAPSHOT -DskipTests -DjenkinsHome=/tmp/sanity-check-maven-hpi-plugin clean package hpi:run
+mvn -f ../some-plugin -Dhpi-plugin.version=2.XXX-SNAPSHOT -DskipTests -DjenkinsHome=/tmp/sanity-check-maven-hpi-plugin clean package hpi:run
 ```
 
 You can also rerun one test:
