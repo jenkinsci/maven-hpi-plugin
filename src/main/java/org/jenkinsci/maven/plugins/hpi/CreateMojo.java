@@ -32,6 +32,7 @@ import org.codehaus.plexus.util.StringUtils;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -154,21 +155,26 @@ public class CreateMojo extends AbstractMojo {
             // copy view resource files. So far maven archetype doesn't seem to be able to handle it.
             File outDir = new File( basedir, artifactId );
             char sep = File.separatorChar;
-            File viewDir = new File( outDir, "src"+sep+"main"+sep+"resources"+sep+packageName.replace('.',sep)+sep+"HelloWorldBuilder" );
-            viewDir.mkdirs();
-
-            for( String s : new String[]{"config.jelly","global.jelly","help-name.html","help-useFrench.html"} ) {
-                InputStream in = getClass().getResourceAsStream("/archetype-resources/src/main/resources/HelloWorldBuilder/"+s);
-                FileWriter out = new FileWriter(new File(viewDir, s));
-                out.write(IOUtil.toString(in).replace("@artifactId@", artifactId));
-                in.close();
-                out.close();
-            }
-
+            copyResourcesForClass(outDir, sep, artifactId, "HelloWorldBuilder");
+            copyResourcesForClass(outDir, sep, artifactId, "HelloWorldStep");
 
         } catch (Exception e) {
             throw new MojoExecutionException("Failed to create a new Jenkins plugin",e);
         }
+    }
+
+    private void copyResourcesForClass(File outDir, char sep, String artifactId, String className) throws IOException {
+        File viewDir = new File( outDir, "src"+sep+"main"+sep+"resources"+sep+packageName.replace('.',sep)+sep+className );
+        viewDir.mkdirs();
+
+        for( String s : new String[]{"config.jelly","global.jelly","help-name.html","help-useFrench.html"} ) {
+            InputStream in = getClass().getResourceAsStream("/archetype-resources/src/main/resources/"+className+"/"+s);
+            FileWriter out = new FileWriter(new File(viewDir, s));
+            out.write(IOUtil.toString(in).replace("@artifactId@", artifactId));
+            in.close();
+            out.close();
+        }
+
     }
 
     /**
