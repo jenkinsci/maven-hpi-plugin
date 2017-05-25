@@ -957,6 +957,11 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         mainSection.addAttributeAndCheck(new Attribute("Hudson-Version",jv));
         mainSection.addAttributeAndCheck(new Attribute("Jenkins-Version",jv));
 
+	    String javaLevel = project.getProperties().getProperty("java.level");
+	    if (StringUtils.isNotBlank(javaLevel)) {
+		    mainSection.addAttributeAndCheck(new Attribute("Java-Level", javaLevel));
+	    }
+
         if(maskClasses!=null)
             mainSection.addAttributeAndCheck(new Attribute("Mask-Classes",maskClasses));
 

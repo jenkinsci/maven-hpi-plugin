@@ -25,7 +25,7 @@ checkArtifact(installed, 'parent-2x-1.0-SNAPSHOT.hpi',
     ['WEB-INF/lib/parent-2x.jar'],
     // TODO still some problems with unwanted transitive JAR dependencies creeping in, e.g. WEB-INF/lib/jboss-marshalling-1.4.9.Final.jar in workflow-multibranch.hpi, or all kinds of junk in parameterized-trigger.hpi
     ['test/SampleRootAction.class', 'WEB-INF/lib/symbol-annotation-1.5.jar'],
-    ['Short-Name': 'parent-2x', 'Group-Id': 'org.jenkins-ci.tools.hpi.its', 'Jenkins-Version': '2.19.2' /* Plugin-Version unpredictable for a snapshot */, 'Plugin-Dependencies': 'structs:1.5'])
+    ['Short-Name': 'parent-2x', 'Group-Id': 'org.jenkins-ci.tools.hpi.its', 'Jenkins-Version': '2.19.2' /* Plugin-Version unpredictable for a snapshot */, 'Java-Level':'7', 'Plugin-Dependencies': 'structs:1.5'])
 
 checkArtifact(installed, 'parent-2x-1.0-SNAPSHOT.jar',
     ['META-INF/annotations/hudson.Extension', 'test/SampleRootAction.class', 'index.jelly'],
