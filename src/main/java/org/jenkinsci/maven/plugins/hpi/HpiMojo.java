@@ -19,6 +19,8 @@ package org.jenkinsci.maven.plugins.hpi;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.archiver.MavenArchiveConfiguration;
 import org.apache.maven.archiver.MavenArchiver;
@@ -138,6 +140,21 @@ public class HpiMojo extends AbstractHpiMojo {
             }
         }
         if (jarFile == null) {
+            // generate default index.jelly
+            File classes = getClassesDirectory();
+            File indexJelly = new File(classes,"index.jelly");
+            if (!indexJelly.exists()) {
+                classes.mkdirs();
+                String body = project.getDescription();
+                if (body==null) body=project.getName();
+                FileUtils.writeStringToFile(indexJelly,
+                        "<?jelly escape-by-default='true'?>\n" +
+                        "<div>\n" +
+                        "<![CDATA["+ body +"]]>"+
+                        "</div>\n");
+                getLog().info("Generated index.jelly");
+            }
+
             // create a jar file to be used when other plugins depend on this plugin.
             jarFile = getOutputFile(".jar");
             getLog().info("Generating jar " + jarFile.getAbsolutePath());
@@ -145,7 +162,7 @@ public class HpiMojo extends AbstractHpiMojo {
             archiver.setArchiver(jarArchiver);
             archiver.setOutputFile(jarFile);
             jarArchiver.addConfiguredManifest(manifest);
-            jarArchiver.addDirectory(getClassesDirectory());
+            jarArchiver.addDirectory(classes);
             archiver.createArchive(project, archive);
         }
         // HACK Alert... due to how this plugin hacks the maven dependency model (by using a dependency on the
