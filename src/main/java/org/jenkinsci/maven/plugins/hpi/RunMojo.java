@@ -724,7 +724,7 @@ public class RunMojo extends AbstractJettyMojo {
             if (jenkinsWarId!=null)
                 match = (a.getGroupId()+':'+a.getArtifactId()).equals(jenkinsWarId);
             else
-                match = (a.getArtifactId().equals("jenkins-war") || a.getArtifactId().equals("hudson-war")) && a.getType().equals("war");
+                match = (a.getArtifactId().equals("jenkins-war") || a.getArtifactId().equals("hudson-war")) && (a.getType().equals("executable-war") || a.getType().equals("war"));
             if(match)
                 return a;
         }
