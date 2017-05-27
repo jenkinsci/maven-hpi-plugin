@@ -328,9 +328,9 @@ public class RunMojo extends AbstractJettyMojo {
 
                 File upstreamHpl = pluginWorkspaceMap.read(hpi.getId());
                 if (upstreamHpl != null) {
-                    copyHpl(upstreamHpl, pluginsDir, a.getArtifactId());
+                    copyHpl(upstreamHpl, pluginsDir, a.getActualArtifactId());
                 } else {
-                    copyPlugin(hpi.getFile(), pluginsDir, a.getArtifactId());
+                    copyPlugin(hpi.getFile(), pluginsDir, a.getActualArtifactId());
                 }
             }
         } catch (IOException e) {
@@ -625,8 +625,8 @@ public class RunMojo extends AbstractJettyMojo {
         // to allow the development environment to run multiple "mvn hpi:run" with different port,
         // use different session cookie names. Otherwise they can mix up. See
         // http://stackoverflow.com/questions/1612177/are-http-cookies-port-specific
-        wac.getSessionHandler().getSessionManager().getSessionCookieConfig()
-                .setName("JSESSIONID." + UUID.randomUUID().toString().replace("-", "").substring(0, 8));
+        wac.getSessionHandler().getSessionCookieConfig()
+            .setName(  "JSESSIONID." + UUID.randomUUID().toString().replace("-", "").substring(0, 8));
 
         try {
             // for Jenkins modules, swap the component from jenkins.war by target/classes
@@ -724,7 +724,7 @@ public class RunMojo extends AbstractJettyMojo {
             if (jenkinsWarId!=null)
                 match = (a.getGroupId()+':'+a.getArtifactId()).equals(jenkinsWarId);
             else
-                match = (a.getArtifactId().equals("jenkins-war") || a.getArtifactId().equals("hudson-war")) && a.getType().equals("war");
+                match = (a.getArtifactId().equals("jenkins-war") || a.getArtifactId().equals("hudson-war")) && (a.getType().equals("executable-war") || a.getType().equals("war"));
             if(match)
                 return a;
         }

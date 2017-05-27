@@ -161,7 +161,7 @@ public class TagLibInterfaceGeneratorMojo extends AbstractMojo {
 
                         JDocComment javadoc = m.javadoc();
                         if (doc!=null)
-                            javadoc.append(doc.getText().replace("&","&amp;").replace("<","&lt;"));
+                            javadoc.append(doc.getText().replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"));
                     }
 
                     // generate Groovy DSL
@@ -173,7 +173,7 @@ public class TagLibInterfaceGeneratorMojo extends AbstractMojo {
                             gdsl.printf("    parameter(name:'%s',type:'%s', doc:\"\"\"\n%s\n\"\"\"),\n",
                                     a.attributeValue("name"),
                                     a.attributeValue("type","java.lang.Object"),
-                                    a.getTextTrim().replace("$","\\$").replace("&","&amp;").replace("<","&lt;"));
+                                    a.getTextTrim().replace("$", "\\$").replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"));
                         }
 
                         // see http://youtrack.jetbrains.com/issue/IDEA-108355 for why

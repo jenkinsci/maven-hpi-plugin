@@ -158,7 +158,7 @@ public class HplMojo extends AbstractHpiMojo {
         }
         if(jenkinsHome==null) {
             throw new MojoExecutionException(
-                "Property jenkinsHome needs to be set to $JENKINS_HOME. Please use 'mvn -DjenkinsHome=...' or" +
+                "Property jenkinsHome needs to be set to $JENKINS_HOME. Please use 'mvn -DjenkinsHome=...' or " +
                 "put <settings><profiles><profile><properties><property><jenkinsHome>...</...>"
             );
         }
