@@ -54,6 +54,9 @@ public class TestInsertionMojo extends AbstractJenkinsMojo {
     @Parameter(defaultValue = "org.jenkins-ci.main:jenkins-test-harness")
     protected String jenkinsTestHarnessId;
 
+    @Parameter(defaultValue = "${java.level}")
+    protected String javaLevel;
+
     private static String quote(String s) {
         return '"'+s.replace("\\", "\\\\")+'"';
     }
@@ -102,8 +105,8 @@ public class TestInsertionMojo extends AbstractJenkinsMojo {
             getLog().info("Skipping auto-test generation because we are targeting Jenkins "+target+" (at least 1.327 is required).");
             return;
         }
-        if (System.getProperty("java.version").compareTo("1.7") < 0) {
-            getLog().info("Skipping auto-test generation because JDK "+System.getProperty("java.version")+" is used (at least 1.7 is required).");
+        if (javaLevel != null && javaLevel.compareTo("7") < 0) {
+            getLog().info("Skipping auto-test generation because java.level= "+javaLevel+" in pom.xml (at least 7 is required).");
             return;
         }
 
