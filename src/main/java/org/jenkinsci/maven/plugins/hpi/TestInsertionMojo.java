@@ -102,6 +102,10 @@ public class TestInsertionMojo extends AbstractJenkinsMojo {
             getLog().info("Skipping auto-test generation because we are targeting Jenkins "+target+" (at least 1.327 is required).");
             return;
         }
+        if (System.getProperty("java.version").compareTo("1.7") < 0) {
+            getLog().info("Skipping auto-test generation because JDK "+System.getProperty("java.version")+" is used (at least 1.7 is required).");
+            return;
+        }
 
         try {
             File f = new File(project.getBasedir(), "target/generated-test-sources/injected");
