@@ -1,4 +1,3 @@
 def log = new File(basedir, 'build.log').text
-assert log.contains('overrideVersions=[whatever, else] useUpperBounds=true')
-
+// TODO add anything needed, or delete this file
 true
