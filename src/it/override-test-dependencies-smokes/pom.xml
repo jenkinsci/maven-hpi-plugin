@@ -18,6 +18,8 @@
         <!-- TODO cannot include `invoker.goals=-DoverrideVersions=…,… test` in invoker.properties since then that is misinterpreted as multiple arguments for invoker.goals -->
         <overrideVersions>whatever,else</overrideVersions>
         <useUpperBounds>true</useUpperBounds>
+        <test>SampleTest</test>
+        <maven.test.redirectTestOutputToFile>false</maven.test.redirectTestOutputToFile>
     </properties>
     <repositories>
         <repository>

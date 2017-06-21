@@ -69,5 +69,8 @@ public class TestDependencyMojo extends AbstractHpiMojo {
         } catch (IOException e) {
             throw new MojoExecutionException("Failed to copy dependency plugins",e);
         }
+        if (overrideVersions != null) {
+            project.getProperties().setProperty("maven.test.additionalClasspath", "extra,stuff");
+        }
     }
 }

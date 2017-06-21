@@ -1,6 +1,6 @@
 package test;
 
-import org.apache.commons.io.IOUtils;
+import static org.hamcrest.Matchers.*;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Rule;
@@ -13,7 +13,7 @@ public class SampleTest {
 
     @Test
     public void smokes() throws Exception {
-        System.err.println(System.getProperty("java.class.path"));
+        assertThat(System.getProperty("java.class.path"), endsWith(":extra:stuff:"));
     }
 
 }
