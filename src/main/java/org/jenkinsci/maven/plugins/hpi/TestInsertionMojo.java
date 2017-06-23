@@ -117,7 +117,7 @@ public class TestInsertionMojo extends AbstractJenkinsMojo {
             w.println("public class " + injectedTestName + " extends junit.framework.TestCase {");
             w.println("  public static junit.framework.Test suite() throws Exception {");
             w.println("    System.out.println(\"Running tests for \"+" + quote(project.getGroupId() + ":" + project.getArtifactId() + ":" + project.getVersion())+");");
-            w.println("    Map parameters = new HashMap();");
+            w.println("    Map<String, Object> parameters = new HashMap<String, Object>();");
             w.println("    parameters.put(\"basedir\","+quote(project.getBasedir().getAbsolutePath())+");");
             w.println("    parameters.put(\"artifactId\","+quote(project.getArtifactId())+");");
             w.println("    parameters.put(\"packaging\","+quote(project.getPackaging())+");");
