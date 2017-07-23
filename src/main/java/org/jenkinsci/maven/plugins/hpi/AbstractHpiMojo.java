@@ -986,10 +986,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         addLicenseAttributesForManifest(mainSection);
         addPropertyAttributeIfNotNull(mainSection, "Plugin-ChangelogUrl", "plugin.info.changelogUrl");
         addPropertyAttributeIfNotNull(mainSection, "Plugin-LogoUrl", "plugin.info.logoUrl");
-        final String scmUrl = getScmUrl();
-        if (scmUrl != null) {
-            mainSection.addAttributeAndCheck(new Attribute("Plugin-ScmUrl", scmUrl));
-        }
+        addAttributeIfNotNull(mainSection, "Plugin-ScmUrl", getScmUrl());
     }
 
     /**
@@ -1012,13 +1009,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         if (e.contains(YesNoMaybe.MAYBE))   return null;
         return true;
     }
-
-    private void addAttributes(Section target, Map<String, String> attrs) throws ManifestException {
-        for(Map.Entry<String, String> entry : attrs.entrySet()) {
-            target.addAttributeAndCheck(new Attribute(entry.getKey(), entry.getValue()));
-        }
-    }
-
+    
     private void addAttributeIfNotNull(Section target, String attributeName, String propertyValue)
             throws ManifestException {
         if (propertyValue != null) {
