@@ -1019,9 +1019,16 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         }
     }
 
-    private void addPropertyAttributeIfNotNull(Section target, String attributeName, String propetyName)
+    private void addAttributeIfNotNull(Section target, String attributeName, String propertyValue)
             throws ManifestException {
-        String propertyValue = project.getProperties().getProperty(propetyName);
+        if (propertyValue != null) {
+            target.addAttributeAndCheck(new Attribute(attributeName, propertyValue));
+        }
+    }
+
+    private void addPropertyAttributeIfNotNull(Section target, String attributeName, String propertyName)
+            throws ManifestException {
+        String propertyValue = project.getProperties().getProperty(propertyName);
         if (propertyValue != null) {
             target.addAttributeAndCheck(new Attribute(attributeName, propertyValue));
         }
@@ -1054,10 +1061,10 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         for (Object obj : licenses) {
             if (obj instanceof License) {
                 License lic = (License)obj;
-                addPropertyAttributeIfNotNull(target, "Plugin-Licence-Name-" + licenseCounter, lic.getName());
-                addPropertyAttributeIfNotNull(target, "Plugin-Licence-Url-" + licenseCounter, lic.getUrl());
-                addPropertyAttributeIfNotNull(target, "Plugin-Licence-Distribution-" + licenseCounter, lic.getDistribution());
-                addPropertyAttributeIfNotNull(target, "Plugin-Licence-Comments-" + licenseCounter, lic.getComments());
+                addAttributeIfNotNull(target, "Plugin-Licence-Name-" + licenseCounter, lic.getName());
+                addAttributeIfNotNull(target, "Plugin-Licence-Url-" + licenseCounter, lic.getUrl());
+                addAttributeIfNotNull(target, "Plugin-Licence-Distribution-" + licenseCounter, lic.getDistribution());
+                addAttributeIfNotNull(target, "Plugin-Licence-Comments-" + licenseCounter, lic.getComments());
             }
             licenseCounter++;
         }
