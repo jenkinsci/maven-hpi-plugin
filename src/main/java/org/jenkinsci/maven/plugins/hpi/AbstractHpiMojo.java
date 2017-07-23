@@ -27,8 +27,10 @@ import org.apache.maven.archiver.MavenArchiver;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
+import org.apache.maven.model.License;
 import org.apache.maven.model.Resource;
 import org.apache.maven.model.Developer;
+import org.apache.maven.model.Scm;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -65,9 +67,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Collection;
@@ -977,6 +981,15 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         Boolean b = isSupportDynamicLoading();
         if (b!=null)
             mainSection.addAttributeAndCheck(new Attribute("Support-Dynamic-Loading",b.toString()));
+
+        // Extra info attributes
+        addLicenseAttributesForManifest(mainSection);
+        addPropertyAttributeIfNotNull(mainSection, "Plugin-ChangelogUrl", "plugin.info.changelogUrl");
+        addPropertyAttributeIfNotNull(mainSection, "Plugin-LogoUrl", "plugin.info.logoUrl");
+        final String scmUrl = getScmUrl();
+        if (scmUrl != null) {
+            mainSection.addAttributeAndCheck(new Attribute("Plugin-ScmUrl", scmUrl));
+        }
     }
 
     /**
@@ -1000,6 +1013,20 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         return true;
     }
 
+    private void addAttributes(Section target, Map<String, String> attrs) throws ManifestException {
+        for(Map.Entry<String, String> entry : attrs.entrySet()) {
+            target.addAttributeAndCheck(new Attribute(entry.getKey(), entry.getValue()));
+        }
+    }
+
+    private void addPropertyAttributeIfNotNull(Section target, String attributeName, String propetyName)
+            throws ManifestException {
+        String propertyValue = project.getProperties().getProperty(propetyName);
+        if (propertyValue != null) {
+            target.addAttributeAndCheck(new Attribute(attributeName, propertyValue));
+        }
+    }
+
     /**
      * Finds and lists developers specified in POM.
      */
@@ -1021,6 +1048,28 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         return buf.toString();
     }
 
+    private void addLicenseAttributesForManifest(Section target) throws ManifestException {
+        final List licenses = project.getLicenses();
+        int licenseCounter = 1;
+        for (Object obj : licenses) {
+            if (obj instanceof License) {
+                License lic = (License)obj;
+                addPropertyAttributeIfNotNull(target, "Plugin-Licence-Name-" + licenseCounter, lic.getName());
+                addPropertyAttributeIfNotNull(target, "Plugin-Licence-Url-" + licenseCounter, lic.getUrl());
+                addPropertyAttributeIfNotNull(target, "Plugin-Licence-Distribution-" + licenseCounter, lic.getDistribution());
+                addPropertyAttributeIfNotNull(target, "Plugin-Licence-Comments-" + licenseCounter, lic.getComments());
+            }
+            licenseCounter++;
+        }
+    }
+
+    private String getScmUrl() {
+        Scm scm = project.getScm();
+        if (scm != null) {
+            return scm.getUrl();
+        }
+        return null;
+    }
 
     /**
      * Finds and lists dependency plugins.
