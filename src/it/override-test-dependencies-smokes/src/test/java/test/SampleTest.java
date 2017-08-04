@@ -1,11 +1,13 @@
 package test;
 
 import com.google.common.collect.ImmutableMap;
+import hudson.remoting.Which;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.jar.Manifest;
+import org.jenkinsci.plugins.workflow.steps.StepConfigTester;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Rule;
@@ -18,7 +20,7 @@ public class SampleTest {
 
     @Test
     public void smokes() throws Exception {
-        Map<String, String> expectedVersions = ImmutableMap.of("workflow-cps", "2.32", "workflow-api", "2.17");
+        Map<String, String> expectedVersions = ImmutableMap.of("workflow-step-api", "2.11", "workflow-api", "2.17", "workflow-cps", "2.32");
         Enumeration<URL> manifests = SampleTest.class.getClassLoader().getResources("META-INF/MANIFEST.MF");
         while (manifests.hasMoreElements()) {
             URL url = manifests.nextElement();
@@ -34,6 +36,7 @@ public class SampleTest {
         for (Map.Entry<String, String> entry : expectedVersions.entrySet()) {
             assertEquals("wrong version for " + entry.getKey() + " as plugin", entry.getValue(), r.jenkins.pluginManager.getPlugin(entry.getKey()).getVersion());
         }
+        assertEquals("workflow-step-api-2.11-tests.jar", Which.jarFile(StepConfigTester.class).getName());
     }
 
 }
