@@ -5,6 +5,7 @@
     <source>src/main/java/HelloWorldBuilder.java</source>
   </sources>
   <resources>
+    <resource>Jenkinsfile</resource>
     <resource>pom.xml</resource>
     <resource>src/main/resources/index.jelly</resource>
   </resources>

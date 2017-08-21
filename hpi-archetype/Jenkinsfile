@@ -1,0 +1,3 @@
+// This file is used by the Jenkins' project continuous integration infrastructure
+// to build the plugin and verify there are no issues with pull requests
+buildPlugin()
