@@ -44,6 +44,7 @@ public class HelloWorldBuilder extends Builder implements SimpleBuildStep {
 
     /**
      * We'll use this from the {@code config.jelly}.
+     * @return name to include in greeting
      */
     public String getName() {
         return name;
@@ -107,6 +108,8 @@ public class HelloWorldBuilder extends Builder implements SimpleBuildStep {
          *      Note that returning {@link FormValidation#error(String)} does not
          *      prevent the form from being saved. It just means that a message
          *      will be displayed to the user. 
+         * @throws java.io.IOException on input / output error
+         * @throws javax.servlet.ServletException on servlet exception
          */
         public FormValidation doCheckName(@QueryParameter String value)
                 throws IOException, ServletException {
@@ -147,6 +150,7 @@ public class HelloWorldBuilder extends Builder implements SimpleBuildStep {
          *
          * The method name is bit awkward because global.jelly calls this method to determine
          * the initial state of the checkbox by the naming convention.
+         * @return true if French language should be used
          */
         public boolean getUseFrench() {
             return useFrench;
