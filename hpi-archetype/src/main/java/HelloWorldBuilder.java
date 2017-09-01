@@ -117,6 +117,7 @@ public class HelloWorldBuilder extends Builder implements SimpleBuildStep {
             return FormValidation.ok();
         }
 
+        @Override
         public boolean isApplicable(Class<? extends AbstractProject> aClass) {
             // Indicates that this builder can be used with all kinds of project types 
             return true;
@@ -125,6 +126,7 @@ public class HelloWorldBuilder extends Builder implements SimpleBuildStep {
         /**
          * This human readable name is used in the configuration screen.
          */
+        @Override
         public String getDisplayName() {
             return "Say hello world";
         }
