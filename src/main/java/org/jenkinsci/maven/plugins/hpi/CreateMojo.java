@@ -24,7 +24,7 @@ public class CreateMojo extends AbstractMojo {
 
     @Override
     public void execute() throws MojoExecutionException {
-        throw new MojoExecutionException("Obsolete; use: mvn archetype:generate -Dfilter=io.jenkins.archetypes:");
+        throw new MojoExecutionException("Unimplemented!\nhpi:create is obsolete. Instead use:\n====\nmvn archetype:generate -Dfilter=io.jenkins.archetypes:\n====\n");
     }
 
 }
