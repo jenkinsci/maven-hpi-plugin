@@ -229,6 +229,13 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
     protected boolean pluginFirstClassLoader = false;
 
     /**
+     * True if this is a plugin that overrides a core component.
+     * See https://issues.jenkins-ci.org/browse/JENKINS-41196
+     */
+    @Parameter
+    protected boolean coreComponent = false;
+
+    /**
      * If true, test scope dependencies count as if they are normal dependencies.
      * This is only useful during hpi:run, so not exposing it as a configurable parameter.
      */
@@ -977,6 +984,9 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         Boolean b = isSupportDynamicLoading();
         if (b!=null)
             mainSection.addAttributeAndCheck(new Attribute("Support-Dynamic-Loading",b.toString()));
+
+        if (coreComponent)
+            mainSection.addAttributeAndCheck(new Attribute("Core-Component","true"));
     }
 
     /**
@@ -986,6 +996,10 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
      * we don't know we can dynamic load. Otherwise, if everything is known to be dynamic loadable, return true.
      */
     protected Boolean isSupportDynamicLoading() throws IOException {
+        if (coreComponent) {
+            return false;
+        }
+
         URLClassLoader cl = new URLClassLoader(new URL[]{
                 new File(project.getBuild().getOutputDirectory()).toURI().toURL()
         }, getClass().getClassLoader());
