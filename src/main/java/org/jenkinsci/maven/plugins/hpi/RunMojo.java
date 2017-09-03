@@ -458,16 +458,6 @@ public class RunMojo extends AbstractJettyMojo {
         
         super.configureWebApplication();
         getWebAppConfig().setWar(webAppFile.getCanonicalPath());
-        for (Artifact a : (Set<Artifact>) project.getArtifacts()) {
-            if (a.getGroupId().equals("org.jenkins-ci.main") && a.getArtifactId().equals("jenkins-core")) {
-                File coreBasedir = pluginWorkspaceMap.read(a.getId());
-                if (coreBasedir != null) {
-                    String extraCP = new File(coreBasedir, "src/main/resources").toURI() + "," + new File(coreBasedir, "target/classes").toURI();
-                    getLog().info("Will load directly from " + extraCP);
-                    getWebAppConfig().setExtraClasspath(extraCP);
-                }
-            }
-        }
         // cf. https://wiki.jenkins-ci.org/display/JENKINS/Jetty
         HashLoginService hashLoginService = (new HashLoginService("Jenkins Realm"));
         hashLoginService.setConfig(System.getProperty("jetty.home", "work") + "/etc/realm.properties");
