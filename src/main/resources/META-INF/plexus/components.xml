@@ -122,18 +122,5 @@
       </configuration>
     </component>
     
-    <!-- See JENKINS-24064 for background; used to be war-for-test classifier. -->
-    <component>
-      <role>org.apache.maven.artifact.handler.ArtifactHandler</role>
-      <role-hint>executable-war</role-hint>
-      <implementation>org.apache.maven.artifact.handler.DefaultArtifactHandler</implementation>
-      <configuration>
-        <type>executable-war</type>
-        <extension>war</extension>
-        <language>java</language>
-        <addedToClasspath>true</addedToClasspath>
-      </configuration>
-    </component>
-
   </components>
 </component-set>
