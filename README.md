@@ -5,6 +5,13 @@ See the [developer guide](https://jenkins.io/doc/developer/plugin-development/) 
 
 ## Changelog
 
+### 2.1 (2017 Sep 26)
+
+* Jenkins plugin archetypes are no longer bundled with this Maven plugin. Instead use the [new project](https://github.com/jenkinsci/archetypes/blob/master/README.md#introduction).
+* Making `-DwebAppFile=…` work.
+* Fixing unchecked/rawtypes warnings in `InjectedTest`.
+* No more special handling of artifacts with `-ea` in the version.
+
 ### 2.0 (2017 May 25)
 
 * Updated integrated Jetty server to 9.x. This means that JDK 8 is now required at build time. (Plugins may continue to target older Java baselines using the `java.level` property in the 2.x parent POM.)
