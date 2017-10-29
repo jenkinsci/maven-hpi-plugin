@@ -5,6 +5,13 @@ See the [developer guide](https://jenkins.io/doc/developer/plugin-development/) 
 
 ## Changelog
 
+### 2.1 (2017 Sep 26)
+
+* Jenkins plugin archetypes are no longer bundled with this Maven plugin. Instead use the [new project](https://github.com/jenkinsci/archetypes/blob/master/README.md#introduction).
+* Making `-DwebAppFile=…` work.
+* Fixing unchecked/rawtypes warnings in `InjectedTest`.
+* No more special handling of artifacts with `-ea` in the version.
+
 ### 2.0 (2017 May 25)
 
 * Updated integrated Jetty server to 9.x. This means that JDK 8 is now required at build time. (Plugins may continue to target older Java baselines using the `java.level` property in the 2.x parent POM.)
@@ -55,6 +62,6 @@ Also make sure `project.parent.version` in `src/it/parent-2x/pom.xml` is the lat
 ## Updating Jetty
 `hpi:run` mojo is a variant of `jetty:run` mojo, and because of the way plugin descriptor is generated, this module copies some code from Jetty Maven plugin, specifically `AbstractJettyMojo.java` and `ConsoleScanner.java`.
 
-To keep upstream tracking easier, prestine copies of these files are copied into `incoming-x.y` branch, then package renamed. This version specific incoming branch is then "theirs" merged into the `incoming` branch, which acts as the upstream tracking branch.
+To keep upstream tracking easier, pristine copies of these files are copied into `incoming-x.y` branch, then package renamed. This version specific incoming branch is then "theirs" merged into the `incoming` branch, which acts as the upstream tracking branch.
 
 This branch is then merged into `master` via `git merge -X ignore-space-at-eol incoming`. See diff between `incoming` and `master` on these files to see the exact local patches.

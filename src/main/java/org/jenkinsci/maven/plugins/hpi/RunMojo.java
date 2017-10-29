@@ -93,7 +93,7 @@ public class RunMojo extends AbstractJettyMojo {
      * But this parameter allows that to be overwritten.
      * </p>
      */
-    @Parameter
+    @Parameter(property = "webAppFile")
     private File webAppFile;
 
     /**
@@ -281,7 +281,9 @@ public class RunMojo extends AbstractJettyMojo {
                 .groupIdIs("org.jenkins-ci.main","org.jvnet.hudson.main")
                 .artifactIdIsNot("remoting");       // remoting moved to its own release cycle
 
-        webAppFile = getJenkinsWarArtifact().getFile();
+        if (webAppFile == null) {
+            webAppFile = getJenkinsWarArtifact().getFile();
+        }
 
         // make sure all the relevant Jenkins artifacts have the same version
         for (Artifact a : jenkinsArtifacts) {
