@@ -105,7 +105,13 @@ public class TestInsertionMojo extends AbstractJenkinsMojo {
             getLog().info("Skipping auto-test generation because we are targeting Jenkins "+target+" (at least 1.327 is required).");
             return;
         }
-        if (javaLevel != null && javaLevel.compareTo("7") < 0) {
+        Integer javaLevelAsInteger;
+        try {
+            javaLevelAsInteger = Integer.valueOf(javaLevel);
+        } catch (NumberFormatException e) {
+            javaLevelAsInteger = null;
+        }
+        if (javaLevelAsInteger != null && javaLevelAsInteger.intValue() < 7) {
             getLog().info("Skipping auto-test generation because java.level= "+javaLevel+" in pom.xml (at least 7 is required).");
             return;
         }
