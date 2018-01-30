@@ -142,15 +142,25 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
 
     /** For a plugin artifact, unlike {@link #getArtifactId} this parses the plugin manifest. */
     public String getActualArtifactId() throws IOException {
-        try (JarFile jf = new JarFile(getFile())) {
-            return jf.getManifest().getMainAttributes().getValue("Short-Name");
+        File file = getFile();
+        if (file != null && file.isFile()) {
+            try (JarFile jf = new JarFile(file)) {
+                return jf.getManifest().getMainAttributes().getValue("Short-Name");
+            }
+        } else {
+            return getArtifactId();
         }
     }
 
     /** For a plugin artifact, unlike {@link #getVersion} this parses the plugin manifest. */
     public String getActualVersion() throws IOException {
-        try (JarFile jf = new JarFile(getFile())) {
-            return jf.getManifest().getMainAttributes().getValue("Plugin-Version").replaceFirst(" [(].+[)]$", ""); // e.g. " (private-abcd1234-username)"; Implementation-Version is clean but seems less portable
+        File file = getFile();
+        if (file != null && file.isFile()) {
+            try (JarFile jf = new JarFile(file)) {
+                return jf.getManifest().getMainAttributes().getValue("Plugin-Version").replaceFirst(" [(].+[)]$", ""); // e.g. " (private-abcd1234-username)"; Implementation-Version is clean but seems less portable
+            }
+        } else {
+            return getVersion();
         }
     }
 
