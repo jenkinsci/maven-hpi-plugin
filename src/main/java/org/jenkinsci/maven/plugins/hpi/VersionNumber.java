@@ -45,10 +45,6 @@ import java.util.StringTokenizer;
  *
  * <h2>Special tokens</h2>
  * <p>
- * We allow a component to be not just a number, but also "ea", "ea1", "ea2".
- * "ea" is treated as "ea0", and eaN &lt; M for any M &gt; 0.
- *
- * <p>
  * '*' is also allowed as a component, and '*' &gt; M for any M &gt; 0.
  *
  * <p>
@@ -87,12 +83,6 @@ public class VersionNumber implements Comparable<VersionNumber> {
                 digits[i-1]--;
                 digits[i++] = 1000;
                 break;
-            } else
-            if(token.startsWith("ea")) {
-                if(token.length()==2)
-                    digits[i++] = -1000;    // just "ea"
-                else
-                    digits[i++] = -1000 + Integer.parseInt(token.substring(2)); // "eaNNN"
             } else {
                 int n =0;
                 try {

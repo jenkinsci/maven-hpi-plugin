@@ -95,7 +95,7 @@ public class RunMojo extends AbstractJettyMojo {
      * But this parameter allows that to be overwritten.
      * </p>
      */
-    @Parameter
+    @Parameter(property = "webAppFile")
     private File webAppFile;
 
     /**
@@ -283,15 +283,17 @@ public class RunMojo extends AbstractJettyMojo {
                 .groupIdIs("org.jenkins-ci.main","org.jvnet.hudson.main")
                 .artifactIdIsNot("remoting");       // remoting moved to its own release cycle
 
-        Artifact jenkinsWarArtifact = getJenkinsWarArtifact();
-        try {
-            artifactResolver.resolve(jenkinsWarArtifact, remoteRepos, localRepository);
-        } catch (AbstractArtifactResolutionException x) {
-            throw new MojoExecutionException("Could not resolve " + jenkinsWarArtifact + ": " + x, x);
-        }
-        webAppFile = jenkinsWarArtifact.getFile();
-        if (webAppFile == null || !webAppFile.isFile()) {
-            throw new MojoExecutionException("Could not find " + webAppFile + " from " + jenkinsWarArtifact);
+        if (webAppFile == null) {
+            Artifact jenkinsWarArtifact = getJenkinsWarArtifact();
+            try {
+                artifactResolver.resolve(jenkinsWarArtifact, remoteRepos, localRepository);
+            } catch (AbstractArtifactResolutionException x) {
+                throw new MojoExecutionException("Could not resolve " + jenkinsWarArtifact + ": " + x, x);
+            }
+            webAppFile = jenkinsWarArtifact.getFile();
+            if (webAppFile == null || !webAppFile.isFile()) {
+                throw new MojoExecutionException("Could not find " + webAppFile + " from " + jenkinsWarArtifact);
+            }
         }
 
         // make sure all the relevant Jenkins artifacts have the same version
@@ -735,7 +737,7 @@ public class RunMojo extends AbstractJettyMojo {
             if (jenkinsWarId!=null)
                 match = (a.getGroupId()+':'+a.getArtifactId()).equals(jenkinsWarId);
             else
-                match = (a.getArtifactId().equals("jenkins-war") || a.getArtifactId().equals("hudson-war")) && a.getType().equals("war");
+                match = (a.getArtifactId().equals("jenkins-war") || a.getArtifactId().equals("hudson-war")) && (a.getType().equals("executable-war") || a.getType().equals("war"));
             if(match)
                 return a;
         }
