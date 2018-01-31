@@ -5,6 +5,10 @@ See the [developer guide](https://jenkins.io/doc/developer/plugin-development/) 
 
 ## Changelog
 
+### 2.2 (2018 Jan 30)
+
+* Fix `mvn clean hpi:run` and some similar special goal sequences.
+
 ### 2.1 (2017 Sep 26)
 
 * Jenkins plugin archetypes are no longer bundled with this Maven plugin. Instead use the [new project](https://github.com/jenkinsci/archetypes/blob/master/README.md#introduction).
