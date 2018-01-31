@@ -81,14 +81,28 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
 
     /**
      * Resolves to the jar file that contains the code of the plugin.
+     * 
+     * @return the artifact file
+     * @throws RuntimeException
+     *             if the artifact can't be resolved
+     * @throws NullPointerException
+     *             if the artifact file can't be resolved
      */
     public File getFile() {
-        if (artifact.getFile()==null)
+        if (artifact.getFile()==null) {
+            if (artifact.isResolved()) {
+                // artifacts can be set as resolved and file be null, is this a bug in Maven 3.5.0 ?
+                artifact.setResolved(false);
+            }
             try {
                 resolver.resolve(artifact, remoteRepositories, localRepository);
             } catch (AbstractArtifactResolutionException e) {
                 throw new RuntimeException("Failed to resolve "+getId(),e);
             }
+        }
+        if (artifact.getFile()==null) {
+            throw new NullPointerException("Unable to resolve file for artifact " + artifact);
+        }
         return artifact.getFile();
     }
 
