@@ -27,7 +27,6 @@ import org.apache.maven.archiver.MavenArchiver;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
-import org.apache.maven.model.Plugin;
 import org.apache.maven.model.Resource;
 import org.apache.maven.model.Developer;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -47,7 +46,6 @@ import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.InterpolationFilterReader;
 import org.codehaus.plexus.util.StringUtils;
-import org.codehaus.plexus.util.xml.Xpp3Dom;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -940,9 +938,8 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         if (compatibleSinceVersion!=null)
             mainSection.addAttributeAndCheck(new Attribute("Compatible-Since-Version", compatibleSinceVersion));
 
-        String javaVersion = determineMinimumJavaVersion();
-        if (javaVersion != null) {
-            mainSection.addAttributeAndCheck(new Attribute("Minimum-Java-Version", javaVersion));
+        if (this.javaVersion != null) {
+            mainSection.addAttributeAndCheck(new Attribute("Minimum-Java-Version", this.javaVersion));
         }
 
         if (sandboxStatus!=null)
@@ -990,42 +987,6 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         Boolean b = isSupportDynamicLoading();
         if (b!=null)
             mainSection.addAttributeAndCheck(new Attribute("Support-Dynamic-Loading",b.toString()));
-    }
-
-    /**
-     * Determine the minimum Java version this plugin requires from HPI plugin configuration or other POM entries.
-     *
-     * @return A Java version such as <code>1.7</code> or <code>1.8</code>, or <code>null</code> if it could not be determined.
-     */
-    private String determineMinimumJavaVersion() {
-        // prefer explicitly defined minimum Java version
-        String javaVersion = this.javaVersion;
-
-        // next stop, 2.x plugins parent POM property
-        if (javaVersion == null) {
-            // plugin POM convention
-            javaVersion = this.project.getProperties().getProperty("java.level");
-            if (javaVersion != null && javaVersion.matches("\\d+")) {
-                javaVersion = "1." + javaVersion;
-            }
-        }
-
-        // if all else fails, one last attempt to get it from the maven-compiler-plugin configuration
-        if (javaVersion == null) {
-            List<Plugin> plugins = this.project.getBuild().getPlugins();
-            for (Plugin plugin : plugins) {
-                if (plugin.getArtifactId().equals("maven-compiler-plugin")) {
-                    Object config = plugin.getConfiguration();
-                    if (config != null) {
-                        Xpp3Dom node = ((Xpp3Dom) config).getChild("target");
-                        if (node != null) {
-                            javaVersion = node.getValue();
-                        }
-                    }
-                }
-            }
-        }
-        return javaVersion;
     }
 
     /**
