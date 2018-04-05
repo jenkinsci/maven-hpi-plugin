@@ -1,7 +1,7 @@
 properties([buildDiscarder(logRotator(numToKeepStr: '20'))])
 node('docker') {
   checkout scm
-  docker.image('maven:3.3.9-jdk-8').inside {
+  docker.image('maven:3.3.9-jdk-8').inside { // checking
     try {
       sh 'mvn -B -Prun-its clean install site'
     } catch (e) {
