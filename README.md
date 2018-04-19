@@ -5,6 +5,10 @@ See the [developer guide](https://jenkins.io/doc/developer/plugin-development/) 
 
 ## Changelog
 
+### 2.3 (2018 Apr 19)
+
+* Using a newer standard `VersionNumber` that precisely matches the behavior of the Jenkins plugin manager.
+
 ### 2.2 (2018 Jan 30)
 
 * Fix `mvn clean hpi:run` and some similar special goal sequences.
