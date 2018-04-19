@@ -157,6 +157,11 @@
       <artifactId>plexus-component-annotations</artifactId>
       <version>1.6</version>
     </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci</groupId>
+      <artifactId>version-number</artifactId>
+      <version>1.4</version>
+    </dependency>
   </dependencies>
 
   <build>

@@ -1,5 +1,6 @@
 package org.jenkinsci.maven.plugins.hpi;
 
+import hudson.util.VersionNumber;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.repository.ArtifactRepository;
