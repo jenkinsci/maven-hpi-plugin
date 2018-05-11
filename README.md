@@ -5,6 +5,10 @@ See the [developer guide](https://jenkins.io/doc/developer/plugin-development/) 
 
 ## Changelog
 
+### 2.5 (2018 May 11)
+
+* Option to override a snapshot plugin version with a more informative string.
+
 ### 2.3 (2018 Apr 19)
 
 * Using a newer standard `VersionNumber` that precisely matches the behavior of the Jenkins plugin manager.
