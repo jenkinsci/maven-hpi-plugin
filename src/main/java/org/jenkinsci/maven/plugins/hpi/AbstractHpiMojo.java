@@ -122,16 +122,17 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
      * something like <a href="https://github.com/stephenc/git-timestamp-maven-plugin">git-timestamp-maven-plugin</a>
      * to populate a property with the version and then use this configuration to provide the version.
      *
-     * @see #snapshotPluginVersionOverrideSafetyOff
+     * @see #failOnVersionOverrideToDifferentRelease
      */
     @Parameter
     protected String snapshotPluginVersionOverride;
 
     /**
-     * Optional - disable the built in safety checks and allow override to any version whatsoever.
+     * Controls the safety check that prevents a {@link #snapshotPluginVersionOverride} from switching to a different
+     * release version.
      */
-    @Parameter
-    protected boolean snapshotPluginVersionOverrideSafetyOff;
+    @Parameter(defaultValue = "true")
+    protected boolean failOnVersionOverrideToDifferentRelease = true;
 
     /**
      * The directory where the webapp is built.
@@ -967,25 +968,22 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         if (v.endsWith("-SNAPSHOT") && snapshotPluginVersionOverride!=null) {
             String nonSnapshotVersion = v.substring(0, v.length() - "-SNAPSHOT".length());
             if (!snapshotPluginVersionOverride.startsWith(nonSnapshotVersion)) {
-                if (snapshotPluginVersionOverrideSafetyOff) {
-                    // there are be some legitimate use cases for this usage:
-                    // for example:
-                    // * If the development version is 1.x-SNAPSHOT and releases are e.g. 1.423
-                    //   and you want to test upgrading from 1.423 to the development version from a hosted update
-                    //   centre then you need the version reported to be after 1.423 using the version number
-                    //   comparison rules, thus you would need to override the version to something like
-                    //   1.424-20180430.123402-6 so that this new version is visible from Jenkins
-                    // Ordinarily, you would only be comparing ether a release with a release or a
-                    // SNAPSHOT with a SNAPSHOT and thus the safety checks would not be required for normal use
-                    // but we provide this escape hatch just in case.
-                    getLog().warn(
-                            "Snapshot Plugin Version Override is being used to apply a 'non-safe' version."
-                    );
-                } else {
-                    throw new MojoExecutionException(
-                            "The snapshotPluginVersionOverride of " + snapshotPluginVersionOverride
-                                    + " does not start with the current target release version " + v);
+                String message = "The snapshotPluginVersionOverride of " + snapshotPluginVersionOverride
+                        + " does not start with the current target release version " + v;
+                // there are be some legitimate use cases for this usage:
+                // for example:
+                // * If the development version is 1.x-SNAPSHOT and releases are e.g. 1.423
+                //   and you want to test upgrading from 1.423 to the development version from a hosted update
+                //   centre then you need the version reported to be after 1.423 using the version number
+                //   comparison rules, thus you would need to override the version to something like
+                //   1.424-20180430.123402-6 so that this new version is visible from Jenkins
+                // Ordinarily, you would only be comparing either a release with a release or a
+                // SNAPSHOT with a SNAPSHOT and thus the safety checks would not be required for normal use
+                // but we provide this escape hatch just in case.
+                if (failOnVersionOverrideToDifferentRelease) {
+                    throw new MojoExecutionException(message);
                 }
+                getLog().warn(message);
             }
             getLog().info("Snapshot Plugin Version Override enabled. Using " + snapshotPluginVersionOverride
                     + " in place of " + v);
