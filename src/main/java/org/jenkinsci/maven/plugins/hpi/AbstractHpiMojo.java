@@ -17,7 +17,34 @@ package org.jenkinsci.maven.plugins.hpi;
  */
 
 import hudson.Extension;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.Writer;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import jenkins.YesNoMaybe;
 import net.java.sezpoz.Index;
 import net.java.sezpoz.IndexItem;
@@ -27,8 +54,8 @@ import org.apache.maven.archiver.MavenArchiver;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
-import org.apache.maven.model.Resource;
 import org.apache.maven.model.Developer;
+import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -46,34 +73,6 @@ import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.InterpolationFilterReader;
 import org.codehaus.plexus.util.StringUtils;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
-import java.io.Writer;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-import java.util.Collection;
-import java.util.TreeSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
     /**
@@ -104,6 +103,35 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
      */
     @Parameter(defaultValue = "${plugin.version.description}")
     protected String pluginVersionDescription;
+
+    /**
+     * Optional - the version to use in place of the project version in the event that the project version is a
+     * -SNAPSHOT. If specified, the value <strong>must</strong> start with the project version after removing the
+     * terminal {@code -SNAPSHOT}, for example if the project version is {@code 1.2.3-SNAPSHOT} then the
+     * {@code snapshotPluginVersionOverride} could be {@code 1.2.3-rc45.cafebabe-SNAPSHOT} or
+     * {@code 1.2.3-20180430.123233-56}, etc, but it could not be {@code 1.2.4} as that does not start with the
+     * project version.
+     *
+     * When testing plugin builds on a locally hosted update centre, in order to be allowed to update the plugin,
+     * the update centre must report the plugin version as greater than the currently installed plugin version.
+     * If you are using a Continuous Delivery model for your plugin (i.e. where the master branch stays on a
+     * version like {@code 1.x-SNAPSHOT} and releases are tagged but not merged back to master (in order to
+     * prevent merge conflicts) then you will find that you cannot update the plugin when building locally as
+     * {@code 1.x-SNAPSHOT} is never less than {@code 1.x-SNAPSHOT}. Thus in order to test plugin upgrade (in say
+     * an acceptance test), you need to override the plugin version for non-releases. Typically you would use
+     * something like <a href="https://github.com/stephenc/git-timestamp-maven-plugin">git-timestamp-maven-plugin</a>
+     * to populate a property with the version and then use this configuration to provide the version.
+     *
+     * @see #snapshotPluginVersionOverrideSafetyOff
+     */
+    @Parameter
+    protected String snapshotPluginVersionOverride;
+
+    /**
+     * Optional - disable the built in safety checks and allow override to any version whatsoever.
+     */
+    @Parameter
+    protected boolean snapshotPluginVersionOverrideSafetyOff;
 
     /**
      * The directory where the webapp is built.
@@ -936,6 +964,33 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
             mainSection.addAttributeAndCheck(new Attribute("Sandbox-Status", sandboxStatus));
 
         String v = project.getVersion();
+        if (v.endsWith("-SNAPSHOT") && snapshotPluginVersionOverride!=null) {
+            String nonSnapshotVersion = v.substring(0, v.length() - "-SNAPSHOT".length());
+            if (!snapshotPluginVersionOverride.startsWith(nonSnapshotVersion)) {
+                if (snapshotPluginVersionOverrideSafetyOff) {
+                    // there are be some legitimate use cases for this usage:
+                    // for example:
+                    // * If the development version is 1.x-SNAPSHOT and releases are e.g. 1.423
+                    //   and you want to test upgrading from 1.423 to the development version from a hosted update
+                    //   centre then you need the version reported to be after 1.423 using the version number
+                    //   comparison rules, thus you would need to override the version to something like
+                    //   1.424-20180430.123402-6 so that this new version is visible from Jenkins
+                    // Ordinarily, you would only be comparing ether a release with a release or a
+                    // SNAPSHOT with a SNAPSHOT and thus the safety checks would not be required for normal use
+                    // but we provide this escape hatch just in case.
+                    getLog().warn(
+                            "Snapshot Plugin Version Override is being used to apply a 'non-safe' version."
+                    );
+                } else {
+                    throw new MojoExecutionException(
+                            "The snapshotPluginVersionOverride of " + snapshotPluginVersionOverride
+                                    + " does not start with the current target release version " + v);
+                }
+            }
+            getLog().info("Snapshot Plugin Version Override enabled. Using " + snapshotPluginVersionOverride
+                    + " in place of " + v);
+            v = snapshotPluginVersionOverride;
+        }
         if (v.endsWith("-SNAPSHOT") && pluginVersionDescription==null) {
             String dt = getGitHeadSha1();
             if (dt==null)   // if SHA1 isn't available, fall back to timestamp
