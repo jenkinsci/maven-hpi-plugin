@@ -123,6 +123,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
      * to populate a property with the version and then use this configuration to provide the version.
      *
      * @see #failOnVersionOverrideToDifferentRelease
+     * @since 2.4
      */
     @Parameter
     protected String snapshotPluginVersionOverride;
@@ -130,6 +131,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
     /**
      * Controls the safety check that prevents a {@link #snapshotPluginVersionOverride} from switching to a different
      * release version.
+     * @since 2.4
      */
     @Parameter(defaultValue = "true")
     protected boolean failOnVersionOverrideToDifferentRelease = true;
