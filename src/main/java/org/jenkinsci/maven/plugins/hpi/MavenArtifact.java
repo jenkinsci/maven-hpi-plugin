@@ -202,6 +202,10 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
             if(!type.equals("jar")) {
                 return type;
             }
+            // also ignore core-assets, tests, etc.
+            if (artifact.getClassifier() != null) {
+                return type;
+            }
 
             // when a plugin depends on another plugin, it doesn't specify the type as hpi or jpi, so we need to resolve its POM to see it
             return resolvePom().getPackaging();
