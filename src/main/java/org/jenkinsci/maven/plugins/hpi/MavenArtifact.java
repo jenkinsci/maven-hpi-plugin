@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.jar.JarFile;
+import org.apache.commons.lang.StringUtils;
 
 import static org.apache.maven.artifact.Artifact.*;
 
@@ -203,7 +204,7 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
                 return type;
             }
             // also ignore core-assets, tests, etc.
-            if (artifact.getClassifier() != null) {
+            if (!StringUtils.isEmpty(artifact.getClassifier())) {
                 return type;
             }
 
