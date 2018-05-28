@@ -260,6 +260,13 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
     protected boolean pluginFirstClassLoader = false;
 
     /**
+     * If true, will add a "Jenkins-ClassFilter-Whitelisted: true" manifest entry.
+     * That whitelists classes defined in a JAR you build and fixes compatibility issues introduced by JEP-200.
+     */
+    @Parameter
+    protected boolean jenkinsClassFilterWhitelisted = false;
+
+    /**
      * If true, test scope dependencies count as if they are normal dependencies.
      * This is only useful during hpi:run, so not exposing it as a configurable parameter.
      */
@@ -1020,6 +1027,9 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
 
         if(pluginFirstClassLoader)
             mainSection.addAttributeAndCheck( new Attribute( "PluginFirstClassLoader", "true" ) );
+
+        if(jenkinsClassFilterWhitelisted)
+            mainSection.addAttributeAndCheck( new Attribute( "Jenkins-ClassFilter-Whitelisted", "true" ) );
 
         String dep = findDependencyPlugins();
         if(dep.length()>0)
