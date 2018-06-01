@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.jar.JarFile;
+import org.apache.commons.lang.StringUtils;
 
 import static org.apache.maven.artifact.Artifact.*;
 
@@ -200,6 +201,10 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
 
             // only resolve the POM if the packaging type is jar, because that's the default if no type has been specified
             if(!type.equals("jar")) {
+                return type;
+            }
+            // also ignore core-assets, tests, etc.
+            if (!StringUtils.isEmpty(artifact.getClassifier())) {
                 return type;
             }
 
