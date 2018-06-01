@@ -5,6 +5,10 @@ See the [developer guide](https://jenkins.io/doc/developer/plugin-development/) 
 
 ## Changelog
 
+### 2.6 (2018 Jun 01)
+
+* Bugs in the dependency copy of `mvn hpi:run` could lead to anomalies such as `work/plugins/null.jpi`.
+
 ### 2.5 (2018 May 11)
 
 * Option to override a snapshot plugin version with a more informative string.
