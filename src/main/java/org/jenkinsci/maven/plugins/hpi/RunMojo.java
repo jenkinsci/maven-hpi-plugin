@@ -401,9 +401,11 @@ public class RunMojo extends AbstractJettyMojo {
         }
         getLog().info("Copying dependency Jenkins plugin " + src);
         FileUtils.copyFile(src, dst);
+        // TODO skip .pinned file creation if Jenkins version is >= 2.0
         // pin the dependency plugin, so that even if a different version of the same plugin is bundled to Jenkins,
         // we still use the plugin as specified by the POM of the plugin.
         FileUtils.writeStringToFile(new File(dst + ".pinned"), "pinned");
+        new File(pluginsDir, shortName + ".jpl").delete(); // in case we used to have a snapshot dependency
     }
     private VersionNumber versionOfPlugin(File p) throws IOException {
         if (!p.isFile()) {
