@@ -5,6 +5,11 @@ See the [developer guide](https://jenkins.io/doc/developer/plugin-development/) 
 
 ## Changelog
 
+### 2.7 (2018-10-30)
+
+* Delete `work/plugins/*.jpl` where the current `test`-scoped dependency is not in fact a snapshot.
+* Use a more specific temp dir for Jetty.
+
 ### 2.6 (2018 Jun 01)
 
 * Bugs in the dependency copy of `mvn hpi:run` could lead to anomalies such as `work/plugins/null.jpi`.
