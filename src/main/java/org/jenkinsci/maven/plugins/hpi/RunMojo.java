@@ -409,13 +409,13 @@ public class RunMojo extends AbstractJettyMojo {
         if (!p.isFile()) {
             return new VersionNumber("0.0");
         }
-        JarFile j = null;
+        JarFile j;
         try {
-            try {
-                j = new JarFile(p);
-            } catch (IOException x) {
-                throw new IOException("not a valid JarFile: " + p, x);
-            }
+            j = new JarFile(p);
+        } catch (IOException x) {
+            throw new IOException("not a valid JarFile: " + p, x);
+        }
+        try {
             String v = j.getManifest().getMainAttributes().getValue("Plugin-Version");
             if (v == null) {
                 throw new IOException("no Plugin-Version in " + p);
@@ -426,9 +426,7 @@ public class RunMojo extends AbstractJettyMojo {
                 throw new IOException("malformed Plugin-Version in " + p + ": " + x, x);
             }
         } finally {
-            if (j != null) {
-                j.close();
-            }
+            j.close();
         }
     }
 
