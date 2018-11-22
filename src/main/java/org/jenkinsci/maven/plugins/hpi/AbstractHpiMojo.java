@@ -122,7 +122,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
      * Optional - specify the minimum version of Java that this plugin requires.
      */
     @Parameter
-    private String javaVersion;
+    private String minimumJavaVersion;
 
     /**
      * Optional - sandbox status of this plugin. 
@@ -938,8 +938,8 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         if (compatibleSinceVersion!=null)
             mainSection.addAttributeAndCheck(new Attribute("Compatible-Since-Version", compatibleSinceVersion));
 
-        if (this.javaVersion != null) {
-            mainSection.addAttributeAndCheck(new Attribute("Minimum-Java-Version", this.javaVersion));
+        if (this.minimumJavaVersion != null) {
+            mainSection.addAttributeAndCheck(new Attribute("Minimum-Java-Version", this.minimumJavaVersion));
         }
 
         if (sandboxStatus!=null)
