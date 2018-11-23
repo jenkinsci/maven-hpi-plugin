@@ -1,5 +1,6 @@
 package org.jenkinsci.maven.plugins.hpi;
 
+import hudson.util.VersionNumber;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;

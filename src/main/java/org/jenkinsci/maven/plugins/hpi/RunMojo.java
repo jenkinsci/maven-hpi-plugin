@@ -14,6 +14,7 @@
 //========================================================================
 package org.jenkinsci.maven.plugins.hpi;
 
+import hudson.util.VersionNumber;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
@@ -340,10 +341,14 @@ public class RunMojo extends AbstractJettyMojo {
                     throw new UnsupportedOperationException(hpi.getFile()+" is a directory and not packaged yet. this isn't supported");
 
                 File upstreamHpl = pluginWorkspaceMap.read(hpi.getId());
+                String actualArtifactId = a.getActualArtifactId();
+                if (actualArtifactId == null) {
+                    throw new MojoExecutionException("Failed to load actual artifactId from " + a + " ~ " + a.getFile());
+                }
                 if (upstreamHpl != null) {
-                    copyHpl(upstreamHpl, pluginsDir, a.getActualArtifactId());
+                    copyHpl(upstreamHpl, pluginsDir, actualArtifactId);
                 } else {
-                    copyPlugin(hpi.getFile(), pluginsDir, a.getActualArtifactId());
+                    copyPlugin(hpi.getFile(), pluginsDir, actualArtifactId);
                 }
             }
         } catch (IOException e) {
@@ -389,15 +394,18 @@ public class RunMojo extends AbstractJettyMojo {
             getLog().warn("Moving historical " + hpi + " to *.jpi");
             hpi.renameTo(dst);
         }
-        if (versionOfPlugin(src).compareTo(versionOfPlugin(dst)) < 0) {
-            getLog().warn("will not overwrite " + dst + " with " + src + " because it is newer");
+        VersionNumber dstV = versionOfPlugin(dst);
+        if (versionOfPlugin(src).compareTo(dstV) < 0) {
+            getLog().info("will not overwrite " + dst + " with " + src + " because " + dstV + " is newer");
             return;
         }
         getLog().info("Copying dependency Jenkins plugin " + src);
         FileUtils.copyFile(src, dst);
+        // TODO skip .pinned file creation if Jenkins version is >= 2.0
         // pin the dependency plugin, so that even if a different version of the same plugin is bundled to Jenkins,
         // we still use the plugin as specified by the POM of the plugin.
         FileUtils.writeStringToFile(new File(dst + ".pinned"), "pinned");
+        new File(pluginsDir, shortName + ".jpl").delete(); // in case we used to have a snapshot dependency
     }
     private VersionNumber versionOfPlugin(File p) throws IOException {
         if (!p.isFile()) {

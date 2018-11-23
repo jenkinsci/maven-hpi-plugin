@@ -5,6 +5,23 @@ See the [developer guide](https://jenkins.io/doc/developer/plugin-development/) 
 
 ## Changelog
 
+### 2.7 (2018-10-30)
+
+* Delete `work/plugins/*.jpl` where the current `test`-scoped dependency is not in fact a snapshot.
+* Use a more specific temp dir for Jetty.
+
+### 2.6 (2018 Jun 01)
+
+* Bugs in the dependency copy of `mvn hpi:run` could lead to anomalies such as `work/plugins/null.jpi`.
+
+### 2.5 (2018 May 11)
+
+* Option to override a snapshot plugin version with a more informative string.
+
+### 2.3 (2018 Apr 19)
+
+* Using a newer standard `VersionNumber` that precisely matches the behavior of the Jenkins plugin manager.
+
 ### 2.2 (2018 Jan 30)
 
 * Fix `mvn clean hpi:run` and some similar special goal sequences.
