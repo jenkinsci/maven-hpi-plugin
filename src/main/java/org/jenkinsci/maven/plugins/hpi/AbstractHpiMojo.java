@@ -969,9 +969,19 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         if (compatibleSinceVersion!=null)
             mainSection.addAttributeAndCheck(new Attribute("Compatible-Since-Version", compatibleSinceVersion));
 
-        if (this.minimumJavaVersion != null) {
-            mainSection.addAttributeAndCheck(new Attribute("Minimum-Java-Version", this.minimumJavaVersion));
+        if (this.minimumJavaVersion == null) {
+            throw new MojoExecutionException("minimumJavaVersion attribute must be set starting from version 2.8");
         }
+        try {
+            int res = Integer.parseInt(this.minimumJavaVersion);
+        } catch(NumberFormatException ex) {
+            if (this.minimumJavaVersion.equals("1.6") || this.minimumJavaVersion.equals("1.7") || this.minimumJavaVersion.equals("1.8")) {
+                // okay
+            } else {
+                throw new MojoExecutionException("Unsupported Java version string: `" + this.minimumJavaVersion + "`. If you use Java 9 or above, see https://openjdk.java.net/jeps/223");
+            }
+        }
+        mainSection.addAttributeAndCheck(new Attribute("Minimum-Java-Version", this.minimumJavaVersion));
 
         if (sandboxStatus!=null)
             mainSection.addAttributeAndCheck(new Attribute("Sandbox-Status", sandboxStatus));
