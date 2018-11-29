@@ -6,14 +6,17 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
-import org.apache.maven.project.artifact.AttachedArtifact;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Zip;
 import org.apache.tools.ant.types.ZipFileSet;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.LinkedHashSet;
+import java.util.Optional;
+import java.util.Set;
 
 import static org.apache.maven.plugins.annotations.LifecyclePhase.*;
 import static org.apache.maven.plugins.annotations.ResolutionScope.*;
@@ -34,6 +37,12 @@ public class WarMojo extends RunMojo {
 
     @Parameter
     protected File outputFile;
+
+    /**
+     * Add this plugin to custom war
+     */
+    @Parameter (property = "addThisPluginToCustomWar", defaultValue = "false")
+    private boolean addThisPluginToCustomWar = false;
 
     @Component
     protected MavenProjectHelper projectHelper;
@@ -58,7 +67,18 @@ public class WarMojo extends RunMojo {
             rezip.addZipfileset(z);
 
             getProject().setArtifacts(resolveDependencies(dependencyResolution));
-            for( MavenArtifact a : getProjectArtifacts() ) {
+
+            Set<MavenArtifact> projectArtifacts = new LinkedHashSet<>(getProjectArtifacts());
+            if(addThisPluginToCustomWar) {
+                Optional.ofNullable(getProject())
+                        .map(MavenProject::getArtifact)
+                        .map(a -> {
+                            projectArtifacts.add(wrap(a)); // side effect
+                            getLog().debug("This plugin " + a + "to be added to custom war");
+                            return projectArtifacts; // have to return someting from multiline lambda inside map()
+                        });
+            }
+            for( MavenArtifact a : projectArtifacts ) {
                 if(!a.isPlugin())
                     continue;
 
