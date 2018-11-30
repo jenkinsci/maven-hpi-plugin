@@ -5,6 +5,15 @@ See the [developer guide](https://jenkins.io/doc/developer/plugin-development/) 
 
 ## Changelog
 
+### 3.0 (2018-11-30)
+
+* [JENKINS-20679](https://issues.jenkins-ci.org/browse/JENKINS-20679) - 
+Inject `Minimum-Java-Version` into the manifest.
+  * It is set by a new mandatory `minimumJavaVersion` parameter in `hpi:hpi`, `hpi:jar` and `hpi:hpl`
+  * Format: `java.specification.version` according to [Java JEP-223](https://openjdk.java.net/jeps/223). 
+    Examples: `1.6`, `1.7`, `1.8`, `6`, `7`, `8`, `9`, `11`, ...
+* Internal: Move manifest-related parameters and logic to `AbstractJenkinsManifestMojo`
+
 ### 2.7 (2018-10-30)
 
 * Delete `work/plugins/*.jpl` where the current `test`-scoped dependency is not in fact a snapshot.
