@@ -5,6 +5,15 @@ See the [developer guide](https://jenkins.io/doc/developer/plugin-development/) 
 
 ## Changelog
 
+### 3.0 (2018-11-30)
+
+* [JENKINS-20679](https://issues.jenkins-ci.org/browse/JENKINS-20679) - 
+Inject `Minimum-Java-Version` into the manifest.
+  * It is set by a new mandatory `minimumJavaVersion` parameter in `hpi:hpi`, `hpi:jar` and `hpi:hpl`
+  * Format: `java.specification.version` according to [Java JEP-223](https://openjdk.java.net/jeps/223). 
+    Examples: `1.6`, `1.7`, `1.8`, `6`, `7`, `8`, `9`, `11`, ...
+* Internal: Move manifest-related parameters and logic to `AbstractJenkinsManifestMojo`
+
 ### 2.7 (2018-10-30)
 
 * Delete `work/plugins/*.jpl` where the current `test`-scoped dependency is not in fact a snapshot.
@@ -69,16 +78,16 @@ mvn -f ../some-plugin -Dhpi-plugin.version=2.XXX-SNAPSHOT -DskipTests -DjenkinsH
 You can also rerun one test:
 
 ```bash
-mvn -Prun-its mrm:start invoker:run mrm:stop -Dinvoker.test=parent-2x
+mvn -Prun-its mrm:start invoker:run mrm:stop -Dinvoker.test=parent-3x
 ```
 
 To rerun just the verification script:
 
 ```bash
-groovy -e "basedir='$(pwd)/target/its/parent-2x'; evaluate new File('src/it/parent-2x/verify.groovy')"
+groovy -e "basedir='$(pwd)/target/its/parent-3x'; evaluate new File('src/it/parent-3x/verify.groovy')"
 ```
 
-Also make sure `project.parent.version` in `src/it/parent-2x/pom.xml` is the latest.
+Also make sure `project.parent.version` in `src/it/parent-3x/pom.xml` is the latest.
 
 ## Updating Jetty
 `hpi:run` mojo is a variant of `jetty:run` mojo, and because of the way plugin descriptor is generated, this module copies some code from Jetty Maven plugin, specifically `AbstractJettyMojo.java` and `ConsoleScanner.java`.
