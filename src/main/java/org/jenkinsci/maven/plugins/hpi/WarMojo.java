@@ -69,7 +69,7 @@ public class WarMojo extends RunMojo {
             getProject().setArtifacts(resolveDependencies(dependencyResolution));
 
             Set<MavenArtifact> projectArtifacts = new LinkedHashSet<>(getProjectArtifacts());
-            if(addThisPluginToCustomWar) {
+            if(getProject().getPackaging().equals("hpi") && addThisPluginToCustomWar) {
                 Optional.ofNullable(getProject())
                         .map(MavenProject::getArtifact)
                         .map(a -> {
