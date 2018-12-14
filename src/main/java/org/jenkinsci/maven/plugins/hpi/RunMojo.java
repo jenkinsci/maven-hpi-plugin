@@ -260,10 +260,11 @@ public class RunMojo extends AbstractJettyMojo {
             if (h == null) {
                 h = System.getenv("HUDSON_HOME");
             }
-            if(h!=null)
+            if (h != null && !h.isEmpty() && /* see pom.xml override */!h.equals("null")) {
                 jenkinsHome = new File(h);
-            else
+            } else {
                 jenkinsHome = new File(basedir, "work");
+            }
         }
 
         // auto-enable stapler trace, unless otherwise configured already.
