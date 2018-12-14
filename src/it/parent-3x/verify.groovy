@@ -52,7 +52,12 @@ checkArtifact(installed, 'parent-3x-1.0-SNAPSHOT-test-sources.jar',
     ['InjectedTest.java'],
     [:])
 
-// TODO try mvn hpi:run (how do we find the right version of mvn to run?) and check that we can access http://localhost:8080/jenkins/sample/
+// TODO check that we can access http://localhost:8080/jenkins/sample/ during hpi:run
+// (tricky since this script is called only once mvn is done)
+def text = new File(basedir, 'build.log').text
+assert text.contains('INFO: Jenkins is fully up and running') && text.contains('INFO: Jenkins stopped')
+assert new File(basedir, 'work/plugins/parent-3x.hpl').file
+assert new File(basedir, 'work/plugins/structs.jpi').file
 
 // TODO run a copy of jenkins.war with the installed *.hpi predeployed and do a similar check
 

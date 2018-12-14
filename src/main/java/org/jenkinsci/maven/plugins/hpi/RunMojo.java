@@ -214,6 +214,12 @@ public class RunMojo extends AbstractJettyMojo {
     private Collection<Logger> loggerReferences; // just to prevent GC
 
     /**
+     * Specify the minimum version of Java that this plugin requires.
+     */
+    @Parameter(required = true)
+    private String minimumJavaVersion;
+
+    /**
      * The context path for the webapp. Defaults to the
      * name of the webapp's artifact.
      *
@@ -254,10 +260,11 @@ public class RunMojo extends AbstractJettyMojo {
             if (h == null) {
                 h = System.getenv("HUDSON_HOME");
             }
-            if(h!=null)
+            if (h != null && !h.isEmpty() && /* see pom.xml override */!h.equals("null")) {
                 jenkinsHome = new File(h);
-            else
+            } else {
                 jenkinsHome = new File(basedir, "work");
+            }
         }
 
         // auto-enable stapler trace, unless otherwise configured already.
@@ -465,6 +472,7 @@ public class RunMojo extends AbstractJettyMojo {
         hpl.pluginFirstClassLoader = this.pluginFirstClassLoader;
         hpl.maskClasses = this.maskClasses;
         hpl.remoteRepos = this.remoteRepos;
+        hpl.minimumJavaVersion = this.minimumJavaVersion;
         /* As needed:
         hpl.artifactFactory = this.artifactFactory;
         hpl.artifactResolver = this.artifactResolver;

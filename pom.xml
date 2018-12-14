@@ -360,7 +360,9 @@
                 </goals>
                 <configuration>
                   <streamLogs>false</streamLogs>
-                  <debug>true</debug>
+                  <environmentVariables>
+                      <JENKINS_HOME/> <!-- block anything set by a CI environment -->
+                  </environmentVariables>
                 </configuration>
               </execution>
             </executions>
