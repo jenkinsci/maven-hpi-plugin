@@ -5,6 +5,10 @@ See the [developer guide](https://jenkins.io/doc/developer/plugin-development/) 
 
 ## Changelog
 
+### 3.1 (2018-12-14)
+
+* `hpi:run` was broken since 3.0 since `minimumJavaVersion` was not being properly propagated.
+
 ### 3.0 (2018-12-05)
 
 * [JENKINS-20679](https://issues.jenkins-ci.org/browse/JENKINS-20679) - 
