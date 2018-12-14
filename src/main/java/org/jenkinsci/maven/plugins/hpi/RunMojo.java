@@ -214,6 +214,12 @@ public class RunMojo extends AbstractJettyMojo {
     private Collection<Logger> loggerReferences; // just to prevent GC
 
     /**
+     * Specify the minimum version of Java that this plugin requires.
+     */
+    @Parameter(required = true)
+    private String minimumJavaVersion;
+
+    /**
      * The context path for the webapp. Defaults to the
      * name of the webapp's artifact.
      *
@@ -465,6 +471,7 @@ public class RunMojo extends AbstractJettyMojo {
         hpl.pluginFirstClassLoader = this.pluginFirstClassLoader;
         hpl.maskClasses = this.maskClasses;
         hpl.remoteRepos = this.remoteRepos;
+        hpl.minimumJavaVersion = this.minimumJavaVersion;
         /* As needed:
         hpl.artifactFactory = this.artifactFactory;
         hpl.artifactResolver = this.artifactResolver;

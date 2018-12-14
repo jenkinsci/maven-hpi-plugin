@@ -70,7 +70,7 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
      * Specify the minimum version of Java that this plugin requires.
      */
     @Parameter(required = true)
-    private String minimumJavaVersion;
+    protected String minimumJavaVersion;
 
     /**
      * Generates a manifest file to be included in the .hpi file

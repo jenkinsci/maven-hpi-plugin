@@ -360,7 +360,6 @@
                 </goals>
                 <configuration>
                   <streamLogs>false</streamLogs>
-                  <debug>true</debug>
                 </configuration>
               </execution>
             </executions>
