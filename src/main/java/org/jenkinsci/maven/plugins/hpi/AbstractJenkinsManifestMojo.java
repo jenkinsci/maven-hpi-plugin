@@ -57,7 +57,7 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
      * Optional - the oldest version of this plugin which the current version is
      * configuration-compatible with.
      */
-    @Parameter
+    @Parameter(property = "hpi.compatibleSinceVersion")
     private String compatibleSinceVersion;
 
     /**
