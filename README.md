@@ -5,6 +5,17 @@ See the [developer guide](https://jenkins.io/doc/developer/plugin-development/) 
 
 ## Changelog
 
+### 3.2 (2019-01-16)
+
+* [PR #90](https://github.com/jenkinsci/maven-hpi-plugin/pull/90) -
+Introduce a new `hpi.compatibleSinceVersion` property to support
+[marking plugins as incompatible](https://wiki.jenkins.io/display/JENKINS/Marking+a+new+plugin+version+as+incompatible+with+older+versions)
+without the plugin configuration override
+  * Prevents issues like [JENKINS-55562](https://issues.jenkins-ci.org/browse/JENKINS-55562)
+* [JENKINS-54949](https://issues.jenkins-ci.org/browse/JENKINS-54949) -
+Add support of adding the current pom.xml to the custom WAR 
+in the `hpi:custom-war` mojo
+
 ### 3.1 (2018-12-14)
 
 * `hpi:run` was broken since 3.0 since `minimumJavaVersion` was not being properly propagated.
