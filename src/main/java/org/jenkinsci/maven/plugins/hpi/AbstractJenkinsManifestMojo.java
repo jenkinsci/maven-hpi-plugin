@@ -73,6 +73,15 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
     protected String minimumJavaVersion;
 
     /**
+     * Indicates the plugin should not get any implied dependency until the specified (Jenkins core) version included.
+     * <p>Example: if a plugin specifies this with a value of <em>2.60.3</em>, and used bouncycastle API (which got detacted in 2.16) without explictly
+     * declaring the dependency against bouncycastle-api, then the plugin would likely fail at runtime because Jenkins Core Plugin Management will
+     * then <strong>not</strong> add bouncycastle-api as an implicit dependency.</p>
+     */
+    @Parameter(property = "hpi.noDetachedPluginUntil", required = true)
+    protected String noDetachedPluginUntil;
+
+    /**
      * Generates a manifest file to be included in the .hpi file
      */
     protected void generateManifest(MavenArchiveConfiguration archive, File manifestFile) throws MojoExecutionException {
@@ -116,6 +125,7 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
         mainSection.addAttributeAndCheck(new Manifest.Attribute("Group-Id",project.getGroupId()));
         mainSection.addAttributeAndCheck(new Manifest.Attribute("Short-Name",project.getArtifactId()));
         mainSection.addAttributeAndCheck(new Manifest.Attribute("Long-Name",pluginName));
+        mainSection.addAttributeAndCheck(new Manifest.Attribute("No-Detached-Plugin-Until", noDetachedPluginUntil));
         String url = project.getUrl();
         if(url!=null)
             mainSection.addAttributeAndCheck(new Manifest.Attribute("Url", url));
