@@ -51,6 +51,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -81,7 +82,7 @@ import java.util.zip.ZipFile;
  * <p>
  * To specify the HTTP port, use <tt>-Djetty.port=<i>PORT</i></tt>
  * </p>
- * 
+ *
  * @author Kohsuke Kawaguchi
  */
 @Mojo(name="run", requiresDependencyResolution=ResolutionScope.TEST)
@@ -665,7 +666,7 @@ public class RunMojo extends AbstractJettyMojo {
         try {
             // for Jenkins modules, swap the component from jenkins.war by target/classes
             // via classloader magic
-            WebAppClassLoader wacl = new WebAppClassLoader(new JettyAndServletApiOnlyClassLoader(null,getClass().getClassLoader()),wac) {
+            WebAppClassLoader wacl = new WebAppClassLoader(new JettyAndServletApiOnlyClassLoader(getPlatformClassLoader(),getClass().getClassLoader()),wac) {
                 private final Pattern exclusionPattern;
                 {
                     if (getProject().getPackaging().equals("jenkins-module")) {
@@ -706,6 +707,17 @@ public class RunMojo extends AbstractJettyMojo {
         } catch (IOException e) {
             throw new Error(e);
         }
+    }
+
+    private ClassLoader getPlatformClassLoader() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        if (isPostJava8()) {
+            return (ClassLoader) ClassLoader.class.getMethod("getPlatformClassLoader").invoke(null);
+        }
+        return null;
+    }
+
+    private boolean isPostJava8() {
+        return !System.getProperty("java.version").startsWith("1.");
     }
 
     @Override
