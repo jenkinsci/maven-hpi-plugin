@@ -5,6 +5,11 @@ See the [developer guide](https://jenkins.io/doc/developer/plugin-development/) 
 
 ## Changelog
 
+### 3.3 (2019-01-31)
+
+* [JENKINS-54807](https://issues.jenkins-ci.org/browse/JENKINS-54807) -
+Fix classloading of Java-internal modules when running `hpi:run` with Java 11
+
 ### 3.2 (2019-01-16)
 
 * [PR #90](https://github.com/jenkinsci/maven-hpi-plugin/pull/90) -
