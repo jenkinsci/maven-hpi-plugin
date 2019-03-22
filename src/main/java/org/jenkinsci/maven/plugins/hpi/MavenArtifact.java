@@ -8,10 +8,10 @@ import org.apache.maven.artifact.resolver.AbstractArtifactResolutionException;
 import org.apache.maven.artifact.resolver.ArtifactResolver;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.OverConstrainedVersionException;
+import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
-import org.kohsuke.stapler.framework.io.IOException2;
 
 import java.io.File;
 import java.io.IOException;
@@ -57,6 +57,23 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
     public boolean isPlugin() throws IOException {
         String type = getResolvedType();
         return type.equals("hpi") || type.equals("jpi");
+    }
+
+    /**
+     * Like {@link #isPlugin} but will not throw an exception if the project model cannot be resolved.
+     * Helpful for example when an indirect dependency has a bogus {@code systemPath} that is only rejected in some environments.
+     */
+    public boolean isPluginBestEffort(Log log) {
+        try {
+            return isPlugin();
+        } catch (IOException x) {
+            if (log.isDebugEnabled()) {
+                log.debug(x);
+            } else {
+                log.warn(x.getCause().getMessage());
+            }
+            return false;
+        }
     }
 
     public String getId() {
@@ -211,7 +228,7 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
             // when a plugin depends on another plugin, it doesn't specify the type as hpi or jpi, so we need to resolve its POM to see it
             return resolvePom().getPackaging();
         } catch (ProjectBuildingException e) {
-            throw new IOException2("Failed to open artifact "+artifact.toString()+" at "+artifact.getFile(),e);
+            throw new IOException("Failed to open artifact " + artifact.toString() + " at " + artifact.getFile() + ": " + e, e);
         }
     }
 }
