@@ -494,7 +494,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         // List up IDs of Jenkins plugin dependencies
         Set<String> jenkinsPlugins = new HashSet<String>();
         for (MavenArtifact artifact : artifacts) {
-            if(artifact.isPlugin())
+            if (artifact.isPluginBestEffort(getLog()))
                 jenkinsPlugins.add(artifact.getId());
         }
 
