@@ -5,6 +5,10 @@ See the [developer guide](https://jenkins.io/doc/developer/plugin-development/) 
 
 ## Changelog
 
+### 3.5 (2019-03-28)
+
+* Treat POM loading errors in dependencies as nonfatal.
+
 ### 3.3 (2019-01-31)
 
 * [JENKINS-54807](https://issues.jenkins-ci.org/browse/JENKINS-54807) -
