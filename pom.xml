@@ -80,7 +80,7 @@
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-utils</artifactId>
       <!-- generated help mojo has a dependency on plexus utils -->
-      <version>3.0.1</version>
+      <version>3.2.0</version>
     </dependency>
     <dependency>
       <groupId>com.ibm.icu</groupId>
