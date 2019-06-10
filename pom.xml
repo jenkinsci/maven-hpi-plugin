@@ -126,7 +126,7 @@
     <dependency>
       <groupId>net.java.sezpoz</groupId>
       <artifactId>sezpoz</artifactId>
-      <version>1.9</version>
+      <version>1.13</version>
     </dependency>
     <!-- for copy-dependency-plugins -->
     <dependency>
