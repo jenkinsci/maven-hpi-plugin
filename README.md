@@ -5,6 +5,10 @@ See the [developer guide](https://jenkins.io/doc/developer/plugin-development/) 
 
 ## Changelog
 
+### Newer versions
+
+See [GitHub Releases](https://github.com/jenkinsci/maven-hpi-plugin/releases)
+
 ### 3.5 (2019-03-28)
 
 * Treat POM loading errors in dependencies as nonfatal.
