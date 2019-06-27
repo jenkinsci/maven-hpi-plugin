@@ -31,7 +31,7 @@ import java.util.Set;
  * @author Kohsuke Kawaguchi
  */
 @Mojo(name="hpl", requiresDependencyResolution = ResolutionScope.RUNTIME)
-public class HplMojo extends AbstractHpiMojo {
+public class HplMojo extends AbstractJenkinsManifestMojo {
     /**
      * Path to {@code $JENKINS_HOME}. A .hpl file will be generated to this location.
      * @deprecated Use {@link #jenkinsHome}.
@@ -125,7 +125,7 @@ public class HplMojo extends AbstractHpiMojo {
         // List up IDs of Jenkins plugin dependencies
         Set<String> jenkinsPlugins = new HashSet<String>();
         for (MavenArtifact artifact : artifacts) {
-            if(artifact.isPlugin())
+            if (artifact.isPluginBestEffort(getLog()))
                 jenkinsPlugins.add(artifact.getId());
         }
 

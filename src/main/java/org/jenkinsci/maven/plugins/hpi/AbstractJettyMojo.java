@@ -611,7 +611,7 @@ public abstract class AbstractJettyMojo extends AbstractMojo
         if (webApp.getTempDirectory() == null)
         {
             File target = new File(project.getBuild().getDirectory());
-            File tmp = new File(target,"tmp");
+            File tmp = new File(target, "jetty");
             if (!tmp.exists())
                 tmp.mkdirs();            
             webApp.setTempDirectory(tmp);

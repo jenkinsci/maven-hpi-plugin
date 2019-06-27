@@ -1,5 +1,6 @@
 package org.jenkinsci.maven.plugins.hpi;
 
+import hudson.util.VersionNumber;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -7,15 +8,16 @@ import org.apache.maven.artifact.resolver.AbstractArtifactResolutionException;
 import org.apache.maven.artifact.resolver.ArtifactResolver;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.OverConstrainedVersionException;
+import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
-import org.kohsuke.stapler.framework.io.IOException2;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.jar.JarFile;
+import org.apache.commons.lang.StringUtils;
 
 import static org.apache.maven.artifact.Artifact.*;
 
@@ -55,6 +57,23 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
     public boolean isPlugin() throws IOException {
         String type = getResolvedType();
         return type.equals("hpi") || type.equals("jpi");
+    }
+
+    /**
+     * Like {@link #isPlugin} but will not throw an exception if the project model cannot be resolved.
+     * Helpful for example when an indirect dependency has a bogus {@code systemPath} that is only rejected in some environments.
+     */
+    public boolean isPluginBestEffort(Log log) {
+        try {
+            return isPlugin();
+        } catch (IOException x) {
+            if (log.isDebugEnabled()) {
+                log.debug(x);
+            } else {
+                log.warn(x.getCause().getMessage());
+            }
+            return false;
+        }
     }
 
     public String getId() {
@@ -142,15 +161,25 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
 
     /** For a plugin artifact, unlike {@link #getArtifactId} this parses the plugin manifest. */
     public String getActualArtifactId() throws IOException {
-        try (JarFile jf = new JarFile(getFile())) {
-            return jf.getManifest().getMainAttributes().getValue("Short-Name");
+        File file = getFile();
+        if (file != null && file.isFile()) {
+            try (JarFile jf = new JarFile(file)) {
+                return jf.getManifest().getMainAttributes().getValue("Short-Name");
+            }
+        } else {
+            return getArtifactId();
         }
     }
 
     /** For a plugin artifact, unlike {@link #getVersion} this parses the plugin manifest. */
     public String getActualVersion() throws IOException {
-        try (JarFile jf = new JarFile(getFile())) {
-            return jf.getManifest().getMainAttributes().getValue("Plugin-Version").replaceFirst(" [(].+[)]$", ""); // e.g. " (private-abcd1234-username)"; Implementation-Version is clean but seems less portable
+        File file = getFile();
+        if (file != null && file.isFile()) {
+            try (JarFile jf = new JarFile(file)) {
+                return jf.getManifest().getMainAttributes().getValue("Plugin-Version").replaceFirst(" [(].+[)]$", ""); // e.g. " (private-abcd1234-username)"; Implementation-Version is clean but seems less portable
+            }
+        } else {
+            return getVersion();
         }
     }
 
@@ -191,11 +220,15 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
             if(!type.equals("jar")) {
                 return type;
             }
+            // also ignore core-assets, tests, etc.
+            if (!StringUtils.isEmpty(artifact.getClassifier())) {
+                return type;
+            }
 
             // when a plugin depends on another plugin, it doesn't specify the type as hpi or jpi, so we need to resolve its POM to see it
             return resolvePom().getPackaging();
         } catch (ProjectBuildingException e) {
-            throw new IOException2("Failed to open artifact "+artifact.toString()+" at "+artifact.getFile(),e);
+            throw new IOException("Failed to open artifact " + artifact.toString() + " at " + artifact.getFile() + ": " + e, e);
         }
     }
 }

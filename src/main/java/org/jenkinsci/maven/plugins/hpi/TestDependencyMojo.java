@@ -30,7 +30,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
             Writer w = new OutputStreamWriter(new FileOutputStream(new File(testDir,"index")),"UTF-8");
 
             for (MavenArtifact a : getProjectArtfacts()) {
-                if(!a.isPlugin())
+                if (!a.isPluginBestEffort(getLog()))
                     continue;
 
                 String artifactId = a.getActualArtifactId();

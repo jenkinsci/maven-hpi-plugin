@@ -48,7 +48,7 @@ import org.codehaus.plexus.util.IOUtil;
  * @since 1.115
  */
 @Mojo(name="jar", defaultPhase = LifecyclePhase.PREPARE_PACKAGE, requiresDependencyResolution = ResolutionScope.RUNTIME)
-public class JarMojo extends AbstractHpiMojo {
+public class JarMojo extends AbstractJenkinsManifestMojo {
 
     /**
      * The name of the generated hpi.

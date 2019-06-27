@@ -62,10 +62,8 @@ import java.io.Reader;
 import java.io.Writer;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -74,10 +72,29 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.Collection;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.YesNoMaybe;
+import net.java.sezpoz.Index;
+import net.java.sezpoz.IndexItem;
+import org.apache.commons.io.IOUtils;
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
+import org.apache.maven.model.Resource;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugins.annotations.Component;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.archiver.ArchiverException;
+import org.codehaus.plexus.archiver.UnArchiver;
+import org.codehaus.plexus.archiver.manager.ArchiverManager;
+import org.codehaus.plexus.archiver.manager.NoSuchArchiverException;
+import org.codehaus.plexus.util.DirectoryScanner;
+import org.codehaus.plexus.util.FileUtils;
+import org.codehaus.plexus.util.IOUtil;
+import org.codehaus.plexus.util.InterpolationFilterReader;
+import org.codehaus.plexus.util.StringUtils;
 
 public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
     /**
@@ -110,23 +127,42 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
     protected String pluginVersionDescription;
 
     /**
+     * Optional - the version to use in place of the project version in the event that the project version is a
+     * -SNAPSHOT. If specified, the value <strong>must</strong> start with the project version after removing the
+     * terminal {@code -SNAPSHOT}, for example if the project version is {@code 1.2.3-SNAPSHOT} then the
+     * {@code snapshotPluginVersionOverride} could be {@code 1.2.3-rc45.cafebabe-SNAPSHOT} or
+     * {@code 1.2.3-20180430.123233-56}, etc, but it could not be {@code 1.2.4} as that does not start with the
+     * project version.
+     *
+     * When testing plugin builds on a locally hosted update centre, in order to be allowed to update the plugin,
+     * the update centre must report the plugin version as greater than the currently installed plugin version.
+     * If you are using a Continuous Delivery model for your plugin (i.e. where the master branch stays on a
+     * version like {@code 1.x-SNAPSHOT} and releases are tagged but not merged back to master (in order to
+     * prevent merge conflicts) then you will find that you cannot update the plugin when building locally as
+     * {@code 1.x-SNAPSHOT} is never less than {@code 1.x-SNAPSHOT}. Thus in order to test plugin upgrade (in say
+     * an acceptance test), you need to override the plugin version for non-releases. Typically you would use
+     * something like <a href="https://github.com/stephenc/git-timestamp-maven-plugin">git-timestamp-maven-plugin</a>
+     * to populate a property with the version and then use this configuration to provide the version.
+     *
+     * @see #failOnVersionOverrideToDifferentRelease
+     * @since 2.4
+     */
+    @Parameter
+    protected String snapshotPluginVersionOverride;
+
+    /**
+     * Controls the safety check that prevents a {@link #snapshotPluginVersionOverride} from switching to a different
+     * release version.
+     * @since 2.4
+     */
+    @Parameter(defaultValue = "true")
+    protected boolean failOnVersionOverrideToDifferentRelease = true;
+
+    /**
      * The directory where the webapp is built.
      */
     @Parameter(defaultValue = "${project.build.directory}/${project.build.finalName}")
     private File webappDirectory;
-
-    /**
-     * Optional - the oldest version of this plugin which the current version is
-     * configuration-compatible with.
-     */
-    @Parameter
-    private String compatibleSinceVersion;
-
-    /**
-     * Optional - sandbox status of this plugin. 
-     */
-    @Parameter
-    private String sandboxStatus;
 
     /**
      * Single directory for extra files to include in the WAR.
@@ -492,7 +528,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         // List up IDs of Jenkins plugin dependencies
         Set<String> jenkinsPlugins = new HashSet<String>();
         for (MavenArtifact artifact : artifacts) {
-            if(artifact.isPlugin())
+            if (artifact.isPluginBestEffort(getLog()))
                 jenkinsPlugins.add(artifact.getId());
         }
 
@@ -915,7 +951,6 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
     private interface FilterWrapper {
         Reader getReader(Reader fileReader, Properties filterProperties);
     }
-
 
     protected void setAttributes(Section mainSection) throws MojoExecutionException, ManifestException, IOException {
         File pluginImpl = new File(project.getBuild().getOutputDirectory(), "META-INF/services/hudson.Plugin");

@@ -14,11 +14,13 @@
 //========================================================================
 package org.jenkinsci.maven.plugins.hpi;
 
+import hudson.util.VersionNumber;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
 import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.artifact.resolver.AbstractArtifactResolutionException;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
@@ -32,6 +34,7 @@ import org.apache.maven.plugins.annotations.Execute;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectBuilder;
 import org.eclipse.jetty.maven.plugin.JettyWebAppContext;
@@ -48,6 +51,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -78,10 +82,10 @@ import java.util.zip.ZipFile;
  * <p>
  * To specify the HTTP port, use <tt>-Djetty.port=<i>PORT</i></tt>
  * </p>
- * 
+ *
  * @author Kohsuke Kawaguchi
  */
-@Mojo(name="run")
+@Mojo(name="run", requiresDependencyResolution=ResolutionScope.TEST)
 @Execute(phase = LifecyclePhase.COMPILE)
 public class RunMojo extends AbstractJettyMojo {
 
@@ -93,7 +97,7 @@ public class RunMojo extends AbstractJettyMojo {
      * But this parameter allows that to be overwritten.
      * </p>
      */
-    @Parameter
+    @Parameter(property = "webAppFile")
     private File webAppFile;
 
     /**
@@ -211,6 +215,12 @@ public class RunMojo extends AbstractJettyMojo {
     private Collection<Logger> loggerReferences; // just to prevent GC
 
     /**
+     * Specify the minimum version of Java that this plugin requires.
+     */
+    @Parameter(required = true)
+    private String minimumJavaVersion;
+
+    /**
      * The context path for the webapp. Defaults to the
      * name of the webapp's artifact.
      *
@@ -251,10 +261,11 @@ public class RunMojo extends AbstractJettyMojo {
             if (h == null) {
                 h = System.getenv("HUDSON_HOME");
             }
-            if(h!=null)
+            if (h != null && !h.isEmpty() && /* see pom.xml override */!h.equals("null")) {
                 jenkinsHome = new File(h);
-            else
+            } else {
                 jenkinsHome = new File(basedir, "work");
+            }
         }
 
         // auto-enable stapler trace, unless otherwise configured already.
@@ -281,7 +292,18 @@ public class RunMojo extends AbstractJettyMojo {
                 .groupIdIs("org.jenkins-ci.main","org.jvnet.hudson.main")
                 .artifactIdIsNot("remoting");       // remoting moved to its own release cycle
 
-        webAppFile = getJenkinsWarArtifact().getFile();
+        if (webAppFile == null) {
+            Artifact jenkinsWarArtifact = getJenkinsWarArtifact();
+            try {
+                artifactResolver.resolve(jenkinsWarArtifact, remoteRepos, localRepository);
+            } catch (AbstractArtifactResolutionException x) {
+                throw new MojoExecutionException("Could not resolve " + jenkinsWarArtifact + ": " + x, x);
+            }
+            webAppFile = jenkinsWarArtifact.getFile();
+            if (webAppFile == null || !webAppFile.isFile()) {
+                throw new MojoExecutionException("Could not find " + webAppFile + " from " + jenkinsWarArtifact);
+            }
+        }
 
         // make sure all the relevant Jenkins artifacts have the same version
         for (Artifact a : jenkinsArtifacts) {
@@ -327,10 +349,14 @@ public class RunMojo extends AbstractJettyMojo {
                     throw new UnsupportedOperationException(hpi.getFile()+" is a directory and not packaged yet. this isn't supported");
 
                 File upstreamHpl = pluginWorkspaceMap.read(hpi.getId());
+                String actualArtifactId = a.getActualArtifactId();
+                if (actualArtifactId == null) {
+                    throw new MojoExecutionException("Failed to load actual artifactId from " + a + " ~ " + a.getFile());
+                }
                 if (upstreamHpl != null) {
-                    copyHpl(upstreamHpl, pluginsDir, a.getActualArtifactId());
+                    copyHpl(upstreamHpl, pluginsDir, actualArtifactId);
                 } else {
-                    copyPlugin(hpi.getFile(), pluginsDir, a.getActualArtifactId());
+                    copyPlugin(hpi.getFile(), pluginsDir, actualArtifactId);
                 }
             }
         } catch (IOException e) {
@@ -376,21 +402,29 @@ public class RunMojo extends AbstractJettyMojo {
             getLog().warn("Moving historical " + hpi + " to *.jpi");
             hpi.renameTo(dst);
         }
-        if (versionOfPlugin(src).compareTo(versionOfPlugin(dst)) < 0) {
-            getLog().warn("will not overwrite " + dst + " with " + src + " because it is newer");
+        VersionNumber dstV = versionOfPlugin(dst);
+        if (versionOfPlugin(src).compareTo(dstV) < 0) {
+            getLog().info("will not overwrite " + dst + " with " + src + " because " + dstV + " is newer");
             return;
         }
         getLog().info("Copying dependency Jenkins plugin " + src);
         FileUtils.copyFile(src, dst);
+        // TODO skip .pinned file creation if Jenkins version is >= 2.0
         // pin the dependency plugin, so that even if a different version of the same plugin is bundled to Jenkins,
         // we still use the plugin as specified by the POM of the plugin.
         FileUtils.writeStringToFile(new File(dst + ".pinned"), "pinned");
+        new File(pluginsDir, shortName + ".jpl").delete(); // in case we used to have a snapshot dependency
     }
     private VersionNumber versionOfPlugin(File p) throws IOException {
         if (!p.isFile()) {
             return new VersionNumber("0.0");
         }
-        JarFile j = new JarFile(p);
+        JarFile j;
+        try {
+            j = new JarFile(p);
+        } catch (IOException x) {
+            throw new IOException("not a valid JarFile: " + p, x);
+        }
         try {
             String v = j.getManifest().getMainAttributes().getValue("Plugin-Version");
             if (v == null) {
@@ -439,6 +473,7 @@ public class RunMojo extends AbstractJettyMojo {
         hpl.pluginFirstClassLoader = this.pluginFirstClassLoader;
         hpl.maskClasses = this.maskClasses;
         hpl.remoteRepos = this.remoteRepos;
+        hpl.minimumJavaVersion = this.minimumJavaVersion;
         /* As needed:
         hpl.artifactFactory = this.artifactFactory;
         hpl.artifactResolver = this.artifactResolver;
@@ -631,7 +666,7 @@ public class RunMojo extends AbstractJettyMojo {
         try {
             // for Jenkins modules, swap the component from jenkins.war by target/classes
             // via classloader magic
-            WebAppClassLoader wacl = new WebAppClassLoader(new JettyAndServletApiOnlyClassLoader(null,getClass().getClassLoader()),wac) {
+            WebAppClassLoader wacl = new WebAppClassLoader(new JettyAndServletApiOnlyClassLoader(getPlatformClassLoader(),getClass().getClassLoader()),wac) {
                 private final Pattern exclusionPattern;
                 {
                     if (getProject().getPackaging().equals("jenkins-module")) {
@@ -672,6 +707,17 @@ public class RunMojo extends AbstractJettyMojo {
         } catch (IOException e) {
             throw new Error(e);
         }
+    }
+
+    private ClassLoader getPlatformClassLoader() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        if (isPostJava8()) {
+            return (ClassLoader) ClassLoader.class.getMethod("getPlatformClassLoader").invoke(null);
+        }
+        return null;
+    }
+
+    private boolean isPostJava8() {
+        return !System.getProperty("java.version").startsWith("1.");
     }
 
     @Override

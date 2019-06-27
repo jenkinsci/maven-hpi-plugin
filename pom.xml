@@ -10,7 +10,7 @@
 
   <groupId>org.jenkins-ci.tools</groupId>
   <artifactId>maven-hpi-plugin</artifactId>
-  <version>2.1-SNAPSHOT</version>
+  <version>3.7-SNAPSHOT</version>
   <packaging>maven-plugin</packaging>
 
   <name>Maven Jenkins Plugin</name>
@@ -53,18 +53,20 @@
     <openbracket>{</openbracket>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <java.level>8</java.level>
+    <!-- TODO: remove after updating to a recent parent POM -->
+    <maven-release-plugin.version>2.5.3</maven-release-plugin.version>
   </properties>
 
   <repositories>
     <repository>
       <id>repo.jenkins-ci.org</id>
-      <url>http://repo.jenkins-ci.org/public/</url>
+      <url>https://repo.jenkins-ci.org/public/</url>
     </repository>
   </repositories>
   <pluginRepositories>
     <pluginRepository>
       <id>repo.jenkins-ci.org</id>
-      <url>http://repo.jenkins-ci.org/public/</url>
+      <url>https://repo.jenkins-ci.org/public/</url>
     </pluginRepository>
   </pluginRepositories>
 
@@ -126,7 +128,7 @@
     <dependency>
       <groupId>net.java.sezpoz</groupId>
       <artifactId>sezpoz</artifactId>
-      <version>1.9</version>
+      <version>1.13</version>
     </dependency>
     <!-- for copy-dependency-plugins -->
     <dependency>
@@ -134,22 +136,16 @@
       <artifactId>maven-dependency-plugin</artifactId>
       <version>2.8</version>
     </dependency>
-    <!-- for the create goal -->
-    <dependency>
-      <groupId>org.apache.maven.plugins</groupId>
-      <artifactId>maven-archetype-plugin</artifactId>
-      <version>1.0-alpha-4</version>
-    </dependency>
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-interactivity-api</artifactId>
-      <version>1.0-alpha-4</version>
+      <version>1.0</version>
     </dependency>
     <!-- for using annotation processor -->
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>maven-stapler-plugin</artifactId>
-      <version>1.16</version>
+      <version>1.17</version>
       <!-- make sure to exclude servlet so that the one in Jetty (which has different groupId) will win -->
       <exclusions>
         <exclusion>
@@ -163,15 +159,14 @@
       <artifactId>plexus-component-annotations</artifactId>
       <version>1.6</version>
     </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci</groupId>
+      <artifactId>version-number</artifactId>
+      <version>1.4</version>
+    </dependency>
   </dependencies>
 
   <build>
-    <resources>
-      <resource>
-        <directory>src/main/resources</directory>
-        <filtering>true</filtering>
-      </resource>
-    </resources>
     <pluginManagement>
       <plugins>
         <plugin>
@@ -221,43 +216,6 @@
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-release-plugin</artifactId>
-        <version>2.5.1</version>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <version>1.8</version>
-        <executions>
-          <execution>
-            <!-- maven resources plugin can't handle escapes, so we need to fall back to Ant to get the job done -->
-            <phase>process-resources</phase>
-            <configuration>
-              <tasks>
-                <ant antfile="${basedir}/copyArchetype.xml" />
-              </tasks>
-            </configuration>
-            <goals>
-              <goal>run</goal>
-            </goals>
-          </execution>
-        </executions>
-        <dependencies>
-          <dependency>
-            <groupId>ant</groupId>
-            <artifactId>ant-apache-regexp</artifactId>
-            <version>1.6.5</version>
-            <scope>runtime</scope>
-          </dependency>
-          <dependency>
-            <groupId>jakarta-regexp</groupId>
-            <artifactId>jakarta-regexp</artifactId>
-            <version>1.4</version>
-          </dependency>
-        </dependencies>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-plugin-plugin</artifactId>
         <version>3.5</version>
         <configuration>
@@ -283,7 +241,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>mrm-maven-plugin</artifactId>
-        <version>1.1.0</version>
+        <version>1.2.0</version>
         <configuration>
           <propertyName>repository.proxy.url</propertyName>
           <repositories>
@@ -314,7 +272,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>animal-sniffer-maven-plugin</artifactId>
-        <version>1.15</version>
+        <version>1.18</version>
         <executions>
           <execution>
             <goals>
@@ -333,7 +291,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.6.1</version>
+        <version>3.8.1</version>
         <configuration>
           <source>1.${java.level}</source>
           <target>1.${java.level}</target>
@@ -399,7 +357,9 @@
                 </goals>
                 <configuration>
                   <streamLogs>false</streamLogs>
-                  <debug>true</debug>
+                  <environmentVariables>
+                      <JENKINS_HOME /> <!-- block anything set by a CI environment -->
+                  </environmentVariables>
                 </configuration>
               </execution>
             </executions>
