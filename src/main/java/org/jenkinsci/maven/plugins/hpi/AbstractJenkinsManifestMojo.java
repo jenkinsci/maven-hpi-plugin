@@ -54,19 +54,6 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
     private static final Logger LOGGER = Logger.getLogger(AbstractJenkinsManifestMojo.class.getName());
 
     /**
-     * Optional - the oldest version of this plugin which the current version is
-     * configuration-compatible with.
-     */
-    @Parameter(property = "hpi.compatibleSinceVersion")
-    private String compatibleSinceVersion;
-
-    /**
-     * Optional - sandbox status of this plugin.
-     */
-    @Parameter
-    private String sandboxStatus;
-
-    /**
      * Specify the minimum version of Java that this plugin requires.
      */
     @Parameter(required = true)
