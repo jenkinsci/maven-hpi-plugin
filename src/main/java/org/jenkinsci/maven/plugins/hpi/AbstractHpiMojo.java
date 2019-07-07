@@ -62,8 +62,11 @@ import java.io.Reader;
 import java.io.Writer;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -115,6 +118,19 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
      */
     @Parameter(defaultValue = "${project.name}", readonly = true) // TODO why is this read-only, surely I should be able to override
     protected String pluginName;
+
+    /**
+     * Optional - the oldest version of this plugin which the current version is
+     * configuration-compatible with.
+     */
+    @Parameter(property = "hpi.compatibleSinceVersion")
+    protected String compatibleSinceVersion;
+
+    /**
+     * Optional - sandbox status of this plugin.
+     */
+    @Parameter
+    protected String sandboxStatus;
 
     /**
      * Additional information that accompanies the version number of the plugin.
