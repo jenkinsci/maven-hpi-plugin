@@ -24,14 +24,14 @@ checkArtifact(installed, 'JENKINS-45740-metadata-1.0-SNAPSHOT.hpi',
     ['Plugin-ChangelogUrl': 'http://plugins.jenkins.io/JENKINS-45740-metadata/changelog',
     'Plugin-LogoUrl': 'http://plugins.jenkins.io/JENKINS-45740-metadata/logo.png',
     'Plugin-ScmUrl': 'http://github.com/jenkinsci/JENKINS-45740-metadata-plugin',
-    'Plugin-Licence-Name-1': 'MIT License',
-    'Plugin-Licence-Url-1': 'http://www.opensource.org/licenses/mit-license.php',
-    'Plugin-Licence-Distribution-1': 'repo',
-    'Plugin-Licence-Comments-1': null,
-    'Plugin-Licence-Name-2': 'MY License',
-    'Plugin-Licence-Url-2': 'http://mylicense.txt',
-    'Plugin-Licence-Distribution-2': null,
-    'Plugin-Licence-Comments-2': "Hello, world!"
+    'Plugin-License-Name-1': 'MIT License',
+    'Plugin-License-Url-1': 'http://www.opensource.org/licenses/mit-license.php',
+    'Plugin-License-Distribution-1': 'repo',
+    'Plugin-License-Comments-1': null,
+    'Plugin-License-Name-2': 'MY License',
+    'Plugin-License-Url-2': 'http://mylicense.txt',
+    'Plugin-License-Distribution-2': null,
+    'Plugin-License-Comments-2': "Hello, world!"
     ])
 
 // TODO try mvn hpi:run (how do we find the right version of mvn to run?) and check that we can access http://localhost:8080/jenkins/sample/
