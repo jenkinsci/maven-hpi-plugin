@@ -1098,16 +1098,13 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
     }
 
     private void addLicenseAttributesForManifest(Section target) throws ManifestException {
-        final List licenses = project.getLicenses();
+        final List<License> licenses = project.getLicenses();
         int licenseCounter = 1;
-        for (Object obj : licenses) {
-            if (obj instanceof License) {
-                License lic = (License)obj;
-                addAttributeIfNotNull(target, "Plugin-Licence-Name-" + licenseCounter, lic.getName());
-                addAttributeIfNotNull(target, "Plugin-Licence-Url-" + licenseCounter, lic.getUrl());
-                addAttributeIfNotNull(target, "Plugin-Licence-Distribution-" + licenseCounter, lic.getDistribution());
-                addAttributeIfNotNull(target, "Plugin-Licence-Comments-" + licenseCounter, lic.getComments());
-            }
+        for (License lic : licenses) {
+            addAttributeIfNotNull(target, "Plugin-License-Name-" + licenseCounter, lic.getName());
+            addAttributeIfNotNull(target, "Plugin-License-Url-" + licenseCounter, lic.getUrl());
+            addAttributeIfNotNull(target, "Plugin-License-Distribution-" + licenseCounter, lic.getDistribution());
+            addAttributeIfNotNull(target, "Plugin-License-Comments-" + licenseCounter, lic.getComments());
             licenseCounter++;
         }
     }
