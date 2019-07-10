@@ -25,7 +25,7 @@ checkArtifact(
       'Plugin-LogoUrl': 'http://plugins.jenkins.io/JENKINS-45740-metadata/logo.png',
       'Plugin-ScmUrl': 'http://github.com/jenkinsci/JENKINS-45740-metadata-plugin',
       'Plugin-License-Name-1': 'MIT License',
-      'Plugin-License-Url-1': 'http://www.opensource.org/licenses/mit-license.php',
+      'Plugin-License-Url-1': 'https://opensource.org/licenses/MIT',
       'Plugin-License-Distribution-1': 'repo',
       'Plugin-License-Comments-1': null,
       'Plugin-License-Name-2': 'MY License',
