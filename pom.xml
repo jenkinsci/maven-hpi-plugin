@@ -172,7 +172,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-site-plugin</artifactId>
-          <version>3.6</version>
+          <version>3.8.2</version>
           <dependencies>
             <dependency>
               <groupId>com.github.stephenc.wagon</groupId>
