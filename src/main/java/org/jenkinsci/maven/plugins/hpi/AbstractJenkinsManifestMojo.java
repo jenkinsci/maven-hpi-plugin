@@ -280,10 +280,12 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
         final List<License> licenses = project.getLicenses();
         int licenseCounter = 1;
         for (License lic : licenses) {
-            addAttributeIfNotNull(target, "Plugin-License-Name-" + licenseCounter, lic.getName());
-            addAttributeIfNotNull(target, "Plugin-License-Url-" + licenseCounter, lic.getUrl());
-            addAttributeIfNotNull(target, "Plugin-License-Distribution-" + licenseCounter, lic.getDistribution());
-            addAttributeIfNotNull(target, "Plugin-License-Comments-" + licenseCounter, lic.getComments());
+            String licenseSuffix = licenseCounter == 1 ? "" : ("-" + licenseCounter);
+            addAttributeIfNotNull(target, "Plugin-License-Name" + licenseSuffix, lic.getName());
+            addAttributeIfNotNull(target, "Plugin-License-Url" + licenseSuffix, lic.getUrl());
+            //TODO(oleg_nenashev): Can be enabled later if needed 
+            //addAttributeIfNotNull(target, "Plugin-License-Distribution" + licenseSuffix, lic.getDistribution());
+            //addAttributeIfNotNull(target, "Plugin-License-Comments" + licenseSuffix, lic.getComments());
             licenseCounter++;
         }
     }

@@ -21,17 +21,13 @@ checkArtifact(
     installed,
     'JENKINS-45740-metadata-1.0-SNAPSHOT.hpi',
     [
-      'Plugin-ChangelogUrl': 'http://plugins.jenkins.io/JENKINS-45740-metadata/changelog',
-      'Plugin-LogoUrl': 'http://plugins.jenkins.io/JENKINS-45740-metadata/logo.png',
-      'Plugin-ScmUrl': 'http://github.com/jenkinsci/JENKINS-45740-metadata-plugin',
-      'Plugin-License-Name-1': 'MIT License',
-      'Plugin-License-Url-1': 'https://opensource.org/licenses/MIT',
-      'Plugin-License-Distribution-1': 'repo',
-      'Plugin-License-Comments-1': null,
+      'Plugin-ChangelogUrl': 'https://plugins.jenkins.io/JENKINS-45740-metadata/changelog',
+      'Plugin-LogoUrl': 'https://plugins.jenkins.io/JENKINS-45740-metadata/logo.png',
+      'Plugin-ScmUrl': 'https://github.com/jenkinsci/JENKINS-45740-metadata-plugin',
+      'Plugin-License-Name': 'MIT License',
+      'Plugin-License-Url': 'https://opensource.org/licenses/MIT',
       'Plugin-License-Name-2': 'MY License',
-      'Plugin-License-Url-2': 'http://mylicense.txt',
-      'Plugin-License-Distribution-2': null,
-      'Plugin-License-Comments-2': "Hello, world!"
+      'Plugin-License-Url-2': 'https://mylicense.txt',
     ])
 
 return true

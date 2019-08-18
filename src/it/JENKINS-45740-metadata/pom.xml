@@ -14,8 +14,8 @@
     <properties>
         <java.level>8</java.level>
         <hpi-plugin.version>@project.version@</hpi-plugin.version>
-        <plugin.info.changelogUrl>http://plugins.jenkins.io/JENKINS-45740-metadata/changelog</plugin.info.changelogUrl>
-        <plugin.info.logoUrl>http://plugins.jenkins.io/JENKINS-45740-metadata/logo.png</plugin.info.logoUrl>
+        <plugin.info.changelogUrl>https://plugins.jenkins.io/JENKINS-45740-metadata/changelog</plugin.info.changelogUrl>
+        <plugin.info.logoUrl>https://plugins.jenkins.io/JENKINS-45740-metadata/logo.png</plugin.info.logoUrl>
     </properties>
     
     <licenses>
