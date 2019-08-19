@@ -27,7 +27,7 @@
       </license>
       <license>
         <name>MY License</name>
-        <url>http://mylicense.txt</url>
+        <url>https://mylicense.txt</url>
         <comments>Hello, world!</comments>
       </license>
     </licenses> 
