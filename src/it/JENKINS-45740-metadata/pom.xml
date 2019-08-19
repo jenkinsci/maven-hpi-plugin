@@ -16,7 +16,7 @@
         <hpi-plugin.version>@project.version@</hpi-plugin.version>
         <!--Examples of real use-cases-->
         <hpi.pluginChagelogUrl>https://github.com/jenkinsci/configuration-as-code-plugin/releases</hpi.pluginChagelogUrl>
-        <hpi.pluginLogoUrl>https://raw.githubusercontent.com/jenkinsci/configuration-as-code-plugin/master/plugin/src/main/webapp/img/logo-head.svg</hpi.pluginLogoUr>
+        <hpi.pluginLogoUrl>https://raw.githubusercontent.com/jenkinsci/configuration-as-code-plugin/master/plugin/src/main/webapp/img/logo-head.svg</hpi.pluginLogoUrl>
     </properties>
     
     <licenses>
