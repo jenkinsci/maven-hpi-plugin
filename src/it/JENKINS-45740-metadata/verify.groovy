@@ -21,8 +21,8 @@ checkArtifact(
     installed,
     'JENKINS-45740-metadata-1.0-SNAPSHOT.hpi',
     [
-      'Plugin-ChangelogUrl': 'https://plugins.jenkins.io/JENKINS-45740-metadata/changelog',
-      'Plugin-LogoUrl': 'https://plugins.jenkins.io/JENKINS-45740-metadata/logo.png',
+      'Plugin-ChangelogUrl': 'https://github.com/jenkinsci/configuration-as-code-plugin/releases',
+      'Plugin-LogoUrl': 'https://raw.githubusercontent.com/jenkinsci/configuration-as-code-plugin/master/plugin/src/main/webapp/img/logo-head.svg',
       'Plugin-ScmUrl': 'https://github.com/jenkinsci/JENKINS-45740-metadata-plugin',
       'Plugin-License-Name': 'MIT License',
       'Plugin-License-Url': 'https://opensource.org/licenses/MIT',

@@ -213,8 +213,8 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
 
         // Extra info attributes
         addLicenseAttributesForManifest(mainSection);
-        addPropertyAttributeIfNotNull(mainSection, "Plugin-ChangelogUrl", "plugin.info.changelogUrl");
-        addPropertyAttributeIfNotNull(mainSection, "Plugin-LogoUrl", "plugin.info.logoUrl");
+        addPropertyAttributeIfNotNull(mainSection, "Plugin-ChangelogUrl", "hpi.pluginChagelogUrl");
+        addPropertyAttributeIfNotNull(mainSection, "Plugin-LogoUrl", "hpi.pluginLogoUrl");
         addAttributeIfNotNull(mainSection, "Plugin-ScmUrl", getScmUrl());
     }
 
