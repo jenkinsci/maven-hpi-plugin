@@ -20,6 +20,8 @@ import org.apache.maven.archiver.MavenArchiver;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.model.Developer;
+import org.apache.maven.model.License;
+import org.apache.maven.model.Scm;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.codehaus.plexus.archiver.jar.Manifest;
@@ -37,6 +39,7 @@ import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -207,6 +210,12 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
         Boolean b = isSupportDynamicLoading();
         if (b!=null)
             mainSection.addAttributeAndCheck(new Manifest.Attribute("Support-Dynamic-Loading",b.toString()));
+
+        // Extra info attributes
+        addLicenseAttributesForManifest(mainSection);
+        addPropertyAttributeIfNotNull(mainSection, "Plugin-ChangelogUrl", "hpi.pluginChagelogUrl");
+        addPropertyAttributeIfNotNull(mainSection, "Plugin-LogoUrl", "hpi.pluginLogoUrl");
+        addAttributeIfNotNull(mainSection, "Plugin-ScmUrl", getScmUrl());
     }
 
     /**
@@ -264,6 +273,43 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
             return new Manifest(r);
         } finally {
             IOUtil.close(r);
+        }
+    }
+
+    private void addLicenseAttributesForManifest(Manifest.Section target) throws ManifestException {
+        final List<License> licenses = project.getLicenses();
+        int licenseCounter = 1;
+        for (License lic : licenses) {
+            String licenseSuffix = licenseCounter == 1 ? "" : ("-" + licenseCounter);
+            addAttributeIfNotNull(target, "Plugin-License-Name" + licenseSuffix, lic.getName());
+            addAttributeIfNotNull(target, "Plugin-License-Url" + licenseSuffix, lic.getUrl());
+            //TODO(oleg_nenashev): Can be enabled later if needed 
+            //addAttributeIfNotNull(target, "Plugin-License-Distribution" + licenseSuffix, lic.getDistribution());
+            //addAttributeIfNotNull(target, "Plugin-License-Comments" + licenseSuffix, lic.getComments());
+            licenseCounter++;
+        }
+    }
+
+    private String getScmUrl() {
+        Scm scm = project.getScm();
+        if (scm != null) {
+            return scm.getUrl();
+        }
+        return null;
+    }
+
+    private void addAttributeIfNotNull(Manifest.Section target, String attributeName, String propertyValue)
+            throws ManifestException {
+        if (propertyValue != null) {
+            target.addAttributeAndCheck(new Manifest.Attribute(attributeName, propertyValue));
+        }
+    }
+
+    private void addPropertyAttributeIfNotNull(Manifest.Section target, String attributeName, String propertyName)
+            throws ManifestException {
+        String propertyValue = project.getProperties().getProperty(propertyName);
+        if (propertyValue != null) {
+            target.addAttributeAndCheck(new Manifest.Attribute(attributeName, propertyValue));
         }
     }
 }
