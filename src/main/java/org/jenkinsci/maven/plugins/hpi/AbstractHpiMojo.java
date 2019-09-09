@@ -16,6 +16,7 @@ package org.jenkinsci.maven.plugins.hpi;
  * limitations under the License.
  */
 
+import com.google.common.collect.Sets;
 import hudson.Extension;
 import java.io.BufferedReader;
 import java.io.File;
@@ -487,13 +488,16 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
 
         Set<MavenArtifact> artifacts = getProjectArtfacts();
 
+        // Also capture test dependencies
+        Set<MavenArtifact> dependencyArtifacts = getDirectDependencyArtfacts();
+
         List<String> duplicates = findDuplicates(artifacts);
 
         List<File> dependentWarDirectories = new ArrayList<File>();
 
         // List up IDs of Jenkins plugin dependencies
         Set<String> jenkinsPlugins = new HashSet<String>();
-        for (MavenArtifact artifact : artifacts) {
+        for (MavenArtifact artifact : Sets.union(artifacts, dependencyArtifacts)) {
             if (artifact.isPluginBestEffort(getLog()))
                 jenkinsPlugins.add(artifact.getId());
         }
