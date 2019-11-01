@@ -40,6 +40,7 @@ import org.apache.maven.project.MavenProjectBuilder;
 import org.eclipse.jetty.maven.plugin.JettyWebAppContext;
 import org.eclipse.jetty.maven.plugin.MavenServerConnector;
 import org.eclipse.jetty.security.HashLoginService;
+import org.eclipse.jetty.security.UserStore;
 import org.eclipse.jetty.server.ConnectionFactory;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.HttpConnectionFactory;
@@ -503,9 +504,8 @@ public class RunMojo extends AbstractJettyMojo {
                 }
             }
         }
-        // cf. https://wiki.jenkins-ci.org/display/JENKINS/Jetty
         HashLoginService hashLoginService = (new HashLoginService("Jenkins Realm"));
-        hashLoginService.setConfig(System.getProperty("jetty.home", "work") + "/etc/realm.properties");
+        hashLoginService.setUserStore(new UserStore());
         getWebAppConfig().getSecurityHandler().setLoginService(hashLoginService);
     }
 
