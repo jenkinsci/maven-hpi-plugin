@@ -45,6 +45,7 @@ import org.eclipse.jetty.server.ConnectionFactory;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.util.Scanner;
+import org.eclipse.jetty.util.security.Password;
 import org.eclipse.jetty.webapp.WebAppClassLoader;
 import org.eclipse.jetty.webapp.WebAppContext;
 
@@ -504,8 +505,12 @@ public class RunMojo extends AbstractJettyMojo {
                 }
             }
         }
-        HashLoginService hashLoginService = (new HashLoginService("Jenkins Realm"));
-        hashLoginService.setUserStore(new UserStore());
+        HashLoginService hashLoginService = (new HashLoginService("default"));
+        UserStore userStore = new UserStore();
+        hashLoginService.setUserStore(userStore);
+        userStore.addUser("alice", new Password("alice"), new String[] {"user", "female"});
+        userStore.addUser("bob", new Password("bob"), new String[] {"user", "male"});
+        userStore.addUser("charlie", new Password("charlie"), new String[] {"user", "male"});
         getWebAppConfig().getSecurityHandler().setLoginService(hashLoginService);
     }
 
