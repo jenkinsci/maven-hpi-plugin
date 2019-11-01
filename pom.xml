@@ -358,7 +358,7 @@
                   <goal>run</goal>
                 </goals>
                 <configuration>
-                  <streamLogs>false</streamLogs>
+                  <streamLogs>true</streamLogs>
                   <environmentVariables>
                       <JENKINS_HOME /> <!-- block anything set by a CI environment -->
                   </environmentVariables>
