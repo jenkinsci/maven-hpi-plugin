@@ -15,10 +15,10 @@
         <java.level>8</java.level>
         <hpi-plugin.version>@project.version@</hpi-plugin.version>
         <!--Examples of real use-cases-->
-        <hpi.pluginChagelogUrl>https://github.com/jenkinsci/configuration-as-code-plugin/releases</hpi.pluginChagelogUrl>
+        <hpi.pluginChangelogUrl>https://github.com/jenkinsci/configuration-as-code-plugin/releases</hpi.pluginChangelogUrl>
         <hpi.pluginLogoUrl>https://raw.githubusercontent.com/jenkinsci/configuration-as-code-plugin/master/plugin/src/main/webapp/img/logo-head.svg</hpi.pluginLogoUrl>
     </properties>
-    
+
     <licenses>
       <license>
         <name>MIT License</name>
@@ -30,8 +30,8 @@
         <url>https://mylicense.txt</url>
         <comments>Hello, world!</comments>
       </license>
-    </licenses> 
-    
+    </licenses>
+
     <repositories>
         <repository>
             <id>repo.jenkins-ci.org</id>
@@ -44,7 +44,7 @@
             <url>https://repo.jenkins-ci.org/public/</url>
         </pluginRepository>
     </pluginRepositories>
-    
+
     <scm>
       <connection>scm:git:git://github.com/jenkinsci/${project.artifctId}-plugin.git</connection>
       <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
