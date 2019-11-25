@@ -213,7 +213,7 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
 
         // Extra info attributes
         addLicenseAttributesForManifest(mainSection);
-        addPropertyAttributeIfNotNull(mainSection, "Plugin-ChangelogUrl", "hpi.pluginChagelogUrl");
+        addPropertyAttributeIfNotNull(mainSection, "Plugin-ChangelogUrl", "hpi.pluginChangelogUrl");
         addPropertyAttributeIfNotNull(mainSection, "Plugin-LogoUrl", "hpi.pluginLogoUrl");
         addAttributeIfNotNull(mainSection, "Plugin-ScmUrl", getScmUrl());
     }
@@ -283,7 +283,7 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
             String licenseSuffix = licenseCounter == 1 ? "" : ("-" + licenseCounter);
             addAttributeIfNotNull(target, "Plugin-License-Name" + licenseSuffix, lic.getName());
             addAttributeIfNotNull(target, "Plugin-License-Url" + licenseSuffix, lic.getUrl());
-            //TODO(oleg_nenashev): Can be enabled later if needed 
+            //TODO(oleg_nenashev): Can be enabled later if needed
             //addAttributeIfNotNull(target, "Plugin-License-Distribution" + licenseSuffix, lic.getDistribution());
             //addAttributeIfNotNull(target, "Plugin-License-Comments" + licenseSuffix, lic.getComments());
             licenseCounter++;
