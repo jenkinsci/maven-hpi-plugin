@@ -16,6 +16,7 @@ package org.jenkinsci.maven.plugins.hpi;
 
 import hudson.util.VersionNumber;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
@@ -151,6 +152,14 @@ public class RunMojo extends AbstractJettyMojo {
      */
     @Parameter(property = "port")
     protected int defaultPort;
+
+    /**
+     * Specifies the host (network interface) to bind to.
+     *
+     * If connectors are configured in the Mojo, that'll take precedence.
+     */
+    @Parameter(property = "host", defaultValue = "localhost")
+    protected String defaultHost;
 
     /**
      * If true, the context will be restarted after a line feed on
@@ -727,9 +736,14 @@ public class RunMojo extends AbstractJettyMojo {
 
     @Override
     public void startJetty() throws MojoExecutionException {
-        if (httpConnector==null && defaultPort!=0) {
+        if (httpConnector == null && (defaultPort != 0 || StringUtils.isNotEmpty(defaultHost))) {
             httpConnector = new MavenServerConnector();
-            httpConnector.setPort(defaultPort);
+            if (defaultPort != 0) {
+                httpConnector.setPort(defaultPort);
+            }
+            if (StringUtils.isNotEmpty(defaultHost)) {
+                httpConnector.setHost(defaultHost);
+            }
         }
         super.startJetty();
     }
