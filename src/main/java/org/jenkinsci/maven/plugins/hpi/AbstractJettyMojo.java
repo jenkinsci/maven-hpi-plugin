@@ -618,9 +618,9 @@ public abstract class AbstractJettyMojo extends AbstractMojo
         }
 
         getLog().info("Context path = " + webApp.getContextPath());
-        getLog().info("Tmp directory = "+ (webApp.getTempDirectory()== null? " determined at runtime": webApp.getTempDirectory()));
-        getLog().info("Web defaults = "+(webApp.getDefaultsDescriptor()==null?" jetty default":webApp.getDefaultsDescriptor()));
-        getLog().info("Web overrides = "+(webApp.getOverrideDescriptor()==null?" none":webApp.getOverrideDescriptor()));
+        getLog().info("Tmp directory = " + (webApp.getTempDirectory()== null ? "(determined at runtime)" : webApp.getTempDirectory()));
+        getLog().info("Web defaults = " + (webApp.getDefaultsDescriptor()== null ? "(jetty default)" : webApp.getDefaultsDescriptor()));
+        getLog().info("Web overrides = " + (webApp.getOverrideDescriptor()== null ? "(none)" : webApp.getOverrideDescriptor()));
     }
 
 
