@@ -500,6 +500,10 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         for (MavenArtifact artifact : Sets.union(artifacts, dependencyArtifacts)) {
             if (artifact.isPluginBestEffort(getLog()))
                 jenkinsPlugins.add(artifact.getId());
+            // Exclude dependency if it comes from test or provided trail.
+            // Most likely a plugin transitive dependency but the trail through (test,provided) dep is shorter
+            if (artifact.hasScope("test", "provided"))
+                jenkinsPlugins.add(artifact.getId());
         }
 
         OUTER:
