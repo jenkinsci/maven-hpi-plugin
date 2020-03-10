@@ -30,16 +30,31 @@
         </pluginRepository>
     </pluginRepositories>
 
+    <!--
+    workflow-support pulls jboss-marshalling-river through 2 different trails
+    * through workflow-cps in compile scope
+    * directly in test scope
+    -->
+
     <dependencies>
         <dependency>
             <groupId>org.jenkins-ci.plugins.workflow</groupId>
             <artifactId>workflow-cps</artifactId>
+<!--            +- org.jenkins-ci.plugins.workflow:workflow-cps:jar:2.76:compile-->
+<!--            |  +- org.jenkins-ci.plugins.workflow:workflow-step-api:jar:2.22:compile-->
+<!--            |  +- org.jenkins-ci.plugins.workflow:workflow-api:jar:2.37:compile-->
+<!--            |  +- org.jenkins-ci.plugins.workflow:workflow-support:jar:3.3:compile-->
+<!--            |  |  \- org.jboss.marshalling:jboss-marshalling-river:jar:2.0.6.Final:compile-->
+<!--            |  |     \- org.jboss.marshalling:jboss-marshalling:jar:2.0.6.Final:compile-->
         </dependency>
         <dependency>
             <groupId>org.jenkins-ci.plugins.workflow</groupId>
             <artifactId>workflow-support</artifactId>
             <classifier>tests</classifier>
             <scope>test</scope>
+<!--            +- org.jenkins-ci.plugins.workflow:workflow-support:jar:tests:3.3:test-->
+<!--            |  \- org.jboss.marshalling:jboss-marshalling-river:jar:2.0.6.Final:compile-->
+<!--            |     \- org.jboss.marshalling:jboss-marshalling:jar:2.0.6.Final:compile-->
         </dependency>
     </dependencies>
 

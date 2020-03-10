@@ -30,6 +30,13 @@
         </pluginRepository>
     </pluginRepositories>
 
+    <!--
+    parent POM pulls com.github.spotbugs:spotbugs-annotations with provided scope. It pulls
+    com.google.code.findbugs:jsr305:jar:3.0.2 transitively.
+
+    google-oauth-plugin pulls com.google.code.findbugs:jsr305:jar:3.0.2 transitively. Resulting scope is compile, but as
+    the trail through spotbugs-annotations is shorter, it ends up packaged instead of excluded as coming from a plugin.
+    -->
     <dependencies>
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
