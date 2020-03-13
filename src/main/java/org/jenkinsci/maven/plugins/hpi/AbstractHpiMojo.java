@@ -496,19 +496,31 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         List<File> dependentWarDirectories = new ArrayList<File>();
 
         // List up IDs of Jenkins plugin dependencies
-        Set<String> jenkinsPlugins = new HashSet<String>();
+        Set<String> jenkinsPlugins = new HashSet<>();
+        Set<String> excludedArtifacts = new HashSet<>();
         for (MavenArtifact artifact : Sets.union(artifacts, dependencyArtifacts)) {
             if (artifact.isPluginBestEffort(getLog()))
                 jenkinsPlugins.add(artifact.getId());
+            // Exclude dependency if it comes from test or provided trail.
+            // Most likely a plugin transitive dependency but the trail through (test,provided) dep is shorter
+            if (artifact.hasScope("test", "provided")) {
+                excludedArtifacts.add(artifact.getId());
+            }
         }
 
         OUTER:
         for (MavenArtifact artifact : artifacts) {
-            if(jenkinsPlugins.contains(artifact.getId()))
+            if (jenkinsPlugins.contains(artifact.getId())) {
                 continue;   // plugin dependency need not be WEB-INF/lib
-            if(artifact.getDependencyTrail().size() >= 1 && jenkinsPlugins.contains(artifact.getDependencyTrail().get(1)))
-                continue;   // no need to have transitive dependencies through plugins in WEB-INF/lib.
-
+            }
+            if (artifact.getDependencyTrail().size() >= 1) {
+                if (jenkinsPlugins.contains(artifact.getDependencyTrail().get(1))) {
+                    continue; // no need to have transitive dependencies through plugins in WEB-INF/lib.
+                }
+                if (excludedArtifacts.contains(artifact.getDependencyTrail().get(1))) {
+                    continue; // exclude artifacts resolved through a test or provided scope
+                }
+            }
             // if the dependency goes through jenkins core, we don't need to bundle it in the war
             // because jenkins-core comes in the <provided> scope, I think this is a bug in Maven that it puts such
             // dependencies into the artifact list.
