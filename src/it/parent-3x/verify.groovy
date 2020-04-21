@@ -55,7 +55,7 @@ checkArtifact(installed, 'parent-3x-1.0-SNAPSHOT-test-sources.jar',
 // TODO check that we can access http://localhost:8080/jenkins/sample/ during hpi:run
 // (tricky since this script is called only once mvn is done)
 def text = new File(basedir, 'build.log').text
-assert text.contains('INFO: Jenkins is fully up and running') && text.contains('INFO: Jenkins stopped')
+assert text.contains('Jenkins is fully up and running') && text.contains('INFO\tjenkins.model.Jenkins#cleanUp: Jenkins stopped')
 assert new File(basedir, 'work/plugins/parent-3x.hpl').file
 assert new File(basedir, 'work/plugins/structs.jpi').file
 
