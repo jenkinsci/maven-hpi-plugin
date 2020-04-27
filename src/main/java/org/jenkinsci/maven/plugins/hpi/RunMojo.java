@@ -15,6 +15,7 @@
 package org.jenkinsci.maven.plugins.hpi;
 
 import hudson.util.VersionNumber;
+import io.jenkins.lib.support_log_formatter.SupportLogFormatter;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.Artifact;
@@ -376,6 +377,11 @@ public class RunMojo extends AbstractJettyMojo {
             throw new MojoExecutionException("Unable to copy dependency plugin",e);
         } catch (ArtifactResolutionException e) {
             throw new MojoExecutionException("Unable to copy dependency plugin",e);
+        }
+
+        if (System.getProperty("java.util.logging.config.file") == null) {
+            // see org.apache.juli.logging.DirectJDKLog
+            System.setProperty("org.apache.juli.formatter", SupportLogFormatter.class.getName());
         }
 
         if (loggers != null) {
