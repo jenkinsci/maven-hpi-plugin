@@ -163,6 +163,14 @@ public class RunMojo extends AbstractJettyMojo {
     protected String defaultHost;
 
     /**
+     * Optional wildcard DNS domain to help set a distinct Jenkins root URL from every plugin.
+     * Just prints a URL you ought to set.
+     * Recommended: {@code nip.io}
+     */
+    @Parameter(property = "wildcardDNS")
+    protected String wildcardDNS;
+
+    /**
      * If true, the context will be restarted after a line feed on
      * the input console. Disabled by default.
      */
@@ -750,6 +758,14 @@ public class RunMojo extends AbstractJettyMojo {
             if (StringUtils.isNotEmpty(defaultHost)) {
                 httpConnector.setHost(defaultHost);
             }
+            String browserHost;
+            if (wildcardDNS != null && "localhost".equals(defaultHost)) {
+                browserHost = getProject().getArtifactId() + ".127.0.0.1." + wildcardDNS;
+            } else {
+                getLog().info("Try setting -DwildcardDNS=nip.io in a profile");
+                browserHost = httpConnector.getHost();
+            }
+            getLog().info("===========> Browse to: http://" + browserHost + ":" + (defaultPort != 0 ? defaultPort : MavenServerConnector.DEFAULT_PORT) + webApp.getContextPath() + "/");
         }
         super.startJetty();
     }
