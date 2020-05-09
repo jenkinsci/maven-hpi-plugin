@@ -55,6 +55,10 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
      * Is this a Jenkins plugin?
      */
     public boolean isPlugin() throws IOException {
+        if ("system".equals(getScope())) {
+            // cannot be a plugin if in system scope, so prevent JENKINS-61937
+            return false;
+        }
         String type = getResolvedType();
         return type.equals("hpi") || type.equals("jpi");
     }
