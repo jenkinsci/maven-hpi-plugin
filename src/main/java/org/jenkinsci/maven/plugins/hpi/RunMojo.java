@@ -353,8 +353,9 @@ public class RunMojo extends AbstractJettyMojo {
         // copy other dependency Jenkins plugins
         try {
             for( MavenArtifact a : getProjectArtifacts() ) {
-                if(!a.isPlugin())
+                if(!a.isPluginBestEffort(getLog())) {
                     continue;
+                }
 
                 // find corresponding .hpi file
                 Artifact hpi = artifactFactory.createArtifact(a.getGroupId(),a.getArtifactId(),a.getVersion(),null,"hpi");
