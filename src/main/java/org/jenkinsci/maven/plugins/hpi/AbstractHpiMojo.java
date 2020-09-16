@@ -510,6 +510,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
 
         OUTER:
         for (MavenArtifact artifact : artifacts) {
+            getLog().debug("Considering artifact trail " + artifact.getDependencyTrail());
             if (jenkinsPlugins.contains(artifact.getId())) {
                 continue;   // plugin dependency need not be WEB-INF/lib
             }
