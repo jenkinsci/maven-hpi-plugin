@@ -8,11 +8,12 @@
     <version>4.6</version>
     <relativePath />
   </parent>
-  <artifactId>check-core-version</artifactId>
+  <artifactId>check-core-version-success</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>hpi</packaging>
   <properties>
     <java.level>8</java.level>
+    <jenkins.version>2.222.4</jenkins.version>
   </properties>
   <dependencies>
     <dependency>
