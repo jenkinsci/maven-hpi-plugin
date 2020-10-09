@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="Date-Revision-yyyymmdd" content="20201009" />
     <meta http-equiv="Content-Language" content="en" />
-    <title>Maven Jenkins Plugin &#x2013; hpi:list-plugin-dependencies</title>
+    <title>Maven Jenkins Plugin &#x2013; hpi:validate-hpi</title>
     <link rel="stylesheet" href="./css/apache-maven-fluido-1.3.0.min.css" />
     <link rel="stylesheet" href="./css/site.css" />
     <link rel="stylesheet" href="./css/print.css" media="print" />
@@ -118,7 +118,7 @@
         Jenkins</a>
         </li>
       <li class="divider ">/</li>
-        <li class="">hpi:list-plugin-dependencies</li>
+        <li class="">hpi:validate-hpi</li>
         
                 
                     
@@ -135,16 +135,16 @@
             
   
     <section>
-<h2><a name="hpi:list-plugin-dependencies"></a>hpi:list-plugin-dependencies</h2>
+<h2><a name="hpi:validate-hpi"></a>hpi:validate-hpi</h2>
       
 <p><b>Full name</b>:</p>
       
-<p>org.jenkins-ci.tools:maven-hpi-plugin:3.16:list-plugin-dependencies</p>
+<p>org.jenkins-ci.tools:maven-hpi-plugin:3.16:validate-hpi</p>
       
 <p><b>Description</b>:</p>
       
-<div>List up all plugin dependencies declared in the project. Transitive
-plugin dependencies will not be listed.</div>
+<div>Validates dependencies depend on older or equal core than the
+current plugin.</div>
       
 <p><b>Attributes</b>:</p>
       
@@ -152,7 +152,9 @@ plugin dependencies will not be listed.</div>
         
 <li>Requires a Maven project to be executed.</li>
         
-<li>Requires dependency resolution of artifacts in scope: <code>compile+runtime</code>.</li>
+<li>Requires dependency resolution of artifacts in scope: <code>runtime</code>.</li>
+        
+<li>Binds by default to the <a class="externalLink" href="http://maven.apache.org/ref/current/maven-core/lifecycles.html">lifecycle phase</a>: <code>validate</code>.</li>
       </ul>
       <section>
 <h3><a name="Optional_Parameters"></a>Optional Parameters</h3>
@@ -315,17 +317,6 @@ name, like &quot;com.foo. com.bar.&quot;</p><br /></td>
           
 <tr class="a">
             
-<td><code><a href="#outputFile">&lt;outputFile&gt;</a></code></td>
-            
-<td><code>File</code></td>
-            
-<td><code>-</code></td>
-            
-<td>If non-null, the output will be sent to a file<br /><b>User property is</b>: <code>outputFile</code>.<br /></td>
-          </tr>
-          
-<tr class="b">
-            
 <td><code><a href="#pluginFirstClassLoader">&lt;pluginFirstClassLoader&gt;</a></code></td>
             
 <td><code>boolean</code></td>
@@ -342,7 +333,7 @@ this switch makes your code susceptible to classloader constraint
 violations.</p><br /></td>
           </tr>
           
-<tr class="a">
+<tr class="b">
             
 <td><code><a href="#pluginVersionDescription">&lt;pluginVersionDescription&gt;</a></code></td>
             
@@ -357,7 +348,7 @@ number in here by running Maven with
 &quot;-Dplugin.version.description=$BUILD_TAG&quot;<br /><b>Default value is</b>: <code>${plugin.version.description}</code>.<br /></td>
           </tr>
           
-<tr class="b">
+<tr class="a">
             
 <td><code><a href="#snapshotPluginVersionOverride">&lt;snapshotPluginVersionOverride&gt;</a></code></td>
             
@@ -390,7 +381,7 @@ to populate a property with the version and then use this
 configuration to provide the version.<br /></td>
           </tr>
           
-<tr class="a">
+<tr class="b">
             
 <td><code><a href="#warSourceDirectory">&lt;warSourceDirectory&gt;</a></code></td>
             
@@ -401,7 +392,7 @@ configuration to provide the version.<br /></td>
 <td>Single directory for extra files to include in the WAR.<br /><b>Default value is</b>: <code>${basedir}/src/main/webapp</code>.<br /></td>
           </tr>
           
-<tr class="b">
+<tr class="a">
             
 <td><code><a href="#warSourceExcludes">&lt;warSourceExcludes&gt;</a></code></td>
             
@@ -412,7 +403,7 @@ configuration to provide the version.<br /></td>
 <td>The comma separated list of tokens to exclude from the WAR.<br /><b>Alias is</b>: <code>excludes</code>.</td>
           </tr>
           
-<tr class="a">
+<tr class="b">
             
 <td><code><a href="#warSourceIncludes">&lt;warSourceIncludes&gt;</a></code></td>
             
@@ -423,7 +414,7 @@ configuration to provide the version.<br /></td>
 <td>The comma separated list of tokens to include in the WAR.<br /><b>Default value is</b>: <code>**</code>.<br /><b>Alias is</b>: <code>includes</code>.</td>
           </tr>
           
-<tr class="b">
+<tr class="a">
             
 <td><code><a href="#webResources">&lt;webResources&gt;</a></code></td>
             
@@ -434,7 +425,7 @@ configuration to provide the version.<br /></td>
 <td>The list of webResources we want to transfer.<br /></td>
           </tr>
           
-<tr class="a">
+<tr class="b">
             
 <td><code><a href="#webappDirectory">&lt;webappDirectory&gt;</a></code></td>
             
@@ -445,7 +436,7 @@ configuration to provide the version.<br /></td>
 <td>The directory where the webapp is built.<br /><b>Default value is</b>: <code>${project.build.directory}/${project.build.finalName}</code>.<br /></td>
           </tr>
           
-<tr class="b">
+<tr class="a">
             
 <td><code><a href="#workDirectory">&lt;workDirectory&gt;</a></code></td>
             
@@ -609,18 +600,6 @@ name, like &quot;com.foo. com.bar.&quot;</p></div>
 <li><b>Required</b>: <code>No</code></li>
           
 <li><b>Default</b>: <code>${project.build.directory}</code></li>
-        </ul><hr /></section><section>
-<h4><a name="a.3CoutputFile.3E"></a><b><a name="outputFile">&lt;outputFile&gt;</a></b></h4>
-        
-<div>If non-null, the output will be sent to a file</div>
-        
-<ul>
-          
-<li><b>Type</b>: <code>java.io.File</code></li>
-          
-<li><b>Required</b>: <code>No</code></li>
-          
-<li><b>User Property</b>: <code>outputFile</code></li>
         </ul><hr /></section><section>
 <h4><a name="a.3CpluginFirstClassLoader.3E"></a><b><a name="pluginFirstClassLoader">&lt;pluginFirstClassLoader&gt;</a></b></h4>
         
