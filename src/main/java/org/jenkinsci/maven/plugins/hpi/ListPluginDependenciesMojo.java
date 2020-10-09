@@ -14,7 +14,8 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 
 /**
- * List up all the plugin dependencies.
+ * List up all plugin dependencies declared in the project.
+ * Transitive plugin dependencies will not be listed.
  *
  * @author Kohsuke Kawaguchi
  */
@@ -26,6 +27,9 @@ public class ListPluginDependenciesMojo extends AbstractHpiMojo {
     @Parameter(property = "outputFile")
     protected File outputFile;
 
+    // TODO(oleg_nenashev): Add support for transitive plugin dependencies.
+    // Might require reusing/refactoring the plugin dependency tree resolution code in plugin installation mojos.
+    
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
             Writer w = outputFile==null ? new NullWriter() : new OutputStreamWriter(new FileOutputStream(outputFile),"UTF-8");
