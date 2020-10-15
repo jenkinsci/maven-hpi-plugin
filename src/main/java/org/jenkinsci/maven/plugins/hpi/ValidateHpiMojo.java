@@ -15,7 +15,7 @@ import java.util.jar.JarFile;
 /**
  * Validates dependencies depend on older or equal core than the current plugin.
  */
-@Mojo(name = "validate-hpi", defaultPhase = LifecyclePhase.VALIDATE, requiresDependencyResolution = ResolutionScope.RUNTIME)
+@Mojo(name = "validate-hpi", defaultPhase = LifecyclePhase.VALIDATE, requiresDependencyResolution = ResolutionScope.TEST)
 public class ValidateHpiMojo extends AbstractHpiMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
