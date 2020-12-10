@@ -129,7 +129,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
      * The directory where the webapp is built.
      */
     @Parameter(defaultValue = "${project.build.directory}/${project.build.finalName}")
-    private File webappDirectory;
+    protected File webappDirectory;
 
     /**
      * Single directory for extra files to include in the WAR.
@@ -407,13 +407,17 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
             if (webappDirectory.exists()) {
                 String[] fileNames = getWarFiles(resource);
                 for (String fileName : fileNames) {
+                    File targetDirectory = webappDirectory;
+                    if (StringUtils.isNotBlank(resource.getTargetPath())) {
+                        targetDirectory = new File(webappDirectory, resource.getTargetPath());
+                    }
                     if (resource.isFiltering()) {
                         copyFilteredFile(new File(resource.getDirectory(), fileName),
-                            new File(webappDirectory, fileName), null, getFilterWrappers(),
+                            new File(targetDirectory, fileName), null, getFilterWrappers(),
                             filterProperties);
                     } else {
                         copyFileIfModified(new File(resource.getDirectory(), fileName),
-                            new File(webappDirectory, fileName));
+                            new File(targetDirectory, fileName));
                     }
                 }
             }
