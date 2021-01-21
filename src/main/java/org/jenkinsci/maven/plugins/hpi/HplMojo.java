@@ -2,7 +2,6 @@ package org.jenkinsci.maven.plugins.hpi;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -98,7 +97,12 @@ public class HplMojo extends AbstractJenkinsManifestMojo {
             mainSection.addAttributeAndCheck(new Attribute("Libraries", StringUtils.join(paths, ",")));
 
             // compute Resource-Path entry
-            mainSection.addAttributeAndCheck(new Attribute("Resource-Path",warSourceDirectory.getAbsolutePath()));
+            if (webappDirectory != null && webappDirectory.isDirectory()) {
+                mainSection.addAttributeAndCheck(new Attribute("Resource-Path",webappDirectory.getAbsolutePath()));
+            } else {
+                getLog().info("webappDirectory does not exist, will use warSourceDirectory");
+                mainSection.addAttributeAndCheck(new Attribute("Resource-Path",warSourceDirectory.getAbsolutePath()));
+            }
 
             printWriter = new PrintWriter(new FileWriter(hplFile));
             mf.write(printWriter);
