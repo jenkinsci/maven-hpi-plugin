@@ -28,10 +28,6 @@
     <url>https://github.com/jenkinsci/maven-hpi-plugin</url>
     <tag>HEAD</tag>
   </scm>
-  <ciManagement>
-    <system>jenkins</system>
-    <url>https://buildhive.cloudbees.com/job/jenkinsci/job/maven-hpi-plugin/</url>
-  </ciManagement>
   <distributionManagement>
     <site>
       <!-- if this deployment fails, it's probably you are missing the entry to set the username in ~/.m2/settings.xml
