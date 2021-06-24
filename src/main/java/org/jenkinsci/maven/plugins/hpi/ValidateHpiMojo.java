@@ -18,26 +18,26 @@ import java.util.jar.JarFile;
 @Mojo(name = "validate-hpi", defaultPhase = LifecyclePhase.VALIDATE, requiresDependencyResolution = ResolutionScope.TEST)
 public class ValidateHpiMojo extends AbstractHpiMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
-        try {
             VersionNumber coreVersion = new VersionNumber(findJenkinsVersion());
             MavenArtifact maxCoreVersionArtifact = null;
             VersionNumber maxCoreVersion = new VersionNumber("0");
 
             for (MavenArtifact artifact : Sets.union(getProjectArtfacts(), getDirectDependencyArtfacts())) {
-                if (artifact.isPluginBestEffort(getLog())) {
-                    VersionNumber dependencyCoreVersion = getDependencyCoreVersion(artifact);
-                    if (dependencyCoreVersion.compareTo(maxCoreVersion) > 0) {
-                        maxCoreVersionArtifact = artifact;
-                        maxCoreVersion = dependencyCoreVersion;
+                try {
+                    if (artifact.isPluginBestEffort(getLog())) {
+                        VersionNumber dependencyCoreVersion = getDependencyCoreVersion(artifact);
+                        if (dependencyCoreVersion.compareTo(maxCoreVersion) > 0) {
+                            maxCoreVersionArtifact = artifact;
+                            maxCoreVersion = dependencyCoreVersion;
+                        }
                     }
+                } catch (IOException e) {
+                    throw new MojoExecutionException("Unable to retrieve manifest, artifactId: " + artifact.getArtifactId(), e);
                 }
             }
             if (coreVersion.compareTo(maxCoreVersion) < 0) {
                 throw new MojoExecutionException("Dependency " + maxCoreVersionArtifact + " requires Jenkins " + maxCoreVersion + " or higher.");
             }
-        } catch (IOException e) {
-            throw new MojoExecutionException("Unable to retrieve manifest", e);
-        }
     }
 
     private VersionNumber getDependencyCoreVersion(MavenArtifact artifact) throws IOException, MojoExecutionException {
