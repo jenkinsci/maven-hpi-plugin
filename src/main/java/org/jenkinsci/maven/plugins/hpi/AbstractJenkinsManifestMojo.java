@@ -15,6 +15,9 @@
  */
 package org.jenkinsci.maven.plugins.hpi;
 
+import java.util.Collections;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.apache.maven.archiver.MavenArchiveConfiguration;
 import org.apache.maven.archiver.MavenArchiver;
 import org.apache.maven.artifact.Artifact;
@@ -223,27 +226,39 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
      */
     private String findDependencyPlugins() throws IOException, MojoExecutionException {
         StringBuilder buf = new StringBuilder();
-        for (MavenArtifact a : getDirectDependencyArtfacts()) {
-            if(a.isPlugin() && scopeFilter.include(a.artifact) && !a.hasSameGAAs(project)) {
-                if(buf.length()>0)
-                    buf.append(',');
-                buf.append(a.getActualArtifactId());
-                buf.append(':');
-                buf.append(a.getActualVersion());
-                if (a.isOptional()) {
-                    buf.append(";resolution:=optional");
-                }
+        for (MavenArtifact a : getEligiblePluginDependencies()) {
+            if (buf.length() > 0) {
+                buf.append(',');
+            }
+            buf.append(a.getActualArtifactId());
+            buf.append(':');
+            buf.append(a.getActualVersion());
+            if (a.isOptional()) {
+                buf.append(";resolution:=optional");
             }
         }
 
         // check any "provided" scope plugin dependencies that are probably not what the user intended.
         // see http://jenkins-ci.361315.n4.nabble.com/Classloading-problem-when-referencing-classes-from-another-plugin-during-the-initialization-phase-of-td394967.html
-        for (Artifact a : (Collection<Artifact>)project.getDependencyArtifacts())
-            if ("provided".equals(a.getScope()) && wrap(a).isPlugin())
-                throw new MojoExecutionException(a.getId()+" is marked as 'provided' scope dependency, but it should be the 'compile' scope.");
+        for (Artifact a : (Collection<Artifact>)project.getDependencyArtifacts()) {
+            if ("provided".equals(a.getScope()) && wrap(a).isPlugin()) {
+                throw new MojoExecutionException(a.getId() + " is marked as 'provided' scope dependency, but it should be the 'compile' scope.");
+            }
+        }
 
 
         return buf.toString();
+    }
+
+    private Set<MavenArtifact> getEligiblePluginDependencies() {
+        Set<MavenArtifact> jenkinsPlugins = getDependencyInfo().getJenkinsPlugins();
+        return jenkinsPlugins
+                .stream()
+                .filter(a -> scopeFilter.include(a.artifact))
+                .filter(a -> !a.hasSameGAAs(project))
+                // Remove plugins which are transitive dependencies of other plugins
+                .filter(a -> jenkinsPlugins.stream().noneMatch(b -> !a.getDependencyTrail().equals(b.getDependencyTrail()) && Collections.indexOfSubList(a.getDependencyTrail(), b.getDependencyTrail()) == 0))
+                .collect(Collectors.toSet());
     }
 
     /**
