@@ -146,6 +146,10 @@ public class HplMojo extends AbstractJenkinsManifestMojo {
                     continue OUTER;
             }
 
+            //Skip artifacts of type pom
+            if(artifact.getType().equals("pom"))
+                continue;
+
             ScopeArtifactFilter filter = new ScopeArtifactFilter(Artifact.SCOPE_RUNTIME);
             if (!artifact.isOptional() && filter.include(artifact.artifact)) {
                 paths.add(artifact.getFile().getPath());
