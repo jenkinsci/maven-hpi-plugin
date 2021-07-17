@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.62</version>
+    <version>1.65</version>
     <relativePath />
   </parent>
 
@@ -51,7 +51,7 @@
     <java.level>8</java.level>
     <!-- TODO: remove after updating to a recent parent POM -->
     <maven-release-plugin.version>2.5.3</maven-release-plugin.version>
-    <maven.version>2.2.0</maven.version>
+    <maven.version>2.2.1</maven.version>
     <maven-plugin-tools.version>3.6.0</maven-plugin-tools.version>
     <enforcer.skip>true</enforcer.skip> <!-- TODO lots of requireUpperBoundDeps violations -->
     <spotbugs.skip>true</spotbugs.skip> <!-- TODO lots of violations -->
