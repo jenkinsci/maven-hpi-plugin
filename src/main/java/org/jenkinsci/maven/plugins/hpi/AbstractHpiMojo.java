@@ -33,6 +33,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -472,6 +473,47 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         return r;
     }
 
+    static class DependencyInfo {
+        private Set<MavenArtifact> jenkinsPlugins;
+        private Set<MavenArtifact> excludedArtifacts;
+
+        public DependencyInfo(Set<MavenArtifact> jenkinsPlugins, Set<MavenArtifact> excludedArtifacts) {
+            this.jenkinsPlugins = new HashSet<>(jenkinsPlugins);
+            this.excludedArtifacts = new HashSet<>(excludedArtifacts);
+        }
+
+        public Set<MavenArtifact> getJenkinsPlugins() {
+            return Collections.unmodifiableSet(jenkinsPlugins);
+        }
+
+        public Set<MavenArtifact> getExcludedArtifacts() {
+            return Collections.unmodifiableSet(excludedArtifacts);
+        }
+    }
+
+    /**
+     * Look at the current project dependency tree and list Jenkins plugins and excluded artifacts
+     * @return a {@link DependencyInfo} object built from current Maven project.
+     */
+    protected DependencyInfo getDependencyInfo() {
+        Set<MavenArtifact> artifacts = getProjectArtfacts();
+        Set<MavenArtifact> dependencyArtifacts = getDirectDependencyArtfacts();
+
+        // List up IDs of Jenkins plugin dependencies
+        Set<MavenArtifact> jenkinsPlugins = new HashSet<>();
+        Set<MavenArtifact> excludedArtifacts = new HashSet<>();
+        for (MavenArtifact artifact : Sets.union(artifacts, dependencyArtifacts)) {
+            if (artifact.isPluginBestEffort(getLog()))
+                jenkinsPlugins.add(artifact);
+            // Exclude dependency if it comes from test or provided trail.
+            // Most likely a plugin transitive dependency but the trail through (test,provided) dep is shorter
+            if (artifact.hasScope("test", "provided")) {
+                excludedArtifacts.add(artifact);
+            }
+        }
+        return new DependencyInfo(jenkinsPlugins, excludedArtifacts);
+    }
+
     /**
      * Builds the webapp for the specified project.
      * <p>
@@ -492,38 +534,30 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
 
         Set<MavenArtifact> artifacts = getProjectArtfacts();
 
-        // Also capture test dependencies
-        Set<MavenArtifact> dependencyArtifacts = getDirectDependencyArtfacts();
-
         List<String> duplicates = findDuplicates(artifacts);
 
         List<File> dependentWarDirectories = new ArrayList<File>();
 
-        // List up IDs of Jenkins plugin dependencies
-        Set<String> jenkinsPlugins = new HashSet<>();
-        Set<String> excludedArtifacts = new HashSet<>();
-        for (MavenArtifact artifact : Sets.union(artifacts, dependencyArtifacts)) {
-            if (artifact.isPluginBestEffort(getLog()))
-                jenkinsPlugins.add(artifact.getId());
-            // Exclude dependency if it comes from test or provided trail.
-            // Most likely a plugin transitive dependency but the trail through (test,provided) dep is shorter
-            if (artifact.hasScope("test", "provided")) {
-                excludedArtifacts.add(artifact.getId());
-            }
-        }
+        DependencyInfo dependencyInfo = getDependencyInfo();
+        Set<MavenArtifact> excludedArtifacts = dependencyInfo.getExcludedArtifacts();
+        Set<MavenArtifact> jenkinsPlugins = dependencyInfo.getJenkinsPlugins();
+        getLog().debug("Jenkins plugins : " + jenkinsPlugins);
 
         OUTER:
         for (MavenArtifact artifact : artifacts) {
             getLog().debug("Considering artifact trail " + artifact.getDependencyTrail());
-            if (jenkinsPlugins.contains(artifact.getId())) {
+            if (jenkinsPlugins.contains(artifact)) {
                 continue;   // plugin dependency need not be WEB-INF/lib
             }
-            if (artifact.getDependencyTrail().size() >= 1) {
-                if (jenkinsPlugins.contains(artifact.getDependencyTrail().get(1))) {
-                    continue; // no need to have transitive dependencies through plugins in WEB-INF/lib.
-                }
-                if (excludedArtifacts.contains(artifact.getDependencyTrail().get(1))) {
-                    continue; // exclude artifacts resolved through a test or provided scope
+            int trailSize = artifact.getDependencyTrail().size();
+            if (trailSize >= 1) {
+                for (String dep : artifact.getDependencyTrail().subList(1, trailSize)) {
+                    if (jenkinsPlugins.stream().anyMatch(a -> a.getId().equals(dep)) ||
+                            excludedArtifacts.stream().anyMatch(a -> a.getId().equals(dep))) {
+                        // no need to have transitive dependencies through plugins in WEB-INF/lib.
+                        // exclude artifacts resolved through a test or provided scope
+                        continue OUTER;
+                    }
                 }
             }
             // if the dependency goes through jenkins core, we don't need to bundle it in the war
@@ -547,7 +581,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
             // TODO: utilise appropriate methods from project builder
             ScopeArtifactFilter filter = new ScopeArtifactFilter(Artifact.SCOPE_RUNTIME);
             if (!artifact.isOptional() && filter.include(artifact.artifact)) {
-                if (artifact.getDependencyTrail().size() > 2) {
+                if (trailSize > 2) {
                     getLog().warn("Bundling transitive dependency " + targetFileName + " (via " + artifact.getDependencyTrail().get(1).replaceAll("[^:]+:([^:]+):.+", "$1") + ")");
                 } else {
                     getLog().info("Bundling direct dependency " + targetFileName);
