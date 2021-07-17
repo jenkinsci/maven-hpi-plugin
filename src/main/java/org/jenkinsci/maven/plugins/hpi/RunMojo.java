@@ -178,7 +178,7 @@ public class RunMojo extends AbstractJettyMojo {
 
     /**
      * If true, the context will be restarted after a line feed on
-     * the input console. Disabled by default.
+     * the input console. Enabled by default.
      */
     @Parameter(property = "jetty.consoleForceReload", defaultValue = "true")
     protected boolean consoleForceReload;
