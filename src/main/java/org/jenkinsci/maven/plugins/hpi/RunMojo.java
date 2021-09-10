@@ -300,8 +300,6 @@ public class RunMojo extends AbstractJettyMojo {
         setSystemPropertyIfEmpty("org.eclipse.jetty.Request.maxFormContentSize","-1");
         // general-purpose system property so that we can tell from Jenkins if we are running in the hpi:run mode.
         setSystemPropertyIfEmpty("hudson.hpi.run","true");
-        // this adds 3 secs to the shutdown time. Skip it.
-        setSystemPropertyIfEmpty("hudson.DNSMultiCast.disabled","true");
         // expose the current top-directory of the plugin
         setSystemPropertyIfEmpty("jenkins.moduleRoot", basedir.getAbsolutePath());
 
