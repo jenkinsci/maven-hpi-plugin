@@ -4,13 +4,13 @@
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.62</version>
+    <version>1.65</version>
     <relativePath />
   </parent>
 
   <groupId>org.jenkins-ci.tools</groupId>
   <artifactId>maven-hpi-plugin</artifactId>
-  <version>3.18-SNAPSHOT</version>
+  <version>3.19-SNAPSHOT</version>
   <packaging>maven-plugin</packaging>
 
   <name>Maven Jenkins Plugin</name>
@@ -98,7 +98,7 @@
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-groovy</artifactId>
-      <version>1.260</version>
+      <version>1563.v3da2d02f9572</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
@@ -123,7 +123,7 @@
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-maven-plugin</artifactId>
-      <version>9.4.32.v20200930</version>
+      <version>11.0.6</version>
     </dependency>
     <dependency>
       <groupId>net.java.sezpoz</groupId>
@@ -277,7 +277,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>animal-sniffer-maven-plugin</artifactId>
-        <version>1.19</version>
+        <version>1.20</version>
         <executions>
           <execution>
             <goals>
