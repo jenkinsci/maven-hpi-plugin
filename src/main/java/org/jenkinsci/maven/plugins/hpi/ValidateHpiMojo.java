@@ -2,6 +2,7 @@ package org.jenkinsci.maven.plugins.hpi;
 
 import com.google.common.collect.Sets;
 import hudson.util.VersionNumber;
+import java.io.File;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -41,17 +42,24 @@ public class ValidateHpiMojo extends AbstractHpiMojo {
     }
 
     private VersionNumber getDependencyCoreVersion(MavenArtifact artifact) throws IOException, MojoExecutionException {
-        Attributes mainAttributes = new JarFile(artifact.getFile()).getManifest().getMainAttributes();
-        Attributes.Name jName = new Attributes.Name("Jenkins-Version");
-        if (mainAttributes.containsKey(jName)) {
-            return new VersionNumber(mainAttributes.getValue(jName));
-        } else {
-            Attributes.Name hName = new Attributes.Name("Hudson-Version");
-            if (mainAttributes.containsKey(hName)) {
-                return new VersionNumber(mainAttributes.getValue(hName));
+        File file = artifact.getFile();
+        if (file.isFile()) {
+            Attributes mainAttributes = new JarFile(file).getManifest().getMainAttributes();
+            Attributes.Name jName = new Attributes.Name("Jenkins-Version");
+            if (mainAttributes.containsKey(jName)) {
+                return new VersionNumber(mainAttributes.getValue(jName));
             } else {
-                throw new MojoExecutionException("Could not find Jenkins Version in manifest for " + artifact);
+                Attributes.Name hName = new Attributes.Name("Hudson-Version");
+                if (mainAttributes.containsKey(hName)) {
+                    return new VersionNumber(mainAttributes.getValue(hName));
+                } else {
+                    throw new MojoExecutionException("Could not find Jenkins Version in manifest for " + artifact);
+                }
             }
+        } else {
+            getLog().warn("Skipping jenkins-core validation for " + artifact + " since we rely on sources and don't have a manifest. Use 'package' goal to get validation");
+            // Assume the version is the same
+            return new VersionNumber(findJenkinsVersion());
         }
     }
 }
