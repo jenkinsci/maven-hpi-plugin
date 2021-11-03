@@ -921,7 +921,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         }
 
         try {
-            Process p = new ProcessBuilder("git", "rev-parse", "HEAD").redirectErrorStream(true).start();
+            Process p = new ProcessBuilder("git", "-C", git.getAbsolutePath(), "rev-parse", "HEAD").redirectErrorStream(true).start();
             p.getOutputStream().close();
             String v = IOUtils.toString(p.getInputStream()).trim();
             if (p.waitFor()!=0)
