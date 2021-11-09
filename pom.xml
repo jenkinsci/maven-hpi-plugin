@@ -187,7 +187,7 @@
             <dependency> <!-- TODO https://maven.apache.org/plugins/maven-site-plugin/migrate.html 1.7 fails with: org.apache.velocity.exception.ParseErrorException: Encountered "source" at META-INF/maven/site.vm[line 1039, column 52] -->
               <groupId>org.apache.velocity</groupId>
               <artifactId>velocity</artifactId>
-              <version>1.5</version>
+              <version>1.7</version>
             </dependency>
           </dependencies>
         </plugin>
