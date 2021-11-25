@@ -4,18 +4,22 @@ import hudson.util.VersionNumber;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.resolver.AbstractArtifactResolutionException;
-import org.apache.maven.artifact.resolver.ArtifactResolver;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.OverConstrainedVersionException;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
+import org.apache.maven.project.ProjectBuildingRequest;
+import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver;
+import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 import java.util.jar.JarFile;
 import org.apache.commons.lang.StringUtils;
 
@@ -36,8 +40,16 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
     public final ArtifactRepository localRepository;
     public final Artifact artifact;
     public final ArtifactResolver resolver;
+    public final MavenSession session;
 
-    public MavenArtifact(Artifact artifact, ArtifactResolver resolver, ArtifactFactory artifactFactory, MavenProjectBuilder builder, List<ArtifactRepository> remoteRepositories, ArtifactRepository localRepository) {
+    public MavenArtifact(
+            Artifact artifact,
+            ArtifactResolver resolver,
+            ArtifactFactory artifactFactory,
+            MavenProjectBuilder builder,
+            List<ArtifactRepository> remoteRepositories,
+            ArtifactRepository localRepository,
+            MavenSession session) {
         this.artifact = artifact;
         this.resolver = resolver;
         this.artifactFactory = artifactFactory;
@@ -45,6 +57,7 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
         this.remoteRepositories = remoteRepositories;
         remoteRepositories.size(); // null check
         this.localRepository = localRepository;
+        this.session = Objects.requireNonNull(session);
     }
 
     public MavenProject resolvePom() throws ProjectBuildingException {
@@ -104,8 +117,12 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
     public File getFile() {
         if (artifact.getFile()==null)
             try {
-                resolver.resolve(artifact, remoteRepositories, localRepository);
-            } catch (AbstractArtifactResolutionException e) {
+                ProjectBuildingRequest buildingRequest =
+                        new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
+                buildingRequest.setRemoteRepositories(remoteRepositories);
+                buildingRequest.setLocalRepository(localRepository);
+                return resolver.resolveArtifact(buildingRequest, artifact).getArtifact().getFile();
+            } catch (ArtifactResolverException e) {
                 throw new RuntimeException("Failed to resolve "+getId(),e);
             }
         return artifact.getFile();
@@ -117,7 +134,14 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
     public MavenArtifact getHpi() throws IOException {
         Artifact a = artifactFactory
                 .createArtifact(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), SCOPE_COMPILE, getResolvedType());
-        return new MavenArtifact(a,resolver,artifactFactory,builder,remoteRepositories,localRepository);
+        return new MavenArtifact(
+                a,
+                resolver,
+                artifactFactory,
+                builder,
+                remoteRepositories,
+                localRepository,
+                session);
     }
 
     public List<String/* of IDs*/> getDependencyTrail() {

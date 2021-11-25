@@ -146,7 +146,7 @@ public class HpiMojo extends AbstractJenkinsManifestMojo {
             archiver.setOutputFile(jarFile);
             jarArchiver.addConfiguredManifest(manifest);
             jarArchiver.addDirectory(getClassesDirectory());
-            archiver.createArchive(project, archive);
+            archiver.createArchive(session, project, archive);
         }
         // HACK Alert... due to how this plugin hacks the maven dependency model (by using a dependency on the
         // jar file and then rewriting them for hpi projects) we need to add the jar as an attached artifact
@@ -172,7 +172,7 @@ public class HpiMojo extends AbstractJenkinsManifestMojo {
         hpiArchiver.addDirectory(getWebappDirectory(), getIncludes(), getExcludes());
 
         // create archive
-        archiver.createArchive(project, archive);
+        archiver.createArchive(session, project, archive);
         project.getArtifact().setFile(hpiFile);
 
     }

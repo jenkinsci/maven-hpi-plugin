@@ -658,9 +658,6 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
             unArchiver.setDestDirectory(location);
             unArchiver.extract();
         }
-        catch (IOException e) {
-            throw new MojoExecutionException("Error unpacking file: " + file + "to: " + location, e);
-        }
         catch (ArchiverException e) {
             throw new MojoExecutionException("Error unpacking file: " + file + "to: " + location, e);
         }

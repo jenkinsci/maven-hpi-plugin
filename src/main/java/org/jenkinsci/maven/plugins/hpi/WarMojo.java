@@ -1,13 +1,15 @@
 package org.jenkinsci.maven.plugins.hpi;
 
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.resolver.AbstractArtifactResolutionException;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
+import org.apache.maven.project.ProjectBuildingRequest;
+import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Zip;
 import org.apache.tools.ant.types.ZipFileSet;
@@ -84,7 +86,11 @@ public class WarMojo extends RunMojo {
 
                 // find corresponding .hpi file
                 Artifact hpi = artifactFactory.createArtifact(a.getGroupId(),a.getArtifactId(),a.getVersion(),null,"hpi");
-                artifactResolver.resolve(hpi,getProject().getRemoteArtifactRepositories(), localRepository);
+                ProjectBuildingRequest buildingRequest =
+                        new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
+                buildingRequest.setRemoteRepositories(getProject().getRemoteArtifactRepositories());
+                buildingRequest.setLocalRepository(localRepository);
+                hpi = artifactResolver.resolveArtifact(buildingRequest, hpi).getArtifact();
 
                 if (hpi.getFile().isDirectory())
                     throw new UnsupportedOperationException(hpi.getFile()+" is a directory and not packaged yet. this isn't supported");
@@ -101,7 +107,7 @@ public class WarMojo extends RunMojo {
             projectHelper.attachArtifact(getProject(), "war", outputFile);
         } catch (IOException e) {
             throw new MojoExecutionException("Failed to package war",e);
-        } catch (AbstractArtifactResolutionException e) {
+        } catch (ArtifactResolverException e) {
             throw new MojoExecutionException("Failed to package war",e);
         }
     }

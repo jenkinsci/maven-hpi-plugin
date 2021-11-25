@@ -4,9 +4,8 @@ import hudson.util.VersionNumber;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
-import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.resolver.ArtifactResolver;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -15,6 +14,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.project.MavenProjectHelper;
+import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver;
 
 import java.util.List;
 
@@ -30,6 +30,9 @@ public abstract class AbstractJenkinsMojo extends AbstractMojo {
      */
     @Component
     protected MavenProject project;
+
+    @Parameter(defaultValue = "${session}", required = true, readonly = true)
+    protected MavenSession session;
 
     /**
      * Optional string that represents "groupId:artifactId" of Jenkins core jar.
@@ -58,9 +61,6 @@ public abstract class AbstractJenkinsMojo extends AbstractMojo {
     @Component
     @Parameter(defaultValue = "${localRepository}", readonly = true, required = true)
     protected ArtifactRepository localRepository;
-
-    @Component
-    protected ArtifactMetadataSource artifactMetadataSource;
 
     @Component
     protected ArtifactFactory artifactFactory;
@@ -105,6 +105,13 @@ public abstract class AbstractJenkinsMojo extends AbstractMojo {
     }
 
     protected MavenArtifact wrap(Artifact a) {
-        return new MavenArtifact(a,artifactResolver,artifactFactory,projectBuilder,remoteRepos,localRepository);
+        return new MavenArtifact(
+                a,
+                artifactResolver,
+                artifactFactory,
+                projectBuilder,
+                remoteRepos,
+                localRepository,
+                session);
     }
 }

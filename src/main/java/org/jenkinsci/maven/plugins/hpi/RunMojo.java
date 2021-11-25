@@ -18,16 +18,13 @@ import hudson.util.VersionNumber;
 import io.jenkins.lib.support_log_formatter.SupportLogFormatter;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
-import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.resolver.AbstractArtifactResolutionException;
-import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
-import org.apache.maven.artifact.resolver.ArtifactResolutionException;
-import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
-import org.apache.maven.artifact.resolver.ArtifactResolver;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
+import org.apache.maven.execution.MavenSession;
+import org.apache.maven.lifecycle.internal.LifecycleDependencyResolver;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -37,8 +34,19 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.project.DefaultDependencyResolutionRequest;
+import org.apache.maven.project.DefaultProjectBuildingRequest;
+import org.apache.maven.project.DependencyResolutionException;
+import org.apache.maven.project.DependencyResolutionRequest;
+import org.apache.maven.project.DependencyResolutionResult;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectBuilder;
+import org.apache.maven.project.ProjectBuildingRequest;
+import org.apache.maven.project.ProjectDependenciesResolver;
+import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver;
+import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException;
+import org.eclipse.aether.graph.DependencyFilter;
+import org.eclipse.aether.util.filter.ScopeDependencyFilter;
 import org.eclipse.jetty.maven.plugin.JettyWebAppContext;
 import org.eclipse.jetty.maven.plugin.MavenServerConnector;
 import org.eclipse.jetty.security.HashLoginService;
@@ -58,8 +66,10 @@ import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -92,6 +102,9 @@ import java.util.zip.ZipFile;
 @Mojo(name="run", requiresDependencyResolution=ResolutionScope.TEST)
 @Execute(phase = LifecyclePhase.COMPILE)
 public class RunMojo extends AbstractJettyMojo {
+
+    @Parameter(defaultValue = "${session}", required = true, readonly = true)
+    protected MavenSession session;
 
     /**
      * The location of the war file.
@@ -150,7 +163,7 @@ public class RunMojo extends AbstractJettyMojo {
     protected ArtifactRepository localRepository;
 
     @Component
-    protected ArtifactMetadataSource artifactMetadataSource;
+    private ProjectDependenciesResolver dependenciesResolver;
 
     /**
      * Specifies the HTTP port number.
@@ -318,9 +331,13 @@ public class RunMojo extends AbstractJettyMojo {
 
         if (webAppFile == null) {
             Artifact jenkinsWarArtifact = getJenkinsWarArtifact();
+            ProjectBuildingRequest buildingRequest =
+                    new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
+            buildingRequest.setRemoteRepositories(remoteRepos);
+            buildingRequest.setLocalRepository(localRepository);
             try {
-                artifactResolver.resolve(jenkinsWarArtifact, remoteRepos, localRepository);
-            } catch (AbstractArtifactResolutionException x) {
+                jenkinsWarArtifact = artifactResolver.resolveArtifact(buildingRequest, jenkinsWarArtifact).getArtifact();
+            } catch (ArtifactResolverException x) {
                 throw new MojoExecutionException("Could not resolve " + jenkinsWarArtifact + ": " + x, x);
             }
             webAppFile = jenkinsWarArtifact.getFile();
@@ -363,7 +380,11 @@ public class RunMojo extends AbstractJettyMojo {
 
                 // find corresponding .hpi file
                 Artifact hpi = artifactFactory.createArtifact(a.getGroupId(),a.getArtifactId(),a.getVersion(),null,"hpi");
-                artifactResolver.resolve(hpi,getProject().getRemoteArtifactRepositories(), localRepository);
+                ProjectBuildingRequest buildingRequest =
+                        new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
+                buildingRequest.setRemoteRepositories(getProject().getRemoteArtifactRepositories());
+                buildingRequest.setLocalRepository(localRepository);
+                hpi = artifactResolver.resolveArtifact(buildingRequest, hpi).getArtifact();
 
                 // check recursive dependency. this is a rare case that happens when we split out some things from the core
                 // into a plugin
@@ -386,9 +407,7 @@ public class RunMojo extends AbstractJettyMojo {
             }
         } catch (IOException e) {
             throw new MojoExecutionException("Unable to copy dependency plugin",e);
-        } catch (ArtifactNotFoundException e) {
-            throw new MojoExecutionException("Unable to copy dependency plugin",e);
-        } catch (ArtifactResolutionException e) {
+        } catch (ArtifactResolverException e) {
             throw new MojoExecutionException("Unable to copy dependency plugin",e);
         }
 
@@ -492,6 +511,7 @@ public class RunMojo extends AbstractJettyMojo {
     private void generateHpl() throws MojoExecutionException, MojoFailureException {
         HplMojo hpl = new HplMojo();
         hpl.project = getProject();
+        hpl.session = session;
         hpl.setJenkinsHome(jenkinsHome);
         hpl.setLog(getLog());
         hpl.pluginName = getProject().getName();
@@ -777,25 +797,46 @@ public class RunMojo extends AbstractJettyMojo {
     }
 
     /**
-     * Performs the equivalent of "@requireDependencyResolution" mojo attribute,
+     * Performs the equivalent of "@requiresDependencyResolution" mojo attribute,
      * so that we can choose the scope at runtime.
      * @param scope
+     * @see LifecycleDependencyResolver#getDependencies(MavenProject, Collection, Collection,
+     *     MavenSession, boolean, Set)
      */
     protected Set<Artifact> resolveDependencies(String scope) throws MojoExecutionException {
         try {
-            ArtifactResolutionResult result = artifactResolver.resolveTransitively(
-                    getProject().getDependencyArtifacts(),
-                    getProject().getArtifact(),
-                    getProject().getManagedVersionMap(),
-                    localRepository,
-                    getProject().getRemoteArtifactRepositories(),
-                    artifactMetadataSource,
-                    new ScopeArtifactFilter(scope));
-            return result.getArtifacts();
-        } catch (ArtifactNotFoundException e) {
+            DependencyResolutionRequest request =
+                    new DefaultDependencyResolutionRequest(
+                            getProject(), session.getRepositorySession());
+            request.setResolutionFilter(getDependencyFilter(scope));
+            DependencyResolutionResult result = dependenciesResolver.resolve(request);
+
+            Set<Artifact> artifacts = new LinkedHashSet<>();
+            if (result.getDependencyGraph() != null
+                    && !result.getDependencyGraph().getChildren().isEmpty()) {
+                RepositoryUtils.toArtifacts(
+                        artifacts,
+                        result.getDependencyGraph().getChildren(),
+                        Collections.singletonList(getProject().getArtifact().getId()),
+                        request.getResolutionFilter());
+            }
+            return artifacts;
+        } catch (DependencyResolutionException e) {
             throw new MojoExecutionException("Unable to copy dependency plugin",e);
-        } catch (ArtifactResolutionException e) {
-            throw new MojoExecutionException("Unable to copy dependency plugin",e);
+        }
+    }
+
+    private static DependencyFilter getDependencyFilter(String scope) {
+        switch (scope) {
+            case Artifact.SCOPE_COMPILE:
+                return new ScopeDependencyFilter(Artifact.SCOPE_RUNTIME, Artifact.SCOPE_TEST);
+            case Artifact.SCOPE_RUNTIME:
+                return new ScopeDependencyFilter(
+                        Artifact.SCOPE_SYSTEM, Artifact.SCOPE_PROVIDED, Artifact.SCOPE_TEST);
+            case Artifact.SCOPE_TEST:
+                return null;
+            default:
+                throw new IllegalArgumentException("unexpected scope: " + scope);
         }
     }
 
@@ -808,7 +849,14 @@ public class RunMojo extends AbstractJettyMojo {
     }
 
     protected MavenArtifact wrap(Artifact a) {
-        return new MavenArtifact(a,artifactResolver,artifactFactory,projectBuilder,getProject().getRemoteArtifactRepositories(),localRepository);
+        return new MavenArtifact(
+                a,
+                artifactResolver,
+                artifactFactory,
+                projectBuilder,
+                getProject().getRemoteArtifactRepositories(),
+                localRepository,
+                session);
     }
 
     protected Artifact getJenkinsWarArtifact() throws MojoExecutionException {
