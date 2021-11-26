@@ -1,6 +1,5 @@
 package org.jenkinsci.maven.plugins.hpi;
 
-import com.google.common.base.Predicate;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
 
@@ -9,6 +8,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * Collection filter operations on a set of {@link Artifact}s.
@@ -38,7 +38,7 @@ public class Artifacts extends ArrayList<Artifact> {
 
     public Artifacts retainAll(Predicate<Artifact> filter) {
         for (Iterator<Artifact> itr = iterator(); itr.hasNext(); ) {
-            if (!filter.apply(itr.next()))
+            if (!filter.test(itr.next()))
                 itr.remove();
         }
         return this;
@@ -46,7 +46,7 @@ public class Artifacts extends ArrayList<Artifact> {
 
     public Artifacts removeAll(Predicate<Artifact> filter) {
         for (Iterator<Artifact> itr = iterator(); itr.hasNext(); ) {
-            if (filter.apply(itr.next()))
+            if (filter.test(itr.next()))
                 itr.remove();
         }
         return this;
