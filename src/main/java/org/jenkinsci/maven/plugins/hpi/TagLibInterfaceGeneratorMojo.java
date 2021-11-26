@@ -105,11 +105,7 @@ public class TagLibInterfaceGeneratorMojo extends AbstractMojo {
     }
 
     private void walk(File dir,JPackage pkg,String dirName) throws JClassAlreadyExistsException, IOException {
-        File[] children = dir.listFiles(new FileFilter() {
-            public boolean accept(File f) {
-                return f.isDirectory();
-            }
-        });
+        File[] children = dir.listFiles(f -> f.isDirectory());
         if (children!=null) {
             for (File child : children)
                 walk(child,pkg.subPackage(h2j(child.getName())),dirName+'/'+child.getName());
@@ -125,11 +121,7 @@ public class TagLibInterfaceGeneratorMojo extends AbstractMojo {
             gdsl.printf("package %s;\n",pkg.parent().name());
             gdsl.printf("contributor(context(ctype:'%s')) {\n",c.fullName());
 
-            File[] tags = dir.listFiles(new FilenameFilter() {
-                public boolean accept(File dir, String name) {
-                    return name.endsWith(".jelly");
-                }
-            });
+            File[] tags = dir.listFiles((unused, name) -> name.endsWith(".jelly"));
 
             long timestamp = -1;
 

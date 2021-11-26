@@ -54,73 +54,41 @@ public class Artifacts extends ArrayList<Artifact> {
     
     public Artifacts scopeIs(String... scopes) {
         final List<String> s = Arrays.asList(scopes);
-        return retainAll(new Predicate<Artifact>() {
-            public boolean apply(Artifact a) {
-                return s.contains(a.getScope());
-            }
-        });
+        return retainAll(a -> s.contains(a.getScope()));
     }
 
     public Artifacts scopeIsNot(String... scopes) {
         final List<String> s = Arrays.asList(scopes);
-        return removeAll(new Predicate<Artifact>() {
-            public boolean apply(Artifact a) {
-                return s.contains(a.getScope());
-            }
-        });
+        return removeAll(a -> s.contains(a.getScope()));
     }
 
     public Artifacts typeIs(String... type) {
         final List<String> s = Arrays.asList(type);
-        return retainAll(new Predicate<Artifact>() {
-            public boolean apply(Artifact a) {
-                return s.contains(a.getType());
-            }
-        });
+        return retainAll(a -> s.contains(a.getType()));
     }
 
     public Artifacts typeIsNot(String... type) {
         final List<String> s = Arrays.asList(type);
-        return removeAll(new Predicate<Artifact>() {
-            public boolean apply(Artifact a) {
-                return s.contains(a.getType());
-            }
-        });
+        return removeAll(a -> s.contains(a.getType()));
     }
 
     public Artifacts groupIdIs(String... groupId) {
         final List<String> s = Arrays.asList(groupId);
-        return retainAll(new Predicate<Artifact>() {
-            public boolean apply(Artifact a) {
-                return s.contains(a.getType());
-            }
-        });
+        return retainAll(a -> s.contains(a.getType()));
     }
 
     public Artifacts groupIdIsNot(String... groupId) {
         final List<String> s = Arrays.asList(groupId);
-        return removeAll(new Predicate<Artifact>() {
-            public boolean apply(Artifact a) {
-                return s.contains(a.getType());
-            }
-        });
+        return removeAll(a -> s.contains(a.getType()));
     }
 
     public Artifacts artifactIdIs(String... artifactId) {
         final List<String> s = Arrays.asList(artifactId);
-        return retainAll(new Predicate<Artifact>() {
-            public boolean apply(Artifact a) {
-                return s.contains(a.getType());
-            }
-        });
+        return retainAll(a -> s.contains(a.getType()));
     }
 
     public Artifacts artifactIdIsNot(String... artifactId) {
         final List<String> s = Arrays.asList(artifactId);
-        return removeAll(new Predicate<Artifact>() {
-            public boolean apply(Artifact a) {
-                return s.contains(a.getType());
-            }
-        });
+        return removeAll(a -> s.contains(a.getType()));
     }
 }
