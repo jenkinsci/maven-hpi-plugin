@@ -797,7 +797,6 @@ public class RunMojo extends AbstractJettyMojo {
     /**
      * Performs the equivalent of "@requiresDependencyResolution" mojo attribute,
      * so that we can choose the scope at runtime.
-     * @param scope
      * @see LifecycleDependencyResolver#getDependencies(MavenProject, Collection, Collection,
      *     MavenSession, boolean, Set)
      */

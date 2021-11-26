@@ -99,12 +99,6 @@ public class HpiMojo extends AbstractJenkinsManifestMojo {
 
     /**
      * Generates the webapp according to the {@code mode} attribute.
-     *
-     * @throws IOException
-     * @throws ArchiverException
-     * @throws ManifestException
-     * @throws DependencyResolutionRequiredException
-     *
      */
     private void performPackaging()
         throws IOException, ArchiverException, ManifestException, DependencyResolutionRequiredException, MojoExecutionException {

@@ -348,9 +348,6 @@ public abstract class AbstractJettyMojo extends AbstractMojo
 
     
     
-    /**
-     * @throws MojoExecutionException
-     */
     public void configurePluginClasspath() throws MojoExecutionException
     {
         //if we are configured to include the provided dependencies on the plugin's classpath
@@ -391,10 +388,6 @@ public abstract class AbstractJettyMojo extends AbstractMojo
 
     
     
-    /**
-     * @param artifact
-     * @return
-     */
     public boolean isPluginArtifact(Artifact artifact)
     {
         if (pluginArtifacts == null || pluginArtifacts.isEmpty())
@@ -415,9 +408,6 @@ public abstract class AbstractJettyMojo extends AbstractMojo
     
     
     
-    /**
-     * @throws Exception
-     */
     public void finishConfigurationBeforeStart() throws Exception
     {
         HandlerCollection contexts = (HandlerCollection)server.getChildHandlerByClass(ContextHandlerCollection.class);
@@ -433,9 +423,6 @@ public abstract class AbstractJettyMojo extends AbstractMojo
 
 
 
-    /**
-     * @throws Exception
-     */
     public void applyJettyXml() throws Exception
     {
         if (getJettyXmlFiles() == null)
@@ -446,9 +433,6 @@ public abstract class AbstractJettyMojo extends AbstractMojo
 
 
     
-    /**
-     * @throws MojoExecutionException
-     */
     public void startJetty () throws MojoExecutionException
     {
         try
@@ -577,8 +561,6 @@ public abstract class AbstractJettyMojo extends AbstractMojo
     /**
      * Subclasses should invoke this to setup basic info
      * on the webapp
-     *
-     * @throws MojoExecutionException
      */
     public void configureWebApplication () throws Exception
     {
@@ -698,7 +680,6 @@ public abstract class AbstractJettyMojo extends AbstractMojo
     /**
      * Try and find a jetty-web.xml file, using some
      * historical naming conventions if necessary.
-     * @param webInfDir
      * @return the jetty web xml file
      */
     public File findJettyWebXmlFile (File webInfDir)
@@ -723,10 +704,6 @@ public abstract class AbstractJettyMojo extends AbstractMojo
 
 
 
-    /**
-     * @param file
-     * @throws Exception
-     */
     public void setSystemPropertiesFile(File file) throws Exception
     {
         this.systemPropertiesFile = file;
@@ -755,9 +732,6 @@ public abstract class AbstractJettyMojo extends AbstractMojo
     
     
     
-    /**
-     * @param systemProperties
-     */
     public void setSystemProperties(SystemProperties systemProperties)
     {
         if (this.systemProperties == null)
@@ -777,9 +751,6 @@ public abstract class AbstractJettyMojo extends AbstractMojo
     
     
     
-    /**
-     * @return
-     */
     public List<File> getJettyXmlFiles()
     {
         if ( this.jettyXml == null )
@@ -808,10 +779,6 @@ public abstract class AbstractJettyMojo extends AbstractMojo
 
 
 
-    /**
-     * @param goal
-     * @return
-     */
     public boolean isExcluded (String goal)
     {
         if (excludedGoals == null || goal == null)

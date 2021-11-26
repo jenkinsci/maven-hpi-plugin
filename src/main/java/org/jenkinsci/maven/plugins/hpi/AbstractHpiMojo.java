@@ -398,7 +398,6 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
      *
      * @param resource         the resource to copy
      * @param webappDirectory  the target directory
-     * @param filterProperties
      * @throws java.io.IOException if an error occurred while copying webResources
      */
     public void copyResources(Resource resource, File webappDirectory, Properties filterProperties)
@@ -480,7 +479,6 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
      * the {@code webappDirectory} during this phase.
      *
      * @param project         the maven project
-     * @param webappDirectory
      * @throws java.io.IOException if an error occurred while building the webapp
      */
     public void buildWebapp(MavenProject project, File webappDirectory)
@@ -615,7 +613,6 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
      *
      * @param artifact War artifact to unpack.
      * @return Directory containing the unpacked war.
-     * @throws MojoExecutionException
      */
     private File unpackWarToTempDirectory(MavenArtifact artifact)
         throws MojoExecutionException {
@@ -792,11 +789,6 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
     }
 
     /**
-     * @param from
-     * @param to
-     * @param encoding
-     * @param wrappers
-     * @param filterProperties
      * @throws IOException TO DO: Remove this method when Maven moves to plexus-utils version 1.4
      */
     private static void copyFilteredFile(File from, File to, String encoding, FilterWrapper[] wrappers,
@@ -867,8 +859,6 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
      * <li>The <code>sourceDirectory</code> must exists.
      * </ul>
      *
-     * @param sourceDirectory
-     * @param destinationDirectory
      * @throws IOException TO DO: Remove this method when Maven moves to plexus-utils version 1.4
      */
     private static void copyDirectoryStructureIfModified(File sourceDirectory, File destinationDirectory)
