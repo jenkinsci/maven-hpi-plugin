@@ -54,8 +54,7 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
         this.resolver = resolver;
         this.artifactFactory = artifactFactory;
         this.builder = builder;
-        this.remoteRepositories = remoteRepositories;
-        remoteRepositories.size(); // null check
+        this.remoteRepositories = Objects.requireNonNull(remoteRepositories);
         this.localRepository = localRepository;
         this.session = Objects.requireNonNull(session);
     }
