@@ -76,7 +76,7 @@ public abstract class AbstractJenkinsMojo extends AbstractMojo {
 
 
     protected String findJenkinsVersion() throws MojoExecutionException {
-        for(Dependency a : (List<Dependency>)project.getDependencies()) {
+        for(Dependency a : project.getDependencies()) {
             boolean match;
             if (jenkinsCoreId!=null)
                 match = (a.getGroupId()+':'+a.getArtifactId()).equals(jenkinsCoreId);

@@ -18,7 +18,6 @@ package org.jenkinsci.maven.plugins.hpi;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.archiver.MavenArchiveConfiguration;
 import org.apache.maven.archiver.MavenArchiver;
@@ -92,25 +91,13 @@ public class HpiMojo extends AbstractJenkinsManifestMojo {
     public void execute() throws MojoExecutionException {
         try {
             performPackaging();
-        } catch (DependencyResolutionRequiredException e) {
-            throw new MojoExecutionException("Error assembling hpi: " + e.getMessage(), e);
-        } catch (ManifestException e) {
-            throw new MojoExecutionException("Error assembling hpi", e);
-        } catch (IOException e) {
-            throw new MojoExecutionException("Error assembling hpi", e);
-        } catch (ArchiverException e) {
+        } catch (IOException | ArchiverException | ManifestException | DependencyResolutionRequiredException e) {
             throw new MojoExecutionException("Error assembling hpi: " + e.getMessage(), e);
         }
     }
 
     /**
      * Generates the webapp according to the {@code mode} attribute.
-     *
-     * @throws IOException
-     * @throws ArchiverException
-     * @throws ManifestException
-     * @throws DependencyResolutionRequiredException
-     *
      */
     private void performPackaging()
         throws IOException, ArchiverException, ManifestException, DependencyResolutionRequiredException, MojoExecutionException {
@@ -123,7 +110,7 @@ public class HpiMojo extends AbstractJenkinsManifestMojo {
         getLog().info("Checking for attached .jar artifact "
                 + (StringUtils.isBlank(jarClassifier) ? "..." : "with classifier " + jarClassifier + "..."));
         File jarFile = null;
-        for (Artifact artifact: (List<Artifact>)project.getAttachedArtifacts()) {
+        for (Artifact artifact: project.getAttachedArtifacts()) {
             if (StringUtils.equals(project.getGroupId(), artifact.getGroupId())
                     && StringUtils.equals(project.getArtifactId(), artifact.getArtifactId())
                     && project.getArtifact().getVersionRange().equals(artifact.getVersionRange())

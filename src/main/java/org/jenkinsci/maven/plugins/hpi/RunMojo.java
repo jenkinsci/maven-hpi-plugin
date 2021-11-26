@@ -405,9 +405,7 @@ public class RunMojo extends AbstractJettyMojo {
                     copyPlugin(hpi.getFile(), pluginsDir, actualArtifactId);
                 }
             }
-        } catch (IOException e) {
-            throw new MojoExecutionException("Unable to copy dependency plugin",e);
-        } catch (ArtifactResolverException e) {
+        } catch (IOException | ArtifactResolverException e) {
             throw new MojoExecutionException("Unable to copy dependency plugin",e);
         }
 
@@ -422,7 +420,7 @@ public class RunMojo extends AbstractJettyMojo {
                     h.setLevel(Level.ALL);
                 }
             }
-            loggerReferences = new LinkedList<Logger>();
+            loggerReferences = new LinkedList<>();
             for (Map.Entry<String,String> logger : loggers.entrySet()) {
                 Logger l = Logger.getLogger(logger.getKey());
                 loggerReferences.add(l);
@@ -544,7 +542,7 @@ public class RunMojo extends AbstractJettyMojo {
         
         super.configureWebApplication();
         getWebAppConfig().setWar(webAppFile.getCanonicalPath());
-        for (Artifact a : (Set<Artifact>) project.getArtifacts()) {
+        for (Artifact a : project.getArtifacts()) {
             if (a.getGroupId().equals("org.jenkins-ci.main") && a.getArtifactId().equals("jenkins-core")) {
                 File coreBasedir = pluginWorkspaceMap.read(a.getId());
                 if (coreBasedir != null) {
@@ -640,7 +638,7 @@ public class RunMojo extends AbstractJettyMojo {
 
         setUpScanList();
 
-        scannerListeners = new ArrayList<Scanner.BulkListener>();
+        scannerListeners = new ArrayList<>();
         scannerListeners.add(new Scanner.BulkListener() {
             public void filesChanged(List<String> changes) {
                 try {
@@ -685,11 +683,11 @@ public class RunMojo extends AbstractJettyMojo {
 
         getLog().debug("Restarting webapp ...");
         webApp.start();
-        getLog().info("Restart completed at " + new Date().toString());
+        getLog().info("Restart completed at " + new Date());
     }
 
     private void setUpScanList() {
-        scanList = new ArrayList<File>();
+        scanList = new ArrayList<>();
         scanList.add(getProject().getFile());
         scanList.add(webAppFile);
         scanList.add(new File(getProject().getBuild().getOutputDirectory()));
@@ -726,9 +724,9 @@ public class RunMojo extends AbstractJettyMojo {
                     if (getProject().getPackaging().equals("jenkins-module")) {
                         // classes compiled from jenkins module should behave as if it's a part of the core
                         // load resources from source folders directly
-                        for (Resource r : (List<Resource>)getProject().getResources())
-                            super.addURL(new File(r.getDirectory()).toURL());
-                        super.addURL(new File(getProject().getBuild().getOutputDirectory()).toURL());
+                        for (Resource r : getProject().getResources())
+                            super.addURL(new File(r.getDirectory()).toURI().toURL());
+                        super.addURL(new File(getProject().getBuild().getOutputDirectory()).toURI().toURL());
 
                         // add all the jar dependencies of the module
                         // "provided" includes all core and others, so drop them
@@ -799,7 +797,6 @@ public class RunMojo extends AbstractJettyMojo {
     /**
      * Performs the equivalent of "@requiresDependencyResolution" mojo attribute,
      * so that we can choose the scope at runtime.
-     * @param scope
      * @see LifecycleDependencyResolver#getDependencies(MavenProject, Collection, Collection,
      *     MavenSession, boolean, Set)
      */
@@ -841,8 +838,8 @@ public class RunMojo extends AbstractJettyMojo {
     }
 
     public Set<MavenArtifact> getProjectArtifacts() {
-        Set<MavenArtifact> r = new HashSet<MavenArtifact>();
-        for (Artifact a : (Collection<Artifact>)getProject().getArtifacts()) {
+        Set<MavenArtifact> r = new HashSet<>();
+        for (Artifact a : getProject().getArtifacts()) {
             r.add(wrap(a));
         }
         return r;

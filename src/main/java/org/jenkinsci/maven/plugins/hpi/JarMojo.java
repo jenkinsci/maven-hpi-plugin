@@ -17,12 +17,7 @@ package org.jenkinsci.maven.plugins.hpi;
  */
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import org.apache.maven.archiver.MavenArchiveConfiguration;
 import org.apache.maven.archiver.MavenArchiver;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
@@ -88,25 +83,13 @@ public class JarMojo extends AbstractJenkinsManifestMojo {
     public void execute() throws MojoExecutionException {
         try {
             performPackaging();
-        } catch (DependencyResolutionRequiredException e) {
-            throw new MojoExecutionException("Error assembling jar: " + e.getMessage(), e);
-        } catch (ManifestException e) {
-            throw new MojoExecutionException("Error assembling jar", e);
-        } catch (IOException e) {
-            throw new MojoExecutionException("Error assembling jar", e);
-        } catch (ArchiverException e) {
+        } catch (IOException | ArchiverException | ManifestException | DependencyResolutionRequiredException e) {
             throw new MojoExecutionException("Error assembling jar: " + e.getMessage(), e);
         }
     }
 
     /**
      * Generates the webapp according to the {@code mode} attribute.
-     *
-     * @throws IOException
-     * @throws ArchiverException
-     * @throws ManifestException
-     * @throws DependencyResolutionRequiredException
-     *
      */
     private void performPackaging()
         throws IOException, ArchiverException, ManifestException, DependencyResolutionRequiredException, MojoExecutionException {

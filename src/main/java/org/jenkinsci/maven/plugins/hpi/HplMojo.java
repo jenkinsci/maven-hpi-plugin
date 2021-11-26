@@ -12,7 +12,6 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.codehaus.plexus.archiver.jar.Manifest;
 import org.codehaus.plexus.archiver.jar.Manifest.Attribute;
 import org.codehaus.plexus.archiver.jar.ManifestException;
-import org.codehaus.plexus.util.IOUtil;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -69,18 +68,17 @@ public class HplMojo extends AbstractJenkinsManifestMojo {
         File hplFile = computeHplFile();
         getLog().info("Generating "+hplFile);
 
-        PrintWriter printWriter = null;
-        try {
+        try (PrintWriter printWriter = new PrintWriter(new FileWriter(hplFile))) {
             Manifest mf = new Manifest();
             Manifest.ExistingSection mainSection = mf.getMainSection();
             setAttributes(mainSection);
 
             // compute Libraries entry
-            List<String> paths = new ArrayList<String>();
+            List<String> paths = new ArrayList<>();
 
             // we want resources to be picked up before target/classes,
             // so that the original (not in the copy) will be picked up first.
-            for (Resource r : (List<Resource>) project.getBuild().getResources()) {
+            for (Resource r : project.getBuild().getResources()) {
                 File dir = new File(r.getDirectory());
                 if (!dir.isAbsolute())
                     dir = new File(project.getBasedir(),r.getDirectory());
@@ -103,14 +101,9 @@ public class HplMojo extends AbstractJenkinsManifestMojo {
                 mainSection.addAttributeAndCheck(new Attribute("Resource-Path",warSourceDirectory.getAbsolutePath()));
             }
 
-            printWriter = new PrintWriter(new FileWriter(hplFile));
             mf.write(printWriter);
-        } catch (ManifestException e) {
+        } catch (ManifestException | IOException e) {
             throw new MojoExecutionException("Error preparing the manifest: " + e.getMessage(), e);
-        } catch (IOException e) {
-            throw new MojoExecutionException("Error preparing the manifest: " + e.getMessage(), e);
-        } finally {
-            IOUtil.close(printWriter);
         }
     }
 
@@ -126,7 +119,7 @@ public class HplMojo extends AbstractJenkinsManifestMojo {
         Set<MavenArtifact> artifacts = getProjectArtfacts();
 
         // List up IDs of Jenkins plugin dependencies
-        Set<String> jenkinsPlugins = new HashSet<String>();
+        Set<String> jenkinsPlugins = new HashSet<>();
         for (MavenArtifact artifact : artifacts) {
             if (artifact.isPluginBestEffort(getLog()))
                 jenkinsPlugins.add(artifact.getId());

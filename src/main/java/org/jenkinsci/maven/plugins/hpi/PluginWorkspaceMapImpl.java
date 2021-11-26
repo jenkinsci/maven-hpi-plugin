@@ -32,11 +32,8 @@ public class PluginWorkspaceMapImpl implements PluginWorkspaceMap {
     private Properties loadMap() throws IOException {
         Properties p = new Properties();
         if (mapFile.isFile()) {
-            InputStream is = new FileInputStream(mapFile);
-            try {
+            try (InputStream is = new FileInputStream(mapFile)) {
                 p.load(is);
-            } finally {
-                is.close();
             }
         }
         return p;
@@ -60,11 +57,8 @@ public class PluginWorkspaceMapImpl implements PluginWorkspaceMap {
     public void write(String id, File f) throws IOException {
         Properties p = loadMap();
         p.setProperty(f.getAbsolutePath(), id);
-        OutputStream os = new FileOutputStream(mapFile);
-        try {
+        try (OutputStream os = new FileOutputStream(mapFile)) {
             p.store(os, " List of development files for Jenkins plugins that have been built.");
-        } finally {
-            os.close();
         }
     }
 }

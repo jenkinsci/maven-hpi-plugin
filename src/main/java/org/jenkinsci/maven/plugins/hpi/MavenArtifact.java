@@ -1,6 +1,7 @@
 package org.jenkinsci.maven.plugins.hpi;
 
 import hudson.util.VersionNumber;
+import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -21,9 +22,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 import java.util.jar.JarFile;
-import org.apache.commons.lang.StringUtils;
-
-import static org.apache.maven.artifact.Artifact.*;
 
 /**
  * {@link Artifact} is a bare data structure without any behavior and therefore
@@ -54,8 +52,7 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
         this.resolver = resolver;
         this.artifactFactory = artifactFactory;
         this.builder = builder;
-        this.remoteRepositories = remoteRepositories;
-        remoteRepositories.size(); // null check
+        this.remoteRepositories = Objects.requireNonNull(remoteRepositories);
         this.localRepository = localRepository;
         this.session = Objects.requireNonNull(session);
     }
@@ -133,7 +130,7 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
      */
     public MavenArtifact getHpi() throws IOException {
         Artifact a = artifactFactory
-                .createArtifact(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), SCOPE_COMPILE, getResolvedType());
+                .createArtifact(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), Artifact.SCOPE_COMPILE, getResolvedType());
         return new MavenArtifact(
                 a,
                 resolver,
@@ -252,7 +249,7 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
             // when a plugin depends on another plugin, it doesn't specify the type as hpi or jpi, so we need to resolve its POM to see it
             return resolvePom().getPackaging();
         } catch (ProjectBuildingException e) {
-            throw new IOException("Failed to open artifact " + artifact.toString() + " at " + artifact.getFile() + ": " + e, e);
+            throw new IOException("Failed to open artifact " + artifact + " at " + artifact.getFile() + ": " + e, e);
         }
     }
 }

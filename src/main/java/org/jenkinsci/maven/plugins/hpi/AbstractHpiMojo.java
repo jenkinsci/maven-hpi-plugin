@@ -35,8 +35,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
@@ -279,7 +279,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
      * @return an array of tokens to exclude
      */
     protected String[] getExcludes() {
-        List<String> excludeList = new ArrayList<String>();
+        List<String> excludeList = new ArrayList<>();
         if (StringUtils.isNotEmpty(warSourceExcludes)) {
             excludeList.addAll(Arrays.asList(StringUtils.split(warSourceExcludes, ",")));
         }
@@ -299,7 +299,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
      * @return an array of tokens to include
      */
     protected String[] getIncludes() {
-        return StringUtils.split(StringUtils.defaultString(warSourceIncludes), ",");
+        return StringUtils.split(Objects.toString(warSourceIncludes), ",");
     }
 
     /**
@@ -325,7 +325,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
      * @return an array of tokens to include
      */
     protected String[] getDependentWarIncludes() {
-        return StringUtils.split(StringUtils.defaultString(dependentWarIncludes), ",");
+        return StringUtils.split(Objects.toString(dependentWarIncludes), ",");
     }
 
     public void buildExplodedWebapp(File webappDirectory, File jarFile)
@@ -397,7 +397,6 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
      *
      * @param resource         the resource to copy
      * @param webappDirectory  the target directory
-     * @param filterProperties
      * @throws java.io.IOException if an error occurred while copying webResources
      */
     public void copyResources(Resource resource, File webappDirectory, Properties filterProperties)
@@ -479,7 +478,6 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
      * the {@code webappDirectory} during this phase.
      *
      * @param project         the maven project
-     * @param webappDirectory
      * @throws java.io.IOException if an error occurred while building the webapp
      */
     public void buildWebapp(MavenProject project, File webappDirectory)
@@ -497,7 +495,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
 
         List<String> duplicates = findDuplicates(artifacts);
 
-        List<File> dependentWarDirectories = new ArrayList<File>();
+        List<File> dependentWarDirectories = new ArrayList<>();
 
         // List up IDs of Jenkins plugin dependencies
         Set<String> jenkinsPlugins = new HashSet<>();
@@ -582,8 +580,8 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
             getLog().info("Overlaying " + dependentWarDirectories.size() + " war(s).");
 
             // overlay dependent wars
-            for (Iterator iter = dependentWarDirectories.iterator(); iter.hasNext();) {
-                copyDependentWarContents((File) iter.next(), webappDirectory);
+            for (File dependentWarDirectory : dependentWarDirectories) {
+                copyDependentWarContents(dependentWarDirectory, webappDirectory);
             }
         }
     }
@@ -595,8 +593,8 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
      * @return List of duplicated artifacts
      */
     private List<String> findDuplicates(Set<MavenArtifact> artifacts) {
-        List<String> duplicates = new ArrayList<String>();
-        List<String> identifiers = new ArrayList<String>();
+        List<String> duplicates = new ArrayList<>();
+        List<String> identifiers = new ArrayList<>();
         for (MavenArtifact artifact : artifacts) {
             String candidate = artifact.getDefaultFinalName();
             if (identifiers.contains(candidate)) {
@@ -614,7 +612,6 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
      *
      * @param artifact War artifact to unpack.
      * @return Directory containing the unpacked war.
-     * @throws MojoExecutionException
      */
     private File unpackWarToTempDirectory(MavenArtifact artifact)
         throws MojoExecutionException {
@@ -733,12 +730,12 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         DirectoryScanner scanner = new DirectoryScanner();
         scanner.setBasedir(resource.getDirectory());
         if (resource.getIncludes() != null && !resource.getIncludes().isEmpty()) {
-            scanner.setIncludes((String[]) resource.getIncludes().toArray(EMPTY_STRING_ARRAY));
+            scanner.setIncludes(resource.getIncludes().toArray(EMPTY_STRING_ARRAY));
         } else {
             scanner.setIncludes(DEFAULT_INCLUDES);
         }
         if (resource.getExcludes() != null && !resource.getExcludes().isEmpty()) {
-            scanner.setExcludes((String[]) resource.getExcludes().toArray(EMPTY_STRING_ARRAY));
+            scanner.setExcludes(resource.getExcludes().toArray(EMPTY_STRING_ARRAY));
         }
 
         scanner.addDefaultExcludes();
@@ -791,11 +788,6 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
     }
 
     /**
-     * @param from
-     * @param to
-     * @param encoding
-     * @param wrappers
-     * @param filterProperties
      * @throws IOException TO DO: Remove this method when Maven moves to plexus-utils version 1.4
      */
     private static void copyFilteredFile(File from, File to, String encoding, FilterWrapper[] wrappers,
@@ -866,8 +858,6 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
      * <li>The <code>sourceDirectory</code> must exists.
      * </ul>
      *
-     * @param sourceDirectory
-     * @param destinationDirectory
      * @throws IOException TO DO: Remove this method when Maven moves to plexus-utils version 1.4
      */
     private static void copyDirectoryStructureIfModified(File sourceDirectory, File destinationDirectory)
@@ -925,10 +915,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
                 return null;    // git rev-parse failed to run
 
             return v.trim().substring(0,8);
-        } catch (IOException e) {
-            LOGGER.log(Level.FINE, "Failed to run git rev-parse HEAD",e);
-            return null;
-        } catch (InterruptedException e) {
+        } catch (IOException | InterruptedException e) {
             LOGGER.log(Level.FINE, "Failed to run git rev-parse HEAD",e);
             return null;
         }

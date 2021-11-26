@@ -16,8 +16,6 @@ package org.jenkinsci.maven.plugins.hpi;
  * limitations under the License.
  */
 
-import org.codehaus.plexus.util.IOUtil;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -52,12 +50,8 @@ public final class PropertyUtils {
         }
 
         if (propfile.exists()) {
-            FileInputStream inStream = new FileInputStream(propfile);
-            try {
+            try (FileInputStream inStream = new FileInputStream(propfile)) {
                 props.load(inStream);
-            }
-            finally {
-                IOUtil.close(inStream);
             }
         } else if (fail) {
             throw new FileNotFoundException(propfile.toString());

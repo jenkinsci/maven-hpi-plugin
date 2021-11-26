@@ -6,8 +6,12 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 
-import java.io.*;
-import java.util.Set;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Places test-dependency plugins into somewhere the test harness can pick up.
@@ -24,7 +28,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
         testDir.mkdirs();
 
         try {
-            Writer w = new OutputStreamWriter(new FileOutputStream(new File(testDir,"index")),"UTF-8");
+            Writer w = new OutputStreamWriter(new FileOutputStream(new File(testDir,"index")), StandardCharsets.UTF_8);
 
             for (MavenArtifact a : getProjectArtfacts()) {
                 if (!a.isPluginBestEffort(getLog()))

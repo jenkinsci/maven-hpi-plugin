@@ -6,7 +6,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.util.List;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
@@ -63,7 +62,7 @@ public class TestInsertionMojo extends AbstractJenkinsMojo {
         if (!project.getPackaging().equals("hpi")) {
             Artifact jenkinsTestHarness = null;
             if (jenkinsTestHarnessId != null) {
-                for (Artifact b : (List<Artifact>) project.getTestArtifacts()) {
+                for (Artifact b : project.getTestArtifacts()) {
                     if (jenkinsTestHarnessId.equals(b.getGroupId() +":"+b.getArtifactId())) {
                         jenkinsTestHarness = b;
                         break;

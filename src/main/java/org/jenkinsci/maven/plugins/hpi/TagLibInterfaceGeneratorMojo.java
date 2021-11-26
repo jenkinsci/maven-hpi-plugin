@@ -33,8 +33,6 @@ import org.kohsuke.stapler.jelly.groovy.TagLibraryUri;
 import org.kohsuke.stapler.jelly.groovy.TypedTagLibrary;
 
 import java.io.File;
-import java.io.FileFilter;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -105,11 +103,7 @@ public class TagLibInterfaceGeneratorMojo extends AbstractMojo {
     }
 
     private void walk(File dir,JPackage pkg,String dirName) throws JClassAlreadyExistsException, IOException {
-        File[] children = dir.listFiles(new FileFilter() {
-            public boolean accept(File f) {
-                return f.isDirectory();
-            }
-        });
+        File[] children = dir.listFiles(File::isDirectory);
         if (children!=null) {
             for (File child : children)
                 walk(child,pkg.subPackage(h2j(child.getName())),dirName+'/'+child.getName());
@@ -125,11 +119,7 @@ public class TagLibInterfaceGeneratorMojo extends AbstractMojo {
             gdsl.printf("package %s;\n",pkg.parent().name());
             gdsl.printf("contributor(context(ctype:'%s')) {\n",c.fullName());
 
-            File[] tags = dir.listFiles(new FilenameFilter() {
-                public boolean accept(File dir, String name) {
-                    return name.endsWith(".jelly");
-                }
-            });
+            File[] tags = dir.listFiles((unused, name) -> name.endsWith(".jelly"));
 
             long timestamp = -1;
 
@@ -181,7 +171,7 @@ public class TagLibInterfaceGeneratorMojo extends AbstractMojo {
                         gdsl.printf("  ], dummy:void, c:Closure]\n");
                     }
                 } catch (DocumentException e) {
-                    throw (IOException)new IOException("Failed to parse "+tag).initCause(e);
+                    throw new IOException("Failed to parse " + tag, e);
                 }
             }
 

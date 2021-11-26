@@ -26,18 +26,19 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.codehaus.plexus.archiver.jar.Manifest;
 import org.codehaus.plexus.archiver.jar.ManifestException;
-import org.codehaus.plexus.util.IOUtil;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.text.SimpleDateFormat;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
@@ -88,29 +89,21 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
         MavenArchiver ma = new MavenArchiver();
         ma.setOutputFile(manifestFile);
 
-        PrintWriter printWriter = null;
-        try {
+        try (PrintWriter printWriter = new PrintWriter(new OutputStreamWriter(new FileOutputStream(manifestFile), StandardCharsets.UTF_8))) {
             Manifest mf = ma.getManifest(project, archive.getManifest());
             Manifest.ExistingSection mainSection = mf.getMainSection();
             setAttributes(mainSection);
 
-            printWriter = new PrintWriter(new OutputStreamWriter(new FileOutputStream(manifestFile), "UTF-8"));
             mf.write(printWriter);
-        } catch (ManifestException e) {
+        } catch (ManifestException | IOException | DependencyResolutionRequiredException e) {
             throw new MojoExecutionException("Error preparing the manifest: " + e.getMessage(), e);
-        } catch (DependencyResolutionRequiredException e) {
-            throw new MojoExecutionException("Error preparing the manifest: " + e.getMessage(), e);
-        } catch (IOException e) {
-            throw new MojoExecutionException("Error preparing the manifest: " + e.getMessage(), e);
-        } finally {
-            IOUtil.close(printWriter);
         }
     }
 
     protected void setAttributes(Manifest.ExistingSection mainSection) throws MojoExecutionException, ManifestException, IOException {
         File pluginImpl = new File(project.getBuild().getOutputDirectory(), "META-INF/services/hudson.Plugin");
         if(pluginImpl.exists()) {
-            BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(pluginImpl),"UTF-8"));
+            BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(pluginImpl), StandardCharsets.UTF_8));
             String pluginClassName = in.readLine();
             in.close();
 
@@ -238,7 +231,7 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
 
         // check any "provided" scope plugin dependencies that are probably not what the user intended.
         // see http://jenkins-ci.361315.n4.nabble.com/Classloading-problem-when-referencing-classes-from-another-plugin-during-the-initialization-phase-of-td394967.html
-        for (Artifact a : (Collection<Artifact>)project.getDependencyArtifacts())
+        for (Artifact a : project.getDependencyArtifacts())
             if ("provided".equals(a.getScope()) && wrap(a).isPlugin())
                 throw new MojoExecutionException(a.getId()+" is marked as 'provided' scope dependency, but it should be the 'compile' scope.");
 
@@ -252,8 +245,7 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
     private String getDevelopersForManifest() throws IOException {
         StringBuilder buf = new StringBuilder();
 
-        for (Object o : project.getDevelopers()) {
-            Developer d = (Developer) o;
+        for (Developer d : project.getDevelopers()) {
             if (buf.length() > 0) {
                 buf.append(',');
             }
@@ -268,11 +260,8 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
     }
 
     protected Manifest loadManifest(File f) throws IOException, ManifestException {
-        InputStreamReader r = new InputStreamReader(new FileInputStream(f), "UTF-8");
-        try {
-            return new Manifest(r);
-        } finally {
-            IOUtil.close(r);
+        try (InputStream is = Files.newInputStream(f.toPath())) {
+            return new Manifest(is);
         }
     }
 

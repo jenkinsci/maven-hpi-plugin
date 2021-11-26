@@ -25,13 +25,11 @@ package hudson;
 
 import jenkins.YesNoMaybe;
 
-import static jenkins.YesNoMaybe.MAYBE;
-
 /**
  * Minimal clone to convince Sezpoz.
  *
  * @author Kohsuke Kawaguchi
  */
 public @interface Extension {
-    YesNoMaybe dynamicLoadable() default MAYBE;
+    YesNoMaybe dynamicLoadable() default YesNoMaybe.MAYBE;
 }
