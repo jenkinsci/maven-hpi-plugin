@@ -422,7 +422,7 @@ public class RunMojo extends AbstractJettyMojo {
                     h.setLevel(Level.ALL);
                 }
             }
-            loggerReferences = new LinkedList<Logger>();
+            loggerReferences = new LinkedList<>();
             for (Map.Entry<String,String> logger : loggers.entrySet()) {
                 Logger l = Logger.getLogger(logger.getKey());
                 loggerReferences.add(l);
@@ -640,7 +640,7 @@ public class RunMojo extends AbstractJettyMojo {
 
         setUpScanList();
 
-        scannerListeners = new ArrayList<Scanner.BulkListener>();
+        scannerListeners = new ArrayList<>();
         scannerListeners.add(new Scanner.BulkListener() {
             public void filesChanged(List<String> changes) {
                 try {
@@ -689,7 +689,7 @@ public class RunMojo extends AbstractJettyMojo {
     }
 
     private void setUpScanList() {
-        scanList = new ArrayList<File>();
+        scanList = new ArrayList<>();
         scanList.add(getProject().getFile());
         scanList.add(webAppFile);
         scanList.add(new File(getProject().getBuild().getOutputDirectory()));
@@ -841,7 +841,7 @@ public class RunMojo extends AbstractJettyMojo {
     }
 
     public Set<MavenArtifact> getProjectArtifacts() {
-        Set<MavenArtifact> r = new HashSet<MavenArtifact>();
+        Set<MavenArtifact> r = new HashSet<>();
         for (Artifact a : (Collection<Artifact>)getProject().getArtifacts()) {
             r.add(wrap(a));
         }

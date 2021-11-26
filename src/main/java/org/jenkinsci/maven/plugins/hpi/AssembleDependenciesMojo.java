@@ -58,7 +58,7 @@ public class AssembleDependenciesMojo extends AbstractDependencyGraphTraversingM
 
     private List<String> parsedScopes;
 
-    private final Map<String,MavenArtifact> hpis = new HashMap<String,MavenArtifact>();
+    private final Map<String,MavenArtifact> hpis = new HashMap<>();
 
     @Override
     protected boolean accept(DependencyNode g) {
@@ -89,7 +89,7 @@ public class AssembleDependenciesMojo extends AbstractDependencyGraphTraversingM
         try {
             hpis.clear();
 
-            parsedScopes = new ArrayList<String>();
+            parsedScopes = new ArrayList<>();
             parsedScopes.add(null); // this is needed to traverse the root node
             for (String s : scopes.split(",")) {
                 parsedScopes.add(s.trim());

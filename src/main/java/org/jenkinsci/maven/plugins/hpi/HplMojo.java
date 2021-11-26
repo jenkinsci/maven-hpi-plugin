@@ -76,7 +76,7 @@ public class HplMojo extends AbstractJenkinsManifestMojo {
             setAttributes(mainSection);
 
             // compute Libraries entry
-            List<String> paths = new ArrayList<String>();
+            List<String> paths = new ArrayList<>();
 
             // we want resources to be picked up before target/classes,
             // so that the original (not in the copy) will be picked up first.
@@ -126,7 +126,7 @@ public class HplMojo extends AbstractJenkinsManifestMojo {
         Set<MavenArtifact> artifacts = getProjectArtfacts();
 
         // List up IDs of Jenkins plugin dependencies
-        Set<String> jenkinsPlugins = new HashSet<String>();
+        Set<String> jenkinsPlugins = new HashSet<>();
         for (MavenArtifact artifact : artifacts) {
             if (artifact.isPluginBestEffort(getLog()))
                 jenkinsPlugins.add(artifact.getId());

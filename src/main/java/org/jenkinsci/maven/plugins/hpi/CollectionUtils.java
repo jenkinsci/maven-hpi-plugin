@@ -13,7 +13,7 @@ class CollectionUtils {
     }
 
     private static class EmptyEnumeration<E> implements Enumeration<E> {
-        static final EmptyEnumeration<Object> EMPTY_ENUMERATION = new EmptyEnumeration<Object>();
+        static final EmptyEnumeration<Object> EMPTY_ENUMERATION = new EmptyEnumeration<>();
 
         public boolean hasMoreElements() { return false; }
         public E nextElement() { throw new NoSuchElementException(); }

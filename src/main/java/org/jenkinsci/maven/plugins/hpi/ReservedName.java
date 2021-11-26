@@ -8,7 +8,7 @@ import java.util.Set;
  * @author Kohsuke Kawaguchi
  */
 class ReservedName {
-    static Set<String> NAMES = new HashSet<String>(Arrays.asList(
+    static Set<String> NAMES = new HashSet<>(Arrays.asList(
         "abstract",
         "assert",
         "boolean",

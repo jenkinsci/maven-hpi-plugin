@@ -279,7 +279,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
      * @return an array of tokens to exclude
      */
     protected String[] getExcludes() {
-        List<String> excludeList = new ArrayList<String>();
+        List<String> excludeList = new ArrayList<>();
         if (StringUtils.isNotEmpty(warSourceExcludes)) {
             excludeList.addAll(Arrays.asList(StringUtils.split(warSourceExcludes, ",")));
         }
@@ -497,7 +497,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
 
         List<String> duplicates = findDuplicates(artifacts);
 
-        List<File> dependentWarDirectories = new ArrayList<File>();
+        List<File> dependentWarDirectories = new ArrayList<>();
 
         // List up IDs of Jenkins plugin dependencies
         Set<String> jenkinsPlugins = new HashSet<>();
@@ -595,8 +595,8 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
      * @return List of duplicated artifacts
      */
     private List<String> findDuplicates(Set<MavenArtifact> artifacts) {
-        List<String> duplicates = new ArrayList<String>();
-        List<String> identifiers = new ArrayList<String>();
+        List<String> duplicates = new ArrayList<>();
+        List<String> identifiers = new ArrayList<>();
         for (MavenArtifact artifact : artifacts) {
             String candidate = artifact.getDefaultFinalName();
             if (identifiers.contains(candidate)) {
