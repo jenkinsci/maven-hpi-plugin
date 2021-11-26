@@ -37,18 +37,12 @@ public class Artifacts extends ArrayList<Artifact> {
     }
 
     public Artifacts retainAll(Predicate<Artifact> filter) {
-        for (Iterator<Artifact> itr = iterator(); itr.hasNext(); ) {
-            if (!filter.test(itr.next()))
-                itr.remove();
-        }
+        removeIf(artifact -> !filter.test(artifact));
         return this;
     }
 
     public Artifacts removeAll(Predicate<Artifact> filter) {
-        for (Iterator<Artifact> itr = iterator(); itr.hasNext(); ) {
-            if (filter.test(itr.next()))
-                itr.remove();
-        }
+        removeIf(filter);
         return this;
     }
     
