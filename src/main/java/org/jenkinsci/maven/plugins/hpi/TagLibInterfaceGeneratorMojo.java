@@ -181,7 +181,7 @@ public class TagLibInterfaceGeneratorMojo extends AbstractMojo {
                         gdsl.printf("  ], dummy:void, c:Closure]\n");
                     }
                 } catch (DocumentException e) {
-                    throw (IOException)new IOException("Failed to parse "+tag).initCause(e);
+                    throw new IOException("Failed to parse " + tag, e);
                 }
             }
 
