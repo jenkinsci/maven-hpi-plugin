@@ -727,8 +727,8 @@ public class RunMojo extends AbstractJettyMojo {
                         // classes compiled from jenkins module should behave as if it's a part of the core
                         // load resources from source folders directly
                         for (Resource r : (List<Resource>)getProject().getResources())
-                            super.addURL(new File(r.getDirectory()).toURL());
-                        super.addURL(new File(getProject().getBuild().getOutputDirectory()).toURL());
+                            super.addURL(new File(r.getDirectory()).toURI().toURL());
+                        super.addURL(new File(getProject().getBuild().getOutputDirectory()).toURI().toURL());
 
                         // add all the jar dependencies of the module
                         // "provided" includes all core and others, so drop them

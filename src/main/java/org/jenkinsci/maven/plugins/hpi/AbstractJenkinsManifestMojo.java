@@ -33,9 +33,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
@@ -264,8 +266,8 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
     }
 
     protected Manifest loadManifest(File f) throws IOException, ManifestException {
-        try (InputStreamReader r = new InputStreamReader(new FileInputStream(f), "UTF-8")) {
-            return new Manifest(r);
+        try (InputStream is = Files.newInputStream(f.toPath())) {
+            return new Manifest(is);
         }
     }
 

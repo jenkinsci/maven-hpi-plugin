@@ -37,6 +37,7 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
@@ -299,7 +300,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
      * @return an array of tokens to include
      */
     protected String[] getIncludes() {
-        return StringUtils.split(StringUtils.defaultString(warSourceIncludes), ",");
+        return StringUtils.split(Objects.toString(warSourceIncludes), ",");
     }
 
     /**
@@ -325,7 +326,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
      * @return an array of tokens to include
      */
     protected String[] getDependentWarIncludes() {
-        return StringUtils.split(StringUtils.defaultString(dependentWarIncludes), ",");
+        return StringUtils.split(Objects.toString(dependentWarIncludes), ",");
     }
 
     public void buildExplodedWebapp(File webappDirectory, File jarFile)
