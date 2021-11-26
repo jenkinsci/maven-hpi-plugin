@@ -359,7 +359,7 @@ public abstract class AbstractJettyMojo extends AbstractMojo
             try
             {
                 List<URL> provided = new ArrayList<>();
-                URL[] urls = null;
+                URL[] urls;
 
                 for (Artifact artifact : projectArtifacts) {
                     if (Artifact.SCOPE_PROVIDED.equals(artifact.getScope()) && !isPluginArtifact(artifact))
