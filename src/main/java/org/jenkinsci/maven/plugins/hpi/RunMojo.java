@@ -27,6 +27,7 @@ import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
 import org.apache.maven.artifact.resolver.ArtifactResolver;
+import org.apache.maven.artifact.resolver.ResolutionNode;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -60,11 +61,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.UUID;
 import java.util.jar.JarFile;
 import java.util.logging.ConsoleHandler;
@@ -783,6 +786,7 @@ public class RunMojo extends AbstractJettyMojo {
      */
     protected Set<Artifact> resolveDependencies(String scope) throws MojoExecutionException {
         try {
+            final HashSet<Artifact> artifacts = new HashSet<>();
             ArtifactResolutionResult result = artifactResolver.resolveTransitively(
                     getProject().getDependencyArtifacts(),
                     getProject().getArtifact(),
@@ -791,12 +795,43 @@ public class RunMojo extends AbstractJettyMojo {
                     getProject().getRemoteArtifactRepositories(),
                     artifactMetadataSource,
                     new ScopeArtifactFilter(scope));
-            return result.getArtifacts();
+            artifacts.addAll(result.getArtifacts());
+
+            // hack to get optional deps into party
+            try {
+                for (Object node : result.getArtifactResolutionNodes()) {
+                    if (node instanceof ResolutionNode) {
+                        artifacts.addAll(recurse((ResolutionNode) node));
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            return artifacts;
         } catch (ArtifactNotFoundException e) {
-            throw new MojoExecutionException("Unable to copy dependency plugin",e);
+            throw new MojoExecutionException("Unable to copy dependency plugin", e);
         } catch (ArtifactResolutionException e) {
-            throw new MojoExecutionException("Unable to copy dependency plugin",e);
+            throw new MojoExecutionException("Unable to copy dependency plugin", e);
         }
+    }
+
+    private Set<Artifact> recurse(ResolutionNode node) throws IOException {
+        final HashSet<Artifact> artifacts = new HashSet<>();
+
+        try {
+            for (Iterator i = node.getChildrenIterator(); i.hasNext(); ) {
+                final ResolutionNode childArtifact = (ResolutionNode) i.next();
+                final MavenArtifact mavenArtifact = wrap(childArtifact.getArtifact());
+                if (mavenArtifact.isPlugin()) {
+                    artifacts.add(childArtifact.getArtifact());
+                    artifacts.addAll(recurse(childArtifact));
+                }
+            }
+        } catch (NullPointerException ignore) {
+            // node.getChildrenIterator() maybe null
+        }
+        return artifacts;
     }
 
     public Set<MavenArtifact> getProjectArtifacts() {
