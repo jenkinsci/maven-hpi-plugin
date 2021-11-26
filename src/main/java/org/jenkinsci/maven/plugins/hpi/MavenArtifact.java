@@ -1,6 +1,7 @@
 package org.jenkinsci.maven.plugins.hpi;
 
 import hudson.util.VersionNumber;
+import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -21,9 +22,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 import java.util.jar.JarFile;
-import org.apache.commons.lang.StringUtils;
-
-import static org.apache.maven.artifact.Artifact.*;
 
 /**
  * {@link Artifact} is a bare data structure without any behavior and therefore
@@ -132,7 +130,7 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
      */
     public MavenArtifact getHpi() throws IOException {
         Artifact a = artifactFactory
-                .createArtifact(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), SCOPE_COMPILE, getResolvedType());
+                .createArtifact(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), Artifact.SCOPE_COMPILE, getResolvedType());
         return new MavenArtifact(
                 a,
                 resolver,

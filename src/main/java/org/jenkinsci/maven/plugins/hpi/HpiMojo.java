@@ -18,7 +18,6 @@ package org.jenkinsci.maven.plugins.hpi;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.archiver.MavenArchiveConfiguration;
 import org.apache.maven.archiver.MavenArchiver;

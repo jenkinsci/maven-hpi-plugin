@@ -16,8 +16,6 @@ package org.jenkinsci.maven.plugins.hpi;
  * limitations under the License.
  */
 
-import org.codehaus.plexus.util.IOUtil;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;

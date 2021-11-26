@@ -33,8 +33,6 @@ import org.kohsuke.stapler.jelly.groovy.TagLibraryUri;
 import org.kohsuke.stapler.jelly.groovy.TypedTagLibrary;
 
 import java.io.File;
-import java.io.FileFilter;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;

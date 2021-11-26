@@ -12,7 +12,6 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.codehaus.plexus.archiver.jar.Manifest;
 import org.codehaus.plexus.archiver.jar.Manifest.Attribute;
 import org.codehaus.plexus.archiver.jar.ManifestException;
-import org.codehaus.plexus.util.IOUtil;
 
 import java.io.File;
 import java.io.FileWriter;

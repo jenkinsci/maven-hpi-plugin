@@ -3,8 +3,10 @@ package org.jenkinsci.maven.plugins.hpi;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
@@ -20,15 +22,12 @@ import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
 
-import static org.apache.maven.plugins.annotations.LifecyclePhase.*;
-import static org.apache.maven.plugins.annotations.ResolutionScope.*;
-
 /**
  * Builds a custom Jenkins war that includes all the additional plugins referenced in this POM.
  *
  * @author Kohsuke Kawaguchi
  */
-@Mojo(name="custom-war", defaultPhase = PACKAGE, requiresDependencyResolution = RUNTIME)
+@Mojo(name="custom-war", defaultPhase = LifecyclePhase.PACKAGE, requiresDependencyResolution = ResolutionScope.RUNTIME)
 public class WarMojo extends RunMojo {
     /**
      * Optional string that represents "groupId:artifactId" of Jenkins war.
