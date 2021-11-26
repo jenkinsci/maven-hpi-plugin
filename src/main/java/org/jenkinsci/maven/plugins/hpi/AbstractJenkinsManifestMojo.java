@@ -233,7 +233,7 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
 
         // check any "provided" scope plugin dependencies that are probably not what the user intended.
         // see http://jenkins-ci.361315.n4.nabble.com/Classloading-problem-when-referencing-classes-from-another-plugin-during-the-initialization-phase-of-td394967.html
-        for (Artifact a : (Collection<Artifact>)project.getDependencyArtifacts())
+        for (Artifact a : project.getDependencyArtifacts())
             if ("provided".equals(a.getScope()) && wrap(a).isPlugin())
                 throw new MojoExecutionException(a.getId()+" is marked as 'provided' scope dependency, but it should be the 'compile' scope.");
 
@@ -247,8 +247,7 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
     private String getDevelopersForManifest() throws IOException {
         StringBuilder buf = new StringBuilder();
 
-        for (Object o : project.getDevelopers()) {
-            Developer d = (Developer) o;
+        for (Developer d : project.getDevelopers()) {
             if (buf.length() > 0) {
                 buf.append(',');
             }

@@ -410,9 +410,9 @@ public abstract class AbstractJettyMojo extends AbstractMojo
     
     public void finishConfigurationBeforeStart() throws Exception
     {
-        HandlerCollection contexts = (HandlerCollection)server.getChildHandlerByClass(ContextHandlerCollection.class);
+        HandlerCollection contexts = server.getChildHandlerByClass(ContextHandlerCollection.class);
         if (contexts==null)
-            contexts = (HandlerCollection)server.getChildHandlerByClass(HandlerCollection.class);
+            contexts = server.getChildHandlerByClass(HandlerCollection.class);
 
         for (int i=0; (this.contextHandlers != null) && (i < this.contextHandlers.length); i++)
         {

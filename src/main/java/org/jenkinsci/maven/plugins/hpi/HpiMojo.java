@@ -111,7 +111,7 @@ public class HpiMojo extends AbstractJenkinsManifestMojo {
         getLog().info("Checking for attached .jar artifact "
                 + (StringUtils.isBlank(jarClassifier) ? "..." : "with classifier " + jarClassifier + "..."));
         File jarFile = null;
-        for (Artifact artifact: (List<Artifact>)project.getAttachedArtifacts()) {
+        for (Artifact artifact: project.getAttachedArtifacts()) {
             if (StringUtils.equals(project.getGroupId(), artifact.getGroupId())
                     && StringUtils.equals(project.getArtifactId(), artifact.getArtifactId())
                     && project.getArtifact().getVersionRange().equals(artifact.getVersionRange())

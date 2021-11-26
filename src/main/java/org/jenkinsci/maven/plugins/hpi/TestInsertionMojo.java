@@ -63,7 +63,7 @@ public class TestInsertionMojo extends AbstractJenkinsMojo {
         if (!project.getPackaging().equals("hpi")) {
             Artifact jenkinsTestHarness = null;
             if (jenkinsTestHarnessId != null) {
-                for (Artifact b : (List<Artifact>) project.getTestArtifacts()) {
+                for (Artifact b : project.getTestArtifacts()) {
                     if (jenkinsTestHarnessId.equals(b.getGroupId() +":"+b.getArtifactId())) {
                         jenkinsTestHarness = b;
                         break;

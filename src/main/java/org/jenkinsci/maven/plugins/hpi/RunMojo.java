@@ -542,7 +542,7 @@ public class RunMojo extends AbstractJettyMojo {
         
         super.configureWebApplication();
         getWebAppConfig().setWar(webAppFile.getCanonicalPath());
-        for (Artifact a : (Set<Artifact>) project.getArtifacts()) {
+        for (Artifact a : project.getArtifacts()) {
             if (a.getGroupId().equals("org.jenkins-ci.main") && a.getArtifactId().equals("jenkins-core")) {
                 File coreBasedir = pluginWorkspaceMap.read(a.getId());
                 if (coreBasedir != null) {
@@ -724,7 +724,7 @@ public class RunMojo extends AbstractJettyMojo {
                     if (getProject().getPackaging().equals("jenkins-module")) {
                         // classes compiled from jenkins module should behave as if it's a part of the core
                         // load resources from source folders directly
-                        for (Resource r : (List<Resource>)getProject().getResources())
+                        for (Resource r : getProject().getResources())
                             super.addURL(new File(r.getDirectory()).toURI().toURL());
                         super.addURL(new File(getProject().getBuild().getOutputDirectory()).toURI().toURL());
 
@@ -839,7 +839,7 @@ public class RunMojo extends AbstractJettyMojo {
 
     public Set<MavenArtifact> getProjectArtifacts() {
         Set<MavenArtifact> r = new HashSet<>();
-        for (Artifact a : (Collection<Artifact>)getProject().getArtifacts()) {
+        for (Artifact a : getProject().getArtifacts()) {
             r.add(wrap(a));
         }
         return r;

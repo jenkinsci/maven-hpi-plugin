@@ -731,12 +731,12 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         DirectoryScanner scanner = new DirectoryScanner();
         scanner.setBasedir(resource.getDirectory());
         if (resource.getIncludes() != null && !resource.getIncludes().isEmpty()) {
-            scanner.setIncludes((String[]) resource.getIncludes().toArray(EMPTY_STRING_ARRAY));
+            scanner.setIncludes(resource.getIncludes().toArray(EMPTY_STRING_ARRAY));
         } else {
             scanner.setIncludes(DEFAULT_INCLUDES);
         }
         if (resource.getExcludes() != null && !resource.getExcludes().isEmpty()) {
-            scanner.setExcludes((String[]) resource.getExcludes().toArray(EMPTY_STRING_ARRAY));
+            scanner.setExcludes(resource.getExcludes().toArray(EMPTY_STRING_ARRAY));
         }
 
         scanner.addDefaultExcludes();

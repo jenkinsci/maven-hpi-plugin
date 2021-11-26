@@ -79,7 +79,7 @@ public class HplMojo extends AbstractJenkinsManifestMojo {
 
             // we want resources to be picked up before target/classes,
             // so that the original (not in the copy) will be picked up first.
-            for (Resource r : (List<Resource>) project.getBuild().getResources()) {
+            for (Resource r : project.getBuild().getResources()) {
                 File dir = new File(r.getDirectory());
                 if (!dir.isAbsolute())
                     dir = new File(project.getBasedir(),r.getDirectory());
