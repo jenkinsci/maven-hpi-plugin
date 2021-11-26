@@ -91,7 +91,7 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
         PrintWriter printWriter = null;
         try {
             Manifest mf = ma.getManifest(project, archive.getManifest());
-            Manifest.Section mainSection = mf.getMainSection();
+            Manifest.ExistingSection mainSection = mf.getMainSection();
             setAttributes(mainSection);
 
             printWriter = new PrintWriter(new OutputStreamWriter(new FileOutputStream(manifestFile), "UTF-8"));
@@ -107,7 +107,7 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
         }
     }
 
-    protected void setAttributes(Manifest.Section mainSection) throws MojoExecutionException, ManifestException, IOException {
+    protected void setAttributes(Manifest.ExistingSection mainSection) throws MojoExecutionException, ManifestException, IOException {
         File pluginImpl = new File(project.getBuild().getOutputDirectory(), "META-INF/services/hudson.Plugin");
         if(pluginImpl.exists()) {
             BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(pluginImpl),"UTF-8"));
@@ -276,7 +276,7 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
         }
     }
 
-    private void addLicenseAttributesForManifest(Manifest.Section target) throws ManifestException {
+    private void addLicenseAttributesForManifest(Manifest.ExistingSection target) throws ManifestException {
         final List<License> licenses = project.getLicenses();
         int licenseCounter = 1;
         for (License lic : licenses) {
@@ -298,14 +298,14 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
         return null;
     }
 
-    private void addAttributeIfNotNull(Manifest.Section target, String attributeName, String propertyValue)
+    private void addAttributeIfNotNull(Manifest.ExistingSection target, String attributeName, String propertyValue)
             throws ManifestException {
         if (propertyValue != null) {
             target.addAttributeAndCheck(new Manifest.Attribute(attributeName, propertyValue));
         }
     }
 
-    private void addPropertyAttributeIfNotNull(Manifest.Section target, String attributeName, String propertyName)
+    private void addPropertyAttributeIfNotNull(Manifest.ExistingSection target, String attributeName, String propertyName)
             throws ManifestException {
         String propertyValue = project.getProperties().getProperty(propertyName);
         if (propertyValue != null) {

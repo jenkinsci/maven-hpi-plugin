@@ -11,7 +11,6 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.codehaus.plexus.archiver.jar.Manifest;
 import org.codehaus.plexus.archiver.jar.Manifest.Attribute;
-import org.codehaus.plexus.archiver.jar.Manifest.Section;
 import org.codehaus.plexus.archiver.jar.ManifestException;
 import org.codehaus.plexus.util.IOUtil;
 
@@ -73,7 +72,7 @@ public class HplMojo extends AbstractJenkinsManifestMojo {
         PrintWriter printWriter = null;
         try {
             Manifest mf = new Manifest();
-            Section mainSection = mf.getMainSection();
+            Manifest.ExistingSection mainSection = mf.getMainSection();
             setAttributes(mainSection);
 
             // compute Libraries entry
@@ -137,6 +136,10 @@ public class HplMojo extends AbstractJenkinsManifestMojo {
         for (MavenArtifact artifact : artifacts) {
             if(jenkinsPlugins.contains(artifact.getId()))
                 continue;   // plugin dependencies
+            if (artifact.getDependencyTrail().size() < 2) {
+                throw new IllegalStateException(
+                        "invalid dependency trail: " + artifact.getDependencyTrail());
+            }
             if(artifact.getDependencyTrail().size() >= 1 && jenkinsPlugins.contains(artifact.getDependencyTrail().get(1)))
                 continue;   // no need to have transitive dependencies through plugins
 

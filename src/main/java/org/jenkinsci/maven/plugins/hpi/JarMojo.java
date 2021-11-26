@@ -36,9 +36,7 @@ import org.codehaus.plexus.archiver.Archiver;
 import org.codehaus.plexus.archiver.ArchiverException;
 import org.codehaus.plexus.archiver.jar.JarArchiver;
 import org.codehaus.plexus.archiver.jar.Manifest;
-import org.codehaus.plexus.archiver.jar.Manifest.Section;
 import org.codehaus.plexus.archiver.jar.ManifestException;
-import org.codehaus.plexus.util.IOUtil;
 
 /**
  * Build a jar separate from the hpi goal. If you do not use this goal then the {@link HpiMojo} will generate a
@@ -125,7 +123,7 @@ public class JarMojo extends AbstractJenkinsManifestMojo {
         archiver.setOutputFile(jarFile);
         jarArchiver.addConfiguredManifest(manifest);
         jarArchiver.addDirectory(getClassesDirectory());
-        archiver.createArchive(project,archive);
+        archiver.createArchive(session, project, archive);
         projectHelper.attachArtifact(project, "jar", jarClassifier, jarFile);
     }
 
