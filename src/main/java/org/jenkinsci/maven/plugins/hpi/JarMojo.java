@@ -88,13 +88,7 @@ public class JarMojo extends AbstractJenkinsManifestMojo {
     public void execute() throws MojoExecutionException {
         try {
             performPackaging();
-        } catch (DependencyResolutionRequiredException e) {
-            throw new MojoExecutionException("Error assembling jar: " + e.getMessage(), e);
-        } catch (ManifestException e) {
-            throw new MojoExecutionException("Error assembling jar", e);
-        } catch (IOException e) {
-            throw new MojoExecutionException("Error assembling jar", e);
-        } catch (ArchiverException e) {
+        } catch (IOException | ArchiverException | ManifestException | DependencyResolutionRequiredException e) {
             throw new MojoExecutionException("Error assembling jar: " + e.getMessage(), e);
         }
     }

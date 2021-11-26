@@ -105,9 +105,7 @@ public class WarMojo extends RunMojo {
             getLog().info("Generated "+outputFile);
 
             projectHelper.attachArtifact(getProject(), "war", outputFile);
-        } catch (IOException e) {
-            throw new MojoExecutionException("Failed to package war",e);
-        } catch (ArtifactResolverException e) {
+        } catch (IOException | ArtifactResolverException e) {
             throw new MojoExecutionException("Failed to package war",e);
         }
     }

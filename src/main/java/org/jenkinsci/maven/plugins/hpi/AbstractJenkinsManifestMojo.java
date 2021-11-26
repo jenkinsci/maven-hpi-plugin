@@ -97,11 +97,7 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
             setAttributes(mainSection);
 
             mf.write(printWriter);
-        } catch (ManifestException e) {
-            throw new MojoExecutionException("Error preparing the manifest: " + e.getMessage(), e);
-        } catch (DependencyResolutionRequiredException e) {
-            throw new MojoExecutionException("Error preparing the manifest: " + e.getMessage(), e);
-        } catch (IOException e) {
+        } catch (ManifestException | IOException | DependencyResolutionRequiredException e) {
             throw new MojoExecutionException("Error preparing the manifest: " + e.getMessage(), e);
         }
     }

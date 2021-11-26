@@ -405,9 +405,7 @@ public class RunMojo extends AbstractJettyMojo {
                     copyPlugin(hpi.getFile(), pluginsDir, actualArtifactId);
                 }
             }
-        } catch (IOException e) {
-            throw new MojoExecutionException("Unable to copy dependency plugin",e);
-        } catch (ArtifactResolverException e) {
+        } catch (IOException | ArtifactResolverException e) {
             throw new MojoExecutionException("Unable to copy dependency plugin",e);
         }
 

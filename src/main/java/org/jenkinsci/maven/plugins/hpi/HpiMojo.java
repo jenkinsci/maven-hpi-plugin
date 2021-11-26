@@ -92,13 +92,7 @@ public class HpiMojo extends AbstractJenkinsManifestMojo {
     public void execute() throws MojoExecutionException {
         try {
             performPackaging();
-        } catch (DependencyResolutionRequiredException e) {
-            throw new MojoExecutionException("Error assembling hpi: " + e.getMessage(), e);
-        } catch (ManifestException e) {
-            throw new MojoExecutionException("Error assembling hpi", e);
-        } catch (IOException e) {
-            throw new MojoExecutionException("Error assembling hpi", e);
-        } catch (ArchiverException e) {
+        } catch (IOException | ArchiverException | ManifestException | DependencyResolutionRequiredException e) {
             throw new MojoExecutionException("Error assembling hpi: " + e.getMessage(), e);
         }
     }

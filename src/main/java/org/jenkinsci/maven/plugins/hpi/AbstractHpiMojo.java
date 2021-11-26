@@ -926,10 +926,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
                 return null;    // git rev-parse failed to run
 
             return v.trim().substring(0,8);
-        } catch (IOException e) {
-            LOGGER.log(Level.FINE, "Failed to run git rev-parse HEAD",e);
-            return null;
-        } catch (InterruptedException e) {
+        } catch (IOException | InterruptedException e) {
             LOGGER.log(Level.FINE, "Failed to run git rev-parse HEAD",e);
             return null;
         }

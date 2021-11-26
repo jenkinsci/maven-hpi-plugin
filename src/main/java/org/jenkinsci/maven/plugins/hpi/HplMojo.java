@@ -103,9 +103,7 @@ public class HplMojo extends AbstractJenkinsManifestMojo {
             }
 
             mf.write(printWriter);
-        } catch (ManifestException e) {
-            throw new MojoExecutionException("Error preparing the manifest: " + e.getMessage(), e);
-        } catch (IOException e) {
+        } catch (ManifestException | IOException e) {
             throw new MojoExecutionException("Error preparing the manifest: " + e.getMessage(), e);
         }
     }
