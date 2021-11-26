@@ -252,7 +252,7 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
             // when a plugin depends on another plugin, it doesn't specify the type as hpi or jpi, so we need to resolve its POM to see it
             return resolvePom().getPackaging();
         } catch (ProjectBuildingException e) {
-            throw new IOException("Failed to open artifact " + artifact.toString() + " at " + artifact.getFile() + ": " + e, e);
+            throw new IOException("Failed to open artifact " + artifact + " at " + artifact.getFile() + ": " + e, e);
         }
     }
 }

@@ -685,7 +685,7 @@ public class RunMojo extends AbstractJettyMojo {
 
         getLog().debug("Restarting webapp ...");
         webApp.start();
-        getLog().info("Restart completed at " + new Date().toString());
+        getLog().info("Restart completed at " + new Date());
     }
 
     private void setUpScanList() {
