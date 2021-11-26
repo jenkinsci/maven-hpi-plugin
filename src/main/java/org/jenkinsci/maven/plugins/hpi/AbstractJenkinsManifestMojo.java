@@ -109,6 +109,24 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
 
             mainSection.addAttributeAndCheck(new Manifest.Attribute("Plugin-Class",pluginClassName));
         }
+
+        mainSection.addAttributeAndCheck(
+                new Manifest.Attribute("Extension-Name", project.getArtifactId()));
+        mainSection.addAttributeAndCheck(
+                new Manifest.Attribute("Implementation-Title", project.getArtifactId()));
+        mainSection.addAttributeAndCheck(
+                new Manifest.Attribute("Implementation-Version", project.getVersion()));
+        if (project.getOrganization() != null) {
+            mainSection.addAttributeAndCheck(
+                    new Manifest.Attribute("Implementation-Vendor", project.getOrganization().getName()));
+        }
+        mainSection.addAttributeAndCheck(
+                new Manifest.Attribute("Specification-Title", project.getDescription()));
+        if (project.getOrganization() != null) {
+            mainSection.addAttributeAndCheck(
+                    new Manifest.Attribute("Specification-Vendor", project.getOrganization().getName()));
+        }
+
         mainSection.addAttributeAndCheck(new Manifest.Attribute("Group-Id",project.getGroupId()));
         mainSection.addAttributeAndCheck(new Manifest.Attribute("Short-Name",project.getArtifactId()));
         mainSection.addAttributeAndCheck(new Manifest.Attribute("Long-Name",pluginName));
