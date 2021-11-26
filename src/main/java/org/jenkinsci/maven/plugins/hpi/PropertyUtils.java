@@ -52,12 +52,8 @@ public final class PropertyUtils {
         }
 
         if (propfile.exists()) {
-            FileInputStream inStream = new FileInputStream(propfile);
-            try {
+            try (FileInputStream inStream = new FileInputStream(propfile)) {
                 props.load(inStream);
-            }
-            finally {
-                IOUtil.close(inStream);
             }
         } else if (fail) {
             throw new FileNotFoundException(propfile.toString());

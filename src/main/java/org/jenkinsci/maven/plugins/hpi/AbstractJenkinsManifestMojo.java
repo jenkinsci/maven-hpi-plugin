@@ -88,13 +88,11 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
         MavenArchiver ma = new MavenArchiver();
         ma.setOutputFile(manifestFile);
 
-        PrintWriter printWriter = null;
-        try {
+        try (PrintWriter printWriter = new PrintWriter(new OutputStreamWriter(new FileOutputStream(manifestFile), "UTF-8"))) {
             Manifest mf = ma.getManifest(project, archive.getManifest());
             Manifest.ExistingSection mainSection = mf.getMainSection();
             setAttributes(mainSection);
 
-            printWriter = new PrintWriter(new OutputStreamWriter(new FileOutputStream(manifestFile), "UTF-8"));
             mf.write(printWriter);
         } catch (ManifestException e) {
             throw new MojoExecutionException("Error preparing the manifest: " + e.getMessage(), e);
@@ -102,8 +100,6 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
             throw new MojoExecutionException("Error preparing the manifest: " + e.getMessage(), e);
         } catch (IOException e) {
             throw new MojoExecutionException("Error preparing the manifest: " + e.getMessage(), e);
-        } finally {
-            IOUtil.close(printWriter);
         }
     }
 
@@ -268,11 +264,8 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
     }
 
     protected Manifest loadManifest(File f) throws IOException, ManifestException {
-        InputStreamReader r = new InputStreamReader(new FileInputStream(f), "UTF-8");
-        try {
+        try (InputStreamReader r = new InputStreamReader(new FileInputStream(f), "UTF-8")) {
             return new Manifest(r);
-        } finally {
-            IOUtil.close(r);
         }
     }
 

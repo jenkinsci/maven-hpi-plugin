@@ -69,8 +69,7 @@ public class HplMojo extends AbstractJenkinsManifestMojo {
         File hplFile = computeHplFile();
         getLog().info("Generating "+hplFile);
 
-        PrintWriter printWriter = null;
-        try {
+        try (PrintWriter printWriter = new PrintWriter(new FileWriter(hplFile))) {
             Manifest mf = new Manifest();
             Manifest.ExistingSection mainSection = mf.getMainSection();
             setAttributes(mainSection);
@@ -103,14 +102,11 @@ public class HplMojo extends AbstractJenkinsManifestMojo {
                 mainSection.addAttributeAndCheck(new Attribute("Resource-Path",warSourceDirectory.getAbsolutePath()));
             }
 
-            printWriter = new PrintWriter(new FileWriter(hplFile));
             mf.write(printWriter);
         } catch (ManifestException e) {
             throw new MojoExecutionException("Error preparing the manifest: " + e.getMessage(), e);
         } catch (IOException e) {
             throw new MojoExecutionException("Error preparing the manifest: " + e.getMessage(), e);
-        } finally {
-            IOUtil.close(printWriter);
         }
     }
 
