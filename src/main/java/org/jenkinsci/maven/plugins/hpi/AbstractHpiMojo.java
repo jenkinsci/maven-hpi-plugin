@@ -583,8 +583,8 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
             getLog().info("Overlaying " + dependentWarDirectories.size() + " war(s).");
 
             // overlay dependent wars
-            for (Iterator iter = dependentWarDirectories.iterator(); iter.hasNext();) {
-                copyDependentWarContents((File) iter.next(), webappDirectory);
+            for (File dependentWarDirectory : dependentWarDirectories) {
+                copyDependentWarContents(dependentWarDirectory, webappDirectory);
             }
         }
     }

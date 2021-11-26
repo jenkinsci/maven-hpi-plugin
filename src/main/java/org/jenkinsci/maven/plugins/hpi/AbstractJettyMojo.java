@@ -241,7 +241,7 @@ public abstract class AbstractJettyMojo extends AbstractMojo
      * The artifacts for the project.
      */
     @Parameter(defaultValue = "${project.artifacts}")
-    protected Set projectArtifacts;
+    protected Set<Artifact> projectArtifacts;
 
 
     @Parameter(defaultValue = "${mojoExecution}", readonly = true)
@@ -252,7 +252,7 @@ public abstract class AbstractJettyMojo extends AbstractMojo
      * The artifacts for the plugin itself.
      */
     @Parameter(defaultValue = "${plugin.artifacts}", readonly = true)
-    protected List pluginArtifacts;
+    protected List<Artifact> pluginArtifacts;
 
 
 
@@ -364,9 +364,7 @@ public abstract class AbstractJettyMojo extends AbstractMojo
                 List<URL> provided = new ArrayList<>();
                 URL[] urls = null;
 
-                for ( Iterator<Artifact> iter = projectArtifacts.iterator(); iter.hasNext(); )
-                {
-                    Artifact artifact = iter.next();
+                for (Artifact artifact : projectArtifacts) {
                     if (Artifact.SCOPE_PROVIDED.equals(artifact.getScope()) && !isPluginArtifact(artifact))
                     {
                         provided.add(artifact.getFile().toURI().toURL());
@@ -687,10 +685,7 @@ public abstract class AbstractJettyMojo extends AbstractMojo
         {
             if (systemProperties != null)
             {
-                Iterator itor = systemProperties.getSystemProperties().iterator();
-                while (itor.hasNext())
-                {
-                    SystemProperty prop = (SystemProperty)itor.next();
+                for (SystemProperty prop : systemProperties.getSystemProperties()) {
                     getLog().debug("Property "+prop.getName()+"="+prop.getValue()+" was "+ (prop.isSet() ? "set" : "skipped"));
                 }
             }
