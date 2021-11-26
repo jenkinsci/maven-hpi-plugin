@@ -37,6 +37,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
@@ -90,7 +91,7 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
         MavenArchiver ma = new MavenArchiver();
         ma.setOutputFile(manifestFile);
 
-        try (PrintWriter printWriter = new PrintWriter(new OutputStreamWriter(new FileOutputStream(manifestFile), "UTF-8"))) {
+        try (PrintWriter printWriter = new PrintWriter(new OutputStreamWriter(new FileOutputStream(manifestFile), StandardCharsets.UTF_8))) {
             Manifest mf = ma.getManifest(project, archive.getManifest());
             Manifest.ExistingSection mainSection = mf.getMainSection();
             setAttributes(mainSection);
@@ -108,7 +109,7 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
     protected void setAttributes(Manifest.ExistingSection mainSection) throws MojoExecutionException, ManifestException, IOException {
         File pluginImpl = new File(project.getBuild().getOutputDirectory(), "META-INF/services/hudson.Plugin");
         if(pluginImpl.exists()) {
-            BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(pluginImpl),"UTF-8"));
+            BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(pluginImpl), StandardCharsets.UTF_8));
             String pluginClassName = in.readLine();
             in.close();
 

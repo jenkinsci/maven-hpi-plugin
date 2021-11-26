@@ -7,6 +7,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.Set;
 
 /**
@@ -24,7 +25,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
         testDir.mkdirs();
 
         try {
-            Writer w = new OutputStreamWriter(new FileOutputStream(new File(testDir,"index")),"UTF-8");
+            Writer w = new OutputStreamWriter(new FileOutputStream(new File(testDir,"index")), StandardCharsets.UTF_8);
 
             for (MavenArtifact a : getProjectArtfacts()) {
                 if (!a.isPluginBestEffort(getLog()))
