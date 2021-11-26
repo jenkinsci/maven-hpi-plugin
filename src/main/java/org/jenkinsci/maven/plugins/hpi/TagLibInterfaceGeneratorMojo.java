@@ -105,7 +105,7 @@ public class TagLibInterfaceGeneratorMojo extends AbstractMojo {
     }
 
     private void walk(File dir,JPackage pkg,String dirName) throws JClassAlreadyExistsException, IOException {
-        File[] children = dir.listFiles(f -> f.isDirectory());
+        File[] children = dir.listFiles(File::isDirectory);
         if (children!=null) {
             for (File child : children)
                 walk(child,pkg.subPackage(h2j(child.getName())),dirName+'/'+child.getName());
