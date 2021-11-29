@@ -54,7 +54,7 @@
     <java.level>8</java.level>
     <gitHubRepo>jenkinsci/${project.artifactId}</gitHubRepo>
     <maven.version>3.8.4</maven.version>
-    <maven-plugin-tools.version>3.6.1</maven-plugin-tools.version>
+    <maven-plugin-tools.version>3.6.2</maven-plugin-tools.version>
     <enforcer.skip>true</enforcer.skip> <!-- TODO lots of requireUpperBoundDeps violations -->
     <spotbugs.skip>true</spotbugs.skip> <!-- TODO lots of violations -->
   </properties>
