@@ -265,12 +265,14 @@ public class RunMojo extends AbstractJettyMojo {
      *
      * @deprecated Use &lt;webApp&gt;&lt;contextPath&gt; instead.
      */
+    @Deprecated
     @Parameter(readonly = true, required = true, defaultValue = "/${project.artifactId}")
     protected String contextPath;
 
     @Component
     protected PluginWorkspaceMap pluginWorkspaceMap;
 
+    @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         getProject().setArtifacts(resolveDependencies(dependencyResolution));
 
@@ -531,6 +533,7 @@ public class RunMojo extends AbstractJettyMojo {
         hpl.execute();
     }
 
+    @Override
     public void configureWebApplication() throws Exception {
         // Jetty tries to do this in WebAppContext.resolveWebApp but it failed to delete the directory.
         File t = webApp.getTempDirectory();
@@ -623,6 +626,7 @@ public class RunMojo extends AbstractJettyMojo {
         return props.getProperty(VERSION_PROP);
     }
 
+    @Override
     public void configureScanner() throws MojoExecutionException {
         // use a bigger buffer as Stapler traces can get pretty large on deeply nested URL
         // this can only be done after server.start() is called, which happens in AbstractJettyMojo.startJetty()
@@ -640,6 +644,7 @@ public class RunMojo extends AbstractJettyMojo {
 
         scannerListeners = new ArrayList<>();
         scannerListeners.add(new Scanner.BulkListener() {
+            @Override
             public void filesChanged(List<String> changes) {
                 try {
                     restartWebApp(changes.contains(getProject().getFile().getCanonicalPath()));
@@ -702,9 +707,11 @@ public class RunMojo extends AbstractJettyMojo {
         }
     }
 
+    @Override
     public void checkPomConfiguration() throws MojoExecutionException {
     }
 
+    @Override
     public void finishConfigurationBeforeStart() throws Exception {
         super.finishConfigurationBeforeStart();
         WebAppContext wac = getWebAppConfig();

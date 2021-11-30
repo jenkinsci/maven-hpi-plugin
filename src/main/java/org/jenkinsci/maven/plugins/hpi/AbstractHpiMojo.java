@@ -775,12 +775,14 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         return new FilterWrapper[]{
             // support ${token}
             new FilterWrapper() {
+                @Override
                 public Reader getReader(Reader fileReader, Properties filterProperties) {
                     return new InterpolationFilterReader(fileReader, filterProperties, "${", "}");
                 }
             },
             // support @token@
             new FilterWrapper() {
+                @Override
                 public Reader getReader(Reader fileReader, Properties filterProperties) {
                     return new InterpolationFilterReader(fileReader, filterProperties, "@", "@");
                 }

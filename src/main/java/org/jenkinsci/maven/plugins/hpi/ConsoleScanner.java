@@ -50,6 +50,7 @@ public class ConsoleScanner extends Thread
     /** 
      * @see java.lang.Thread#run()
      */
+    @Override
     public void run() 
     {  
         try 

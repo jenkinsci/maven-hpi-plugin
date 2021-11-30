@@ -67,6 +67,7 @@ public class TagLibInterfaceGeneratorMojo extends AbstractMojo {
 
     private SAXReader saxReader = new SAXReader();
 
+    @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
             JCodeModel codeModel = new JCodeModel();

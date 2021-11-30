@@ -54,6 +54,7 @@ public class HplMojo extends AbstractJenkinsManifestMojo {
         this.jenkinsHome = jenkinsHome;
     }
 
+    @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         if(!project.getPackaging().equals("hpi")) {
             getLog().info("Skipping "+project.getName()+" because it's not <packaging>hpi</packaging>");

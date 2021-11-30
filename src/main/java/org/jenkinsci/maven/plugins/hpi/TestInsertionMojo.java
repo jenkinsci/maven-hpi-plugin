@@ -58,6 +58,7 @@ public class TestInsertionMojo extends AbstractJenkinsMojo {
         return '"'+s.replace("\\", "\\\\")+'"';
     }
 
+    @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         if (!project.getPackaging().equals("hpi")) {
             Artifact jenkinsTestHarness = null;
