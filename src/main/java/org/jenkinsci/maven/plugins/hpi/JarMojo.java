@@ -80,6 +80,7 @@ public class JarMojo extends AbstractJenkinsManifestMojo {
      *
      * @throws MojoExecutionException if an error occurred while building the webapp
      */
+    @Override
     public void execute() throws MojoExecutionException {
         try {
             performPackaging();

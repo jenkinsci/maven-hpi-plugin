@@ -31,6 +31,7 @@ public class ListPluginDependenciesMojo extends AbstractHpiMojo {
     // TODO(oleg_nenashev): Add support for transitive plugin dependencies.
     // Might require reusing/refactoring the plugin dependency tree resolution code in plugin installation mojos.
     
+    @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
             Writer w = outputFile==null ? new NullWriter() : new OutputStreamWriter(new FileOutputStream(outputFile), StandardCharsets.UTF_8);

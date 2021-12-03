@@ -15,7 +15,9 @@ class CollectionUtils {
     private static class EmptyEnumeration<E> implements Enumeration<E> {
         static final EmptyEnumeration<Object> EMPTY_ENUMERATION = new EmptyEnumeration<>();
 
+        @Override
         public boolean hasMoreElements() { return false; }
+        @Override
         public E nextElement() { throw new NoSuchElementException(); }
     }
 }

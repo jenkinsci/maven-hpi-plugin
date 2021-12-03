@@ -13,6 +13,7 @@ import org.apache.maven.plugins.annotations.Mojo;
  */
 @Mojo(name = "validate", defaultPhase = LifecyclePhase.VALIDATE)
 public class ValidateMojo extends AbstractJenkinsMojo {
+    @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         if (!isMustangOrAbove())
             throw new MojoExecutionException("JDK6 or later is necessary to build a Jenkins plugin");

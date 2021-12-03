@@ -85,6 +85,7 @@ public class AssembleDependenciesMojo extends AbstractDependencyGraphTraversingM
     }
 
 
+    @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
             hpis.clear();

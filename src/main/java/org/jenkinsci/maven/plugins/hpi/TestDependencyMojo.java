@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
  */
 @Mojo(name="resolve-test-dependencies", requiresDependencyResolution = ResolutionScope.TEST)
 public class TestDependencyMojo extends AbstractHpiMojo {
+    @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         File testDir = new File(project.getBuild().getTestOutputDirectory(),"test-dependencies");
         testDir.mkdirs();

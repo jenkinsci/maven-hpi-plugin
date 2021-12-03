@@ -18,6 +18,7 @@ import java.util.jar.JarFile;
  */
 @Mojo(name = "validate-hpi", defaultPhase = LifecyclePhase.VALIDATE, requiresDependencyResolution = ResolutionScope.TEST)
 public class ValidateHpiMojo extends AbstractHpiMojo {
+    @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
             VersionNumber coreVersion = new VersionNumber(findJenkinsVersion());
             MavenArtifact maxCoreVersionArtifact = null;
