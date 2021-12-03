@@ -2,6 +2,7 @@ package org.jenkinsci.maven.plugins.hpi;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.Enumeration;
 
 /**
@@ -26,7 +27,7 @@ public class JettyAndServletApiOnlyClassLoader extends ClassLoader {
       if (name.equals("jndi.properties")) {
         return jettyClassLoader.getResources(name);
       }
-      return CollectionUtils.emptyEnumeration();
+      return Collections.emptyEnumeration();
     }
 
     @Override
