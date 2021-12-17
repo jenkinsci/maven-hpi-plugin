@@ -181,10 +181,6 @@
       <!-- make sure to exclude servlet so that the one in Jetty (which has different groupId) will win -->
       <exclusions>
         <exclusion>
-          <groupId>com.google.guava</groupId>
-          <artifactId>guava</artifactId>
-        </exclusion>
-        <exclusion>
           <groupId>javax.servlet</groupId>
           <artifactId>servlet-api</artifactId>
         </exclusion>
@@ -333,6 +329,7 @@
               <rules>
                 <requireUpperBoundDeps>
                   <excludes combine.children="append">
+                    <exclude>com.google.guava:guava</exclude>
                     <exclude>com.google.inject:guice</exclude>
                     <exclude>commons-io:commons-io</exclude>
                     <exclude>commons-lang:commons-lang</exclude>
