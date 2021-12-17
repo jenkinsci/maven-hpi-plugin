@@ -130,7 +130,7 @@
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-groovy</artifactId>
-      <version>1593.v0e838714faae</version>
+      <version>1612.v2a13b906bf3a</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
