@@ -14,9 +14,10 @@ import org.codehaus.plexus.archiver.jar.Manifest.Attribute;
 import org.codehaus.plexus.archiver.jar.ManifestException;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -69,7 +70,7 @@ public class HplMojo extends AbstractJenkinsManifestMojo {
         File hplFile = computeHplFile();
         getLog().info("Generating "+hplFile);
 
-        try (PrintWriter printWriter = new PrintWriter(new FileWriter(hplFile))) {
+        try (PrintWriter printWriter = new PrintWriter(Files.newBufferedWriter(hplFile.toPath(), StandardCharsets.UTF_8))) {
             Manifest mf = new Manifest();
             Manifest.ExistingSection mainSection = mf.getMainSection();
             setAttributes(mainSection);

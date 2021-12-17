@@ -1,5 +1,7 @@
 package org.jenkinsci.maven.plugins.hpi;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import org.codehaus.plexus.component.annotations.Component;
 
 import java.io.File;
@@ -40,6 +42,7 @@ public class PluginWorkspaceMapImpl implements PluginWorkspaceMap {
     }
 
     @Override
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "TODO needs triage")
     public /*@CheckForNull*/ File read(String id) throws IOException {
         for (Map.Entry<Object,Object> entry : loadMap().entrySet()) {
             if (entry.getValue().equals(id)) {

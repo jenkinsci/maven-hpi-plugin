@@ -56,7 +56,7 @@
     <maven.version>3.8.4</maven.version>
     <maven-plugin-tools.version>3.6.2</maven-plugin-tools.version>
     <enforcer.skip>true</enforcer.skip> <!-- TODO lots of requireUpperBoundDeps violations -->
-    <spotbugs.skip>true</spotbugs.skip> <!-- TODO lots of violations -->
+    <spotbugs.threshold>High</spotbugs.threshold> <!-- TODO lots of violations -->
   </properties>
 
   <repositories>
@@ -170,6 +170,17 @@
       <groupId>io.jenkins.lib</groupId>
       <artifactId>support-log-formatter</artifactId>
       <version>1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.github.spotbugs</groupId>
+      <artifactId>spotbugs-annotations</artifactId>
+      <optional>true</optional>
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.code.findbugs</groupId>
+          <artifactId>jsr305</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
   </dependencies>
 
