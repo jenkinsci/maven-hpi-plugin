@@ -32,11 +32,14 @@ import org.kohsuke.stapler.jelly.groovy.TagFile;
 import org.kohsuke.stapler.jelly.groovy.TagLibraryUri;
 import org.kohsuke.stapler.jelly.groovy.TypedTagLibrary;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
@@ -116,7 +119,7 @@ public class TagLibInterfaceGeneratorMojo extends AbstractMojo {
             c.annotate(TagLibraryUri.class).param("value",dirName);
 
             JBinaryFile _gdsl = new JBinaryFile(c.name()+".gdsl");
-            PrintWriter gdsl = new PrintWriter(_gdsl.getDataStore());
+            PrintWriter gdsl = new PrintWriter(new BufferedWriter(new OutputStreamWriter(_gdsl.getDataStore(), StandardCharsets.UTF_8)));
             gdsl.printf("package %s;\n",pkg.parent().name());
             gdsl.printf("contributor(context(ctype:'%s')) {\n",c.fullName());
 
