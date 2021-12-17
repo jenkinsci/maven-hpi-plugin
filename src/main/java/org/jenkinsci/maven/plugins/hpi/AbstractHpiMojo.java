@@ -17,13 +17,12 @@ package org.jenkinsci.maven.plugins.hpi;
  */
 
 import com.google.common.collect.Sets;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -31,6 +30,8 @@ import java.io.Reader;
 import java.io.Writer;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -803,8 +804,8 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
             to.getParentFile().mkdirs();
 
             if (encoding == null || encoding.length() < 1) {
-                fileReader = new BufferedReader(new FileReader(from));
-                fileWriter = new FileWriter(to);
+                fileReader = Files.newBufferedReader(from.toPath(), StandardCharsets.UTF_8);
+                fileWriter = Files.newBufferedWriter(to.toPath(), StandardCharsets.UTF_8);
             } else {
                 FileInputStream instream = new FileInputStream(from);
 
@@ -936,6 +937,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
      * False, if the answer is known to be "No". Otherwise null, if there are some extensions
      * we don't know we can dynamic load. Otherwise, if everything is known to be dynamic loadable, return true.
      */
+    @SuppressFBWarnings(value = "NP_BOOLEAN_RETURN_NULL", justification = "TODO needs triage")
     protected Boolean isSupportDynamicLoading() throws IOException {
         URLClassLoader cl = new URLClassLoader(new URL[]{
                 new File(project.getBuild().getOutputDirectory()).toURI().toURL()
