@@ -62,6 +62,7 @@ import org.codehaus.plexus.util.DirectoryScanner;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.InterpolationFilterReader;
+import org.codehaus.plexus.util.PropertyUtils;
 import org.codehaus.plexus.util.StringUtils;
 
 public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
@@ -377,7 +378,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
 
         for (String filter : filters) {
             try {
-                Properties properties = PropertyUtils.loadPropertyFile(new File(filter), true, true);
+                Properties properties = PropertyUtils.loadProperties(new File(filter));
 
                 filterProperties.putAll(properties);
             }
