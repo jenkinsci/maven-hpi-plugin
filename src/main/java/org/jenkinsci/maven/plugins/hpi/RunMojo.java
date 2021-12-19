@@ -22,10 +22,10 @@ import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.lifecycle.internal.LifecycleDependencyResolver;
 import org.apache.maven.model.Resource;
+import org.apache.maven.plugin.BuildPluginManager;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
@@ -58,6 +58,7 @@ import org.eclipse.jetty.util.Scanner;
 import org.eclipse.jetty.util.security.Password;
 import org.eclipse.jetty.webapp.WebAppClassLoader;
 import org.eclipse.jetty.webapp.WebAppContext;
+import org.twdata.maven.mojoexecutor.MojoExecutor;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -164,6 +165,9 @@ public class RunMojo extends AbstractJettyMojo {
 
     @Component
     private ProjectDependenciesResolver dependenciesResolver;
+
+    @Component
+    private BuildPluginManager pluginManager;
 
     /**
      * Specifies the HTTP port number.
@@ -498,39 +502,23 @@ public class RunMojo extends AbstractJettyMojo {
 
     /**
      * Create a dot-hpl file.
-     *
-     * <p>
-     * All I want to do here is to invoke the hpl target.
-     * there must be a better way to do this!
-     * (jglick: perhaps https://github.com/TimMoore/mojo-executor would work?)
-     *
-     * <p>
-     * Besides, if the user wants to change the plugin name, etc,
-     * this forces them to do it in two places.
      */
-    private void generateHpl() throws MojoExecutionException, MojoFailureException {
-        HplMojo hpl = new HplMojo();
-        hpl.project = getProject();
-        hpl.session = session;
-        hpl.setJenkinsHome(jenkinsHome);
-        hpl.setLog(getLog());
-        hpl.pluginName = getProject().getName();
-        hpl.webappDirectory = webappDirectory;
-        hpl.warSourceDirectory = warSourceDirectory;
-        hpl.scopeFilter = new ScopeArtifactFilter("runtime");
-        hpl.projectBuilder = this.projectBuilder;
-        hpl.localRepository = this.localRepository;
-        hpl.jenkinsCoreId = this.jenkinsCoreId;
-        hpl.pluginFirstClassLoader = this.pluginFirstClassLoader;
-        hpl.maskClasses = this.maskClasses;
-        hpl.remoteRepos = this.remoteRepos;
-        hpl.minimumJavaVersion = this.minimumJavaVersion;
-        /* As needed:
-        hpl.artifactFactory = this.artifactFactory;
-        hpl.artifactResolver = this.artifactResolver;
-        hpl.artifactMetadataSource = this.artifactMetadataSource;
-        */
-        hpl.execute();
+    private void generateHpl() throws MojoExecutionException {
+        MojoExecutor.executeMojo(
+                MojoExecutor.plugin(
+                        MojoExecutor.groupId("org.jenkins-ci.tools"),
+                        MojoExecutor.artifactId("maven-hpi-plugin")),
+                MojoExecutor.goal("hpl"),
+                MojoExecutor.configuration(
+                        MojoExecutor.element(MojoExecutor.name("jenkinsHome"), jenkinsHome.toString()),
+                        MojoExecutor.element(MojoExecutor.name("pluginName"), project.getName()),
+                        MojoExecutor.element(MojoExecutor.name("webappDirectory"), webappDirectory.toString()),
+                        MojoExecutor.element(MojoExecutor.name("warSourceDirectory"), warSourceDirectory.toString()),
+                        MojoExecutor.element(MojoExecutor.name("jenkinsCoreId"), jenkinsCoreId),
+                        MojoExecutor.element(MojoExecutor.name("pluginFirstClassLoader"), Boolean.toString(pluginFirstClassLoader)),
+                        MojoExecutor.element(MojoExecutor.name("maskClasses"), maskClasses),
+                        MojoExecutor.element(MojoExecutor.name("minimumJavaVersion"), minimumJavaVersion)),
+                MojoExecutor.executionEnvironment(project, session, pluginManager));
     }
 
     @Override
