@@ -356,12 +356,12 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
             if (containerConfigXML != null && StringUtils.isNotEmpty(containerConfigXML.getName())) {
                 metainfDir = new File(webappDirectory, META_INF);
                 String xmlFileName = containerConfigXML.getName();
-                copyFileIfModified(containerConfigXML, new File(metainfDir, xmlFileName));
+                FileUtils.copyFileIfModified(containerConfigXML, new File(metainfDir, xmlFileName));
             }
 
             buildWebapp(project, webappDirectory);
 
-            copyFileIfModified(jarFile, new File(getWebappDirectory(),"WEB-INF/lib/"+jarFile.getName()));
+            FileUtils.copyFileIfModified(jarFile, new File(getWebappDirectory(),"WEB-INF/lib/"+jarFile.getName()));
         }
         catch (IOException e) {
             throw new MojoExecutionException("Could not explode webapp...", e);
@@ -417,7 +417,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
                             new File(targetDirectory, fileName), null, getFilterWrappers(),
                             filterProperties);
                     } else {
-                        copyFileIfModified(new File(resource.getDirectory(), fileName),
+                        FileUtils.copyFileIfModified(new File(resource.getDirectory(), fileName),
                             new File(targetDirectory, fileName));
                     }
                 }
@@ -444,7 +444,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
             if (warSourceDirectory.exists()) {
                 String[] fileNames = getWarFiles(sourceDirectory);
                 for (String fileName : fileNames) {
-                    copyFileIfModified(new File(sourceDirectory, fileName),
+                    FileUtils.copyFileIfModified(new File(sourceDirectory, fileName),
                         new File(webappDirectory, fileName));
                 }
             }
@@ -554,10 +554,10 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
                 }
                 String type = artifact.getType();
                 if ("tld".equals(type)) {
-                    copyFileIfModified(artifact.getFile(), new File(tldDirectory, targetFileName));
+                    FileUtils.copyFileIfModified(artifact.getFile(), new File(tldDirectory, targetFileName));
                 } else {
                     if ("jar".equals(type) || "ejb".equals(type) || "ejb-client".equals(type)) {
-                        copyFileIfModified(artifact.getFile(), new File(libDirectory, targetFileName));
+                        FileUtils.copyFileIfModified(artifact.getFile(), new File(libDirectory, targetFileName));
                     } else {
                         if ("par".equals(type)) {
                             targetFileName = targetFileName.substring(0, targetFileName.lastIndexOf('.')) + ".jar";
@@ -565,7 +565,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
                             getLog().debug(
                                 "Copying " + artifact.getFile() + " to " + new File(libDirectory, targetFileName));
 
-                            copyFileIfModified(artifact.getFile(), new File(libDirectory, targetFileName));
+                            FileUtils.copyFileIfModified(artifact.getFile(), new File(libDirectory, targetFileName));
                         } else {
                             if ("war".equals(type)) {
                                 dependentWarDirectories.add(unpackWarToTempDirectory(artifact));
@@ -691,7 +691,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
             if (!targetFile.exists()) {
                 try {
                     targetFile.getParentFile().mkdirs();
-                    copyFileIfModified(new File(srcDir, file), targetFile);
+                    FileUtils.copyFileIfModified(new File(srcDir, file), targetFile);
                 }
                 catch (IOException e) {
                     throw new MojoExecutionException("Error copying file '" + file + "' to '" + targetFile + "'",
@@ -745,32 +745,6 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         scanner.scan();
 
         return scanner.getIncludedFiles();
-    }
-
-    /**
-     * Copy file from source to destination only if source is newer than the target file.
-     * If <code>destinationDirectory</code> does not exist, it
-     * (and any parent directories) will be created. If a file <code>source</code> in
-     * <code>destinationDirectory</code> exists, it will be overwritten.
-     *
-     * @param source               An existing <code>File</code> to copy.
-     * @param destinationDirectory A directory to copy <code>source</code> into.
-     * @throws java.io.FileNotFoundException if <code>source</code> isn't a normal file.
-     * @throws IllegalArgumentException      if <code>destinationDirectory</code> isn't a directory.
-     * @throws java.io.IOException           if <code>source</code> does not exist, the file in
-     *                                       <code>destinationDirectory</code> cannot be written to, or an IO error occurs during copying.
-     *                                       <p>
-     *                                       TO DO: Remove this method when Maven moves to plexus-utils version 1.4
-     */
-    private static void copyFileToDirectoryIfModified(File source, File destinationDirectory)
-        throws IOException {
-        // TO DO: Remove this method and use the method in WarFileUtils when Maven 2 changes
-        // to plexus-utils 1.2.
-        if (destinationDirectory.exists() && !destinationDirectory.isDirectory()) {
-            throw new IllegalArgumentException("Destination is not a directory");
-        }
-
-        copyFileIfModified(source, new File(destinationDirectory, source.getName()));
     }
 
     private FilterWrapper[] getFilterWrappers() {
@@ -827,72 +801,6 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         finally {
             IOUtil.close(fileReader);
             IOUtil.close(fileWriter);
-        }
-    }
-
-    /**
-     * Copy file from source to destination only if source timestamp is later than the destination timestamp.
-     * The directories up to <code>destination</code> will be created if they don't already exist.
-     * <code>destination</code> will be overwritten if it already exists.
-     *
-     * @param source      An existing non-directory <code>File</code> to copy bytes from.
-     * @param destination A non-directory <code>File</code> to write bytes to (possibly
-     *                    overwriting).
-     * @throws IOException                   if <code>source</code> does not exist, <code>destination</code> cannot be
-     *                                       written to, or an IO error occurs during copying.
-     * @throws java.io.FileNotFoundException if <code>destination</code> is a directory
-     *                                       <p>
-     *                                       TO DO: Remove this method when Maven moves to plexus-utils version 1.4
-     */
-    private static void copyFileIfModified(File source, File destination)
-        throws IOException {
-        // TO DO: Remove this method and use the method in WarFileUtils when Maven 2 changes
-        // to plexus-utils 1.2.
-        if (destination.lastModified() < source.lastModified()) {
-            FileUtils.copyFile(source, destination);
-        }
-    }
-
-    /**
-     * Copies a entire directory structure but only source files with timestamp later than the destinations'.
-     * <p>
-     * Note:
-     * <ul>
-     * <li>It will include empty directories.
-     * <li>The <code>sourceDirectory</code> must exists.
-     * </ul>
-     *
-     * @throws IOException TO DO: Remove this method when Maven moves to plexus-utils version 1.4
-     */
-    private static void copyDirectoryStructureIfModified(File sourceDirectory, File destinationDirectory)
-        throws IOException {
-        if (!sourceDirectory.exists()) {
-            throw new IOException("Source directory doesn't exists (" + sourceDirectory.getAbsolutePath() + ").");
-        }
-
-        String sourcePath = sourceDirectory.getAbsolutePath();
-
-        for (File file : sourceDirectory.listFiles()) {
-            String dest = file.getAbsolutePath();
-
-            dest = dest.substring(sourcePath.length() + 1);
-
-            File destination = new File(destinationDirectory, dest);
-
-            if (file.isFile()) {
-                destination = destination.getParentFile();
-
-                copyFileToDirectoryIfModified(file, destination);
-            } else if (file.isDirectory()) {
-                if (!destination.exists() && !destination.mkdirs()) {
-                    throw new IOException(
-                        "Could not create destination directory '" + destination.getAbsolutePath() + "'.");
-                }
-
-                copyDirectoryStructureIfModified(file, destination);
-            } else {
-                throw new IOException("Unknown file type: " + file.getAbsolutePath());
-            }
         }
     }
 
