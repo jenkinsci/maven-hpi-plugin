@@ -216,6 +216,11 @@
         </exclusion>
       </exclusions>
     </dependency>
+    <dependency>
+        <groupId>org.twdata.maven</groupId>
+        <artifactId>mojo-executor</artifactId>
+        <version>2.3.2</version>
+    </dependency>
   </dependencies>
 
   <build>
