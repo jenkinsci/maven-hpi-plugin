@@ -28,7 +28,7 @@ public abstract class AbstractJenkinsMojo extends AbstractMojo {
     /**
      * The maven project.
      */
-    @Component
+    @Parameter(defaultValue = "${project}", readonly = true)
     protected MavenProject project;
 
     @Parameter(defaultValue = "${session}", required = true, readonly = true)

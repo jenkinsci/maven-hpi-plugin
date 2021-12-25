@@ -53,7 +53,7 @@ public class TagLibInterfaceGeneratorMojo extends AbstractMojo {
     /**
      * The maven project.
      */
-    @Component
+    @Parameter(defaultValue = "${project}", readonly = true)
     protected MavenProject project;
 
     /**
