@@ -27,8 +27,8 @@
   <scm>
     <connection>scm:git:git://github.com/${gitHubRepo}.git</connection>
     <developerConnection>scm:git:git@github.com:${gitHubRepo}.git</developerConnection>
-    <url>https://github.com/${gitHubRepo}</url>
     <tag>${scmTag}</tag>
+    <url>https://github.com/${gitHubRepo}</url>
   </scm>
   <distributionManagement>
     <site>
@@ -57,21 +57,10 @@
     <maven.version>3.8.4</maven.version>
     <maven-plugin-tools.version>3.6.2</maven-plugin-tools.version>
     <plexus-containers.version>2.1.1</plexus-containers.version>
-    <spotbugs.threshold>High</spotbugs.threshold> <!-- TODO lots of violations -->
-  </properties>
 
-  <repositories>
-    <repository>
-      <id>repo.jenkins-ci.org</id>
-      <url>https://repo.jenkins-ci.org/public/</url>
-    </repository>
-  </repositories>
-  <pluginRepositories>
-    <pluginRepository>
-      <id>repo.jenkins-ci.org</id>
-      <url>https://repo.jenkins-ci.org/public/</url>
-    </pluginRepository>
-  </pluginRepositories>
+    <!-- TODO lots of violations -->
+    <spotbugs.threshold>High</spotbugs.threshold>
+  </properties>
 
   <dependencyManagement>
     <dependencies>
@@ -218,11 +207,24 @@
       </exclusions>
     </dependency>
     <dependency>
-        <groupId>org.twdata.maven</groupId>
-        <artifactId>mojo-executor</artifactId>
-        <version>2.3.2</version>
+      <groupId>org.twdata.maven</groupId>
+      <artifactId>mojo-executor</artifactId>
+      <version>2.3.2</version>
     </dependency>
   </dependencies>
+
+  <repositories>
+    <repository>
+      <id>repo.jenkins-ci.org</id>
+      <url>https://repo.jenkins-ci.org/public/</url>
+    </repository>
+  </repositories>
+  <pluginRepositories>
+    <pluginRepository>
+      <id>repo.jenkins-ci.org</id>
+      <url>https://repo.jenkins-ci.org/public/</url>
+    </pluginRepository>
+  </pluginRepositories>
 
   <build>
     <pluginManagement>
@@ -304,7 +306,7 @@
             <proxyRepo />
           </repositories>
         </configuration>
-      </plugin>          
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-invoker-plugin</artifactId>
@@ -416,7 +418,8 @@
                 <configuration>
                   <streamLogs>true</streamLogs>
                   <environmentVariables>
-                      <JENKINS_HOME /> <!-- block anything set by a CI environment -->
+                    <!-- block anything set by a CI environment -->
+                    <JENKINS_HOME />
                   </environmentVariables>
                 </configuration>
               </execution>
