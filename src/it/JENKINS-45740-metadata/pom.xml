@@ -11,6 +11,11 @@
     <artifactId>JENKINS-45740-metadata</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>hpi</packaging>
+    <name>JENKINS-45740 name</name>
+    <description>
+      JENKINS-45740 description.
+      On two lines.
+    </description>
     <properties>
         <java.level>8</java.level>
         <hpi-plugin.version>@project.version@</hpi-plugin.version>

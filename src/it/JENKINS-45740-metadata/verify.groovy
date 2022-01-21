@@ -28,6 +28,13 @@ checkArtifact(
       'Plugin-License-Url': 'https://opensource.org/licenses/MIT',
       'Plugin-License-Name-2': 'MY License',
       'Plugin-License-Url-2': 'https://mylicense.txt',
+      'Extension-Name': 'JENKINS-45740-metadata',
+      'Implementation-Title': 'JENKINS-45740-metadata',
+      'Implementation-Version': '1.0-SNAPSHOT',
+      'Specification-Title': 'JENKINS-45740 name',
+      'Group-Id': 'org.jenkins-ci.tools.hpi.its',
+      'Short-Name': 'JENKINS-45740-metadata',
+      'Long-Name': 'JENKINS-45740 name',
     ])
 
 return true
