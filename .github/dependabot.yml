@@ -6,6 +6,10 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    ignore:
+      # Must remain within Jetty 9.x until Java 8 support is removed
+      - dependency-name: "org.eclipse.jetty:jetty-maven-plugin"
+        versions: [">=10.0.0"]
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
