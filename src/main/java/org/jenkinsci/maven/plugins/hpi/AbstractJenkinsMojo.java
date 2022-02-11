@@ -1,7 +1,6 @@
 package org.jenkinsci.maven.plugins.hpi;
 
 import hudson.util.VersionNumber;
-import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -85,7 +84,7 @@ public abstract class AbstractJenkinsMojo extends AbstractMojo {
                      && (a.getArtifactId().equals("jenkins-core") || a.getArtifactId().equals("hudson-core"));
 
             if (match) {
-                if (StringUtils.isNotBlank(jenkinsCoreVersionOverride)) {
+                if (jenkinsCoreVersionOverride != null && !jenkinsCoreVersionOverride.trim().isEmpty()) {
                     VersionNumber v1 = new VersionNumber(a.getVersion());
                     VersionNumber v2 = new VersionNumber(jenkinsCoreVersionOverride);
                     if (v1.compareTo(v2) == -1) {
@@ -98,7 +97,7 @@ public abstract class AbstractJenkinsMojo extends AbstractMojo {
                 return a.getVersion();
             }
         }
-        if (StringUtils.isNotBlank(jenkinsCoreVersionOverride)) {
+        if (jenkinsCoreVersionOverride != null && !jenkinsCoreVersionOverride.trim().isEmpty()) {
             return jenkinsCoreVersionOverride;
         }
         throw new MojoExecutionException("Failed to determine Jenkins version this plugin depends on.");

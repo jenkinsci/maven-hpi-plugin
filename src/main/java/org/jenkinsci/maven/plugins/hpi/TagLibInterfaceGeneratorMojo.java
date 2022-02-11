@@ -13,7 +13,6 @@ import com.sun.codemodel.writer.FileCodeWriter;
 import com.sun.codemodel.writer.FilterCodeWriter;
 import groovy.lang.Closure;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -114,7 +113,8 @@ public class TagLibInterfaceGeneratorMojo extends AbstractMojo {
         }
 
         if (isTagLibDir(dir)) {
-            JDefinedClass c = pkg.parent()._interface(StringUtils.capitalize(h2j(dir.getName())) + "TagLib");
+            String taglib = h2j(dir.getName());
+            JDefinedClass c = pkg.parent()._interface(taglib.substring(0, 1).toUpperCase() + taglib.substring(1) + "TagLib");
             c._implements(TypedTagLibrary.class);
             c.annotate(TagLibraryUri.class).param("value",dirName);
 
