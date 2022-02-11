@@ -1,6 +1,5 @@
 package org.jenkinsci.maven.plugins.hpi;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.model.Resource;
@@ -93,7 +92,7 @@ public class HplMojo extends AbstractJenkinsManifestMojo {
 
             buildLibraries(paths);
 
-            mainSection.addAttributeAndCheck(new Attribute("Libraries", StringUtils.join(paths, ",")));
+            mainSection.addAttributeAndCheck(new Attribute("Libraries", String.join(",", paths)));
 
             // compute Resource-Path entry
             if (webappDirectory != null && webappDirectory.isDirectory()) {

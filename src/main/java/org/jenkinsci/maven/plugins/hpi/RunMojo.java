@@ -17,7 +17,6 @@ package org.jenkinsci.maven.plugins.hpi;
 import hudson.util.VersionNumber;
 import io.jenkins.lib.support_log_formatter.SupportLogFormatter;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
@@ -769,12 +768,12 @@ public class RunMojo extends AbstractJettyMojo {
 
     @Override
     public void startJetty() throws MojoExecutionException {
-        if (httpConnector == null && (defaultPort != 0 || StringUtils.isNotEmpty(defaultHost))) {
+        if (httpConnector == null && (defaultPort != 0 || (defaultHost != null && !defaultHost.isEmpty()))) {
             httpConnector = new MavenServerConnector();
             if (defaultPort != 0) {
                 httpConnector.setPort(defaultPort);
             }
-            if (StringUtils.isNotEmpty(defaultHost)) {
+            if (defaultHost != null && !defaultHost.isEmpty()) {
                 httpConnector.setHost(defaultHost);
             }
             String browserHost;

@@ -18,7 +18,7 @@ package org.jenkinsci.maven.plugins.hpi;
 
 import java.io.File;
 import java.io.IOException;
-import org.apache.commons.lang.StringUtils;
+import java.util.Objects;
 import org.apache.maven.archiver.MavenArchiveConfiguration;
 import org.apache.maven.archiver.MavenArchiver;
 import org.apache.maven.artifact.Artifact;
@@ -109,16 +109,16 @@ public class HpiMojo extends AbstractJenkinsManifestMojo {
         Manifest manifest = loadManifest(manifestFile);
 
         getLog().info("Checking for attached .jar artifact "
-                + (StringUtils.isBlank(jarClassifier) ? "..." : "with classifier " + jarClassifier + "..."));
+                + (jarClassifier == null || jarClassifier.trim().isEmpty() ? "..." : "with classifier " + jarClassifier + "..."));
         File jarFile = null;
         for (Artifact artifact: project.getAttachedArtifacts()) {
-            if (StringUtils.equals(project.getGroupId(), artifact.getGroupId())
-                    && StringUtils.equals(project.getArtifactId(), artifact.getArtifactId())
+            if (Objects.equals(project.getGroupId(), artifact.getGroupId())
+                    && Objects.equals(project.getArtifactId(), artifact.getArtifactId())
                     && project.getArtifact().getVersionRange().equals(artifact.getVersionRange())
-                    && StringUtils.equals("jar", artifact.getType())
-                    && (StringUtils.isBlank(jarClassifier)
+                    && Objects.equals("jar", artifact.getType())
+                    && (jarClassifier == null || jarClassifier.trim().isEmpty()
                     ? !artifact.hasClassifier()
-                    : StringUtils.equals(jarClassifier, artifact.getClassifier()))
+                    : Objects.equals(jarClassifier, artifact.getClassifier()))
                     && artifact.getFile() != null && artifact.getFile().isFile()) {
                 jarFile = artifact.getFile();
                 getLog().info("Found attached .jar artifact: " + jarFile.getAbsolutePath());

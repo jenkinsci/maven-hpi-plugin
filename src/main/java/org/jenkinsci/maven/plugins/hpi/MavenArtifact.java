@@ -1,7 +1,6 @@
 package org.jenkinsci.maven.plugins.hpi;
 
 import hudson.util.VersionNumber;
-import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -242,7 +241,7 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
                 return type;
             }
             // also ignore core-assets, tests, etc.
-            if (!StringUtils.isEmpty(artifact.getClassifier())) {
+            if (artifact.getClassifier() != null && !artifact.getClassifier().isEmpty()) {
                 return type;
             }
 
