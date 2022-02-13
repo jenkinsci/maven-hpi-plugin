@@ -2,11 +2,13 @@ package org.jenkinsci.maven.plugins.hpi;
 
 import hudson.util.VersionNumber;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.attribute.FileTime;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
@@ -107,7 +109,7 @@ public class TestInsertionMojo extends AbstractJenkinsMojo {
 
         try {
             File f = new File(project.getBasedir(), "target/generated-test-sources/injected");
-            f.mkdirs();
+            Files.createDirectories(f.toPath());
             File javaFile = new File(f, injectedTestName + ".java");
             PrintWriter w = new PrintWriter(new OutputStreamWriter(new FileOutputStream(javaFile), StandardCharsets.UTF_8));
             w.println("import java.util.*;");
@@ -135,9 +137,9 @@ public class TestInsertionMojo extends AbstractJenkinsMojo {
 
             // always set the same time stamp on this file, so that Maven will not re-compile this
             // every time we run this mojo.
-            javaFile.setLastModified(0);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            Files.setLastModifiedTime(javaFile.toPath(), FileTime.fromMillis(0L));
+        } catch (IOException e) {
+            throw new MojoExecutionException("Failed to create injected tests", e);
         }
     }
 }

@@ -334,13 +334,25 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         throws MojoExecutionException {
         getLog().info("Exploding webapp...");
 
-        webappDirectory.mkdirs();
+        try {
+            Files.createDirectories(webappDirectory.toPath());
+        } catch (IOException e) {
+            throw new MojoExecutionException("Failed to create directories for '" + webappDirectory + "'", e);
+        }
 
         File webinfDir = new File(webappDirectory, WEB_INF);
-        webinfDir.mkdirs();
+        try {
+            Files.createDirectories(webinfDir.toPath());
+        } catch (IOException e) {
+            throw new MojoExecutionException("Failed to create directories for '" + webinfDir + "'", e);
+        }
 
         File metainfDir = new File(webappDirectory, META_INF);
-        metainfDir.mkdirs();
+        try {
+            Files.createDirectories(metainfDir.toPath());
+        } catch (IOException e) {
+            throw new MojoExecutionException("Failed to create directories for '" + metainfDir + "'", e);
+        }
 
         try {
             List<Resource> webResources = this.webResources != null ? Arrays.asList(this.webResources) : null;
@@ -621,8 +633,12 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         File tempLocation = new File(workDirectory, name.substring(0, name.length() - 4));
 
         boolean process = false;
-        if (!tempLocation.exists()) {
-            tempLocation.mkdirs();
+        if (!Files.isDirectory(tempLocation.toPath())) {
+            try {
+                Files.createDirectories(tempLocation.toPath());
+            } catch (IOException e) {
+                throw new MojoExecutionException("Failed to create directories for '" + tempLocation + "'", e);
+            }
             process = true;
         } else if (artifact.getFile().lastModified() > tempLocation.lastModified()) {
             process = true;
@@ -681,16 +697,25 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         scanner.scan();
 
         for (String dir : scanner.getIncludedDirectories()) {
-            new File(targetDir, dir).mkdirs();
+            File includeDir = new File(targetDir, dir);
+            try {
+                Files.createDirectories(includeDir.toPath());
+            } catch (IOException e) {
+                throw new MojoExecutionException("Failed to create directories for '" + includeDir + "'", e);
+            }
         }
 
         for (String file : scanner.getIncludedFiles()) {
             File targetFile = new File(targetDir, file);
 
             // Do not overwrite existing files.
-            if (!targetFile.exists()) {
+            if (!Files.exists(targetFile.toPath())) {
                 try {
-                    targetFile.getParentFile().mkdirs();
+                    Files.createDirectories(targetFile.toPath().getParent());
+                } catch (IOException e) {
+                    throw new MojoExecutionException("Failed to create parent directories for '" + targetFile + "'", e);
+                }
+                try {
                     FileUtils.copyFileIfModified(new File(srcDir, file), targetFile);
                 }
                 catch (IOException e) {
@@ -776,7 +801,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         Writer fileWriter = null;
         try {
             // fix for MWAR-36, ensures that the parent dir are created first
-            to.getParentFile().mkdirs();
+            Files.createDirectories(to.toPath().getParent());
 
             if (encoding == null || encoding.length() < 1) {
                 fileReader = Files.newBufferedReader(from.toPath(), StandardCharsets.UTF_8);

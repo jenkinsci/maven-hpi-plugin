@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
 /**
  * Places test-dependency plugins into somewhere the test harness can pick up.
@@ -25,12 +26,14 @@ import java.nio.charset.StandardCharsets;
 public class TestDependencyMojo extends AbstractHpiMojo {
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        File testDir = new File(project.getBuild().getTestOutputDirectory(),"test-dependencies");
-        testDir.mkdirs();
-
+        File testDir = new File(project.getBuild().getTestOutputDirectory(), "test-dependencies");
         try {
-            Writer w = new OutputStreamWriter(new FileOutputStream(new File(testDir,"index")), StandardCharsets.UTF_8);
+            Files.createDirectories(testDir.toPath());
+        } catch (IOException e) {
+            throw new MojoExecutionException("Failed to create directories for '" + testDir + "'", e);
+        }
 
+        try (Writer w = new OutputStreamWriter(new FileOutputStream(new File(testDir, "index")), StandardCharsets.UTF_8)) {
             for (MavenArtifact a : getProjectArtfacts()) {
                 if (!a.isPluginBestEffort(getLog()))
                     continue;
@@ -46,8 +49,6 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                 FileUtils.copyFile(a.getHpi().getFile(),dst);
                 w.write(artifactId + "\n");
             }
-
-            w.close();
         } catch (IOException e) {
             throw new MojoExecutionException("Failed to copy dependency plugins",e);
         }
