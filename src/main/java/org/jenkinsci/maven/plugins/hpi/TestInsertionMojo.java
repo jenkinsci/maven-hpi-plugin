@@ -74,7 +74,7 @@ public class TestInsertionMojo extends AbstractJenkinsMojo {
             if (jenkinsTestHarness != null) {
                 try {
                     ArtifactVersion version = jenkinsTestHarness.getSelectedVersion();
-                    if (version == null || version.compareTo(new DefaultArtifactVersion("2.14")) == -1) {
+                    if (version == null || version.compareTo(new DefaultArtifactVersion("2.14")) < 0) {
                         getLog().info(
                                 "Skipping " + project.getName()
                                         + " because it's not <packaging>hpi</packaging> and the " + jenkinsTestHarnessId
