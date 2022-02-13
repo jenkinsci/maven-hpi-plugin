@@ -45,7 +45,10 @@ public class ValidateHpiMojo extends AbstractHpiMojo {
     private VersionNumber getDependencyCoreVersion(MavenArtifact artifact) throws IOException, MojoExecutionException {
         File file = artifact.getFile();
         if (file.isFile()) {
-            Attributes mainAttributes = new JarFile(file).getManifest().getMainAttributes();
+            Attributes mainAttributes;
+            try (JarFile jarFile = new JarFile(file)) {
+                mainAttributes = jarFile.getManifest().getMainAttributes();
+            }
             Attributes.Name jName = new Attributes.Name("Jenkins-Version");
             if (mainAttributes.containsKey(jName)) {
                 return new VersionNumber(mainAttributes.getValue(jName));
