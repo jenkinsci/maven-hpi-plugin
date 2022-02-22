@@ -95,8 +95,19 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
      * @return converted filename of the artifact
      */
     public String getDefaultFinalName() {
-        return artifact.getArtifactId() + "-" + artifact.getVersion() + "." +
-            artifact.getArtifactHandler().getExtension();
+        StringBuilder path = new StringBuilder();
+        path.append(artifact.getArtifactId());
+        path.append('-');
+        path.append(artifact.getVersion());
+        if (artifact.getClassifier() != null && !artifact.getClassifier().isEmpty()) {
+            path.append('-');
+            path.append(artifact.getClassifier());
+        }
+        if (!artifact.getArtifactHandler().getExtension().isEmpty()) {
+            path.append('.');
+            path.append(artifact.getArtifactHandler().getExtension());
+        }
+        return path.toString();
     }
 
     public boolean isOptional() {
