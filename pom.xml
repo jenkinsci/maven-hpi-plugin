@@ -57,9 +57,7 @@
     <maven.version>3.8.4</maven.version>
     <maven-plugin-tools.version>3.6.4</maven-plugin-tools.version>
     <plexus-containers.version>2.1.1</plexus-containers.version>
-
-    <!-- TODO lots of violations -->
-    <spotbugs.threshold>High</spotbugs.threshold>
+    <spotbugs.excludeFilterFile>${project.basedir}/src/spotbugs/spotbugs-excludes.xml</spotbugs.excludeFilterFile>
   </properties>
 
   <dependencyManagement>

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+  <!--
+    Exclusions in this section have been triaged and determined to be false positives.
+  -->
+  <Match>
+    <Or>
+      <!-- Pending https://github.com/spotbugs/spotbugs/issues/1515 -->
+      <Bug pattern="DP_CREATE_CLASSLOADER_INSIDE_DO_PRIVILEGED"/>
+    </Or>
+  </Match>
+  <!--
+    Here lies technical debt. Exclusions in this section have not yet been triaged. When working on
+    on this section, pick an exclusion to triage, then:
+    - If it is a false positive, add a @SuppressFBWarnings(value = "[…]", justification = "[…]")
+      annotation indicating the reason why it is a false positive, then remove the exclusion from
+      this section.
+    - If it is not a false positive, fix the bug, then remove the exclusion from this section.
+   -->
+  <Match>
+    <Confidence value="2"/>
+    <Or>
+      <And>
+        <Bug pattern="COMMAND_INJECTION"/>
+        <Class name="org.jenkinsci.maven.plugins.hpi.AbstractHpiMojo"/>
+      </And>
+      <And>
+        <Bug pattern="EI_EXPOSE_REP"/>
+        <Class name="org.jenkinsci.maven.plugins.hpi.RunMojo"/>
+      </And>
+      <And>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+        <Or>
+          <Class name="org.jenkinsci.maven.plugins.hpi.AbstractJettyMojo"/>
+          <Class name="org.jenkinsci.maven.plugins.hpi.ConsoleScanner"/>
+          <Class name="org.jenkinsci.maven.plugins.hpi.JettyAndServletApiOnlyClassLoader"/>
+        </Or>
+      </And>
+      <And>
+        <Bug pattern="EQ_COMPARETO_USE_OBJECT_EQUALS"/>
+        <Class name="org.jenkinsci.maven.plugins.hpi.MavenArtifact"/>
+      </And>
+      <And>
+        <Bug pattern="NP_LOAD_OF_KNOWN_NULL_VALUE"/>
+        <Class name="org.jenkinsci.maven.plugins.hpi.TestDependencyMojo"/>
+      </And>
+      <And>
+        <Bug pattern="NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"/>
+        <Or>
+          <Class name="org.jenkinsci.maven.plugins.hpi.AbstractHpiMojo"/>
+          <Class name="org.jenkinsci.maven.plugins.hpi.AbstractJenkinsManifestMojo"/>
+          <Class name="org.jenkinsci.maven.plugins.hpi.TagLibInterfaceGeneratorMojo"/>
+        </Or>
+      </And>
+      <And>
+        <Bug pattern="PATH_TRAVERSAL_IN"/>
+        <Or>
+          <Class name="org.jenkinsci.maven.plugins.hpi.AbstractHpiMojo"/>
+          <Class name="org.jenkinsci.maven.plugins.hpi.AbstractJenkinsManifestMojo"/>
+          <Class name="org.jenkinsci.maven.plugins.hpi.AbstractJettyMojo"/>
+          <Class name="org.jenkinsci.maven.plugins.hpi.AssembleDependenciesMojo"/>
+          <Class name="org.jenkinsci.maven.plugins.hpi.HpiMojo"/>
+          <Class name="org.jenkinsci.maven.plugins.hpi.HplMojo"/>
+          <Class name="org.jenkinsci.maven.plugins.hpi.JarMojo"/>
+          <Class name="org.jenkinsci.maven.plugins.hpi.RunMojo"/>
+          <Class name="org.jenkinsci.maven.plugins.hpi.RunMojo$2"/>
+          <Class name="org.jenkinsci.maven.plugins.hpi.TagLibInterfaceGeneratorMojo"/>
+          <Class name="org.jenkinsci.maven.plugins.hpi.TestDependencyMojo"/>
+          <Class name="org.jenkinsci.maven.plugins.hpi.TestHplMojo"/>
+          <Class name="org.jenkinsci.maven.plugins.hpi.TestInsertionMojo"/>
+          <Class name="org.jenkinsci.maven.plugins.hpi.WarMojo"/>
+        </Or>
+      </And>
+      <And>
+        <Bug pattern="UR_UNINIT_READ_CALLED_FROM_SUPER_CONSTRUCTOR"/>
+        <Class name="org.jenkinsci.maven.plugins.hpi.RunMojo$2"/>
+      </And>
+      <And>
+        <Bug pattern="VA_FORMAT_STRING_USES_NEWLINE"/>
+        <Class name="org.jenkinsci.maven.plugins.hpi.TagLibInterfaceGeneratorMojo"/>
+      </And>
+      <And>
+        <Bug pattern="XXE_DOCUMENT"/>
+        <Class name="org.jenkinsci.maven.plugins.hpi.HelpMojo"/>
+      </And>
+    </Or>
+  </Match>
+</FindBugsFilter>
