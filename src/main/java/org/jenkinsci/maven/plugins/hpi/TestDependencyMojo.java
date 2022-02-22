@@ -33,7 +33,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
             throw new MojoExecutionException("Failed to create directories for '" + testDir + "'", e);
         }
 
-        try (Writer w = new OutputStreamWriter(new FileOutputStream(new File(testDir, "index")), StandardCharsets.UTF_8)) {
+        try (FileOutputStream fos = new FileOutputStream(new File(testDir, "index")); Writer w = new OutputStreamWriter(fos, StandardCharsets.UTF_8)) {
             for (MavenArtifact a : getProjectArtfacts()) {
                 if (!a.isPluginBestEffort(getLog()))
                     continue;
