@@ -64,6 +64,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -361,7 +363,11 @@ public class RunMojo extends AbstractJettyMojo {
         // set JENKINS_HOME
         setSystemPropertyIfEmpty("JENKINS_HOME",jenkinsHome.getAbsolutePath());
         File pluginsDir = new File(jenkinsHome, "plugins");
-        pluginsDir.mkdirs();
+        try {
+            Files.createDirectories(pluginsDir.toPath());
+        } catch (IOException e) {
+            throw new MojoExecutionException("Failed to create directories for '" + pluginsDir + "'", e);
+        }
 
         // enable view auto refreshing via stapler
         setSystemPropertyIfEmpty("stapler.jelly.noCache","true");
@@ -450,9 +456,9 @@ public class RunMojo extends AbstractJettyMojo {
     private void copyPlugin(File src, File pluginsDir, String shortName) throws IOException {
         File dst = new File(pluginsDir, shortName + ".jpi");
         File hpi = new File(pluginsDir, shortName + ".hpi");
-        if (hpi.isFile()) {
+        if (Files.isRegularFile(hpi.toPath())) {
             getLog().warn("Moving historical " + hpi + " to *.jpi");
-            hpi.renameTo(dst);
+            Files.move(hpi.toPath(), dst.toPath(), StandardCopyOption.REPLACE_EXISTING);
         }
         VersionNumber dstV = versionOfPlugin(dst);
         if (versionOfPlugin(src).compareTo(dstV) < 0) {
@@ -465,7 +471,7 @@ public class RunMojo extends AbstractJettyMojo {
         // pin the dependency plugin, so that even if a different version of the same plugin is bundled to Jenkins,
         // we still use the plugin as specified by the POM of the plugin.
         FileUtils.writeStringToFile(new File(dst + ".pinned"), "pinned");
-        new File(pluginsDir, shortName + ".jpl").delete(); // in case we used to have a snapshot dependency
+        Files.deleteIfExists(new File(pluginsDir, shortName + ".jpl").toPath()); // in case we used to have a snapshot dependency
     }
     private VersionNumber versionOfPlugin(File p) throws IOException {
         if (!p.isFile()) {

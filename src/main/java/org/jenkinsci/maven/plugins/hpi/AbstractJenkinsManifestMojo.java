@@ -82,8 +82,13 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
      */
     protected void generateManifest(MavenArchiveConfiguration archive, File manifestFile) throws MojoExecutionException {
         // create directory if it doesn't exist yet
-        if (!manifestFile.getParentFile().exists())
-            manifestFile.getParentFile().mkdirs();
+        if (!Files.isDirectory(manifestFile.toPath().getParent())) {
+            try {
+                Files.createDirectories(manifestFile.toPath().getParent());
+            } catch (IOException e) {
+                throw new MojoExecutionException("Failed to create parent directories for '" + manifestFile + "'", e);
+            }
+        }
 
         getLog().info("Generating " + manifestFile);
 

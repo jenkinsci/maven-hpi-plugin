@@ -39,6 +39,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.Map;
 
@@ -77,7 +78,7 @@ public class TagLibInterfaceGeneratorMojo extends AbstractMojo {
                 walk(new File(res.getDirectory()),codeModel.rootPackage(),"");
             }
 
-            outputDirectory.mkdirs();
+            Files.createDirectories(outputDirectory.toPath());
             CodeWriter w = new FilterCodeWriter(encoding != null ? new FileCodeWriter(outputDirectory, encoding) : new FileCodeWriter(outputDirectory)) {
                 // Cf. ProgressCodeWriter:
                 @Override public Writer openSource(JPackage pkg, String fileName) throws IOException {

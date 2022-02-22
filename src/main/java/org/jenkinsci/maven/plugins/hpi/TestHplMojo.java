@@ -7,6 +7,7 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 
 /**
  * Generate .hpl file in the test class directory so that test harness can locate the plugin.
@@ -25,7 +26,11 @@ public class TestHplMojo extends HplMojo {
     @Override
     protected File computeHplFile() throws MojoExecutionException {
         File testDir = new File(project.getBuild().getTestOutputDirectory());
-        testDir.mkdirs();
+        try {
+            Files.createDirectories(testDir.toPath());
+        } catch (IOException e) {
+            throw new MojoExecutionException("Failed to create directories for '" + testDir + "'", e);
+        }
         File theHpl = new File(testDir,"the.hpl");
         if (project.getArtifact().isSnapshot()) {
             try {

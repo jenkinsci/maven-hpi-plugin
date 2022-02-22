@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -591,8 +592,9 @@ public abstract class AbstractJettyMojo extends AbstractMojo
         {
             File target = new File(project.getBuild().getDirectory());
             File tmp = new File(target, "jetty");
-            if (!tmp.exists())
-                tmp.mkdirs();            
+            if (!Files.isDirectory(tmp.toPath())) {
+                Files.createDirectories(tmp.toPath());
+            }
             webApp.setTempDirectory(tmp);
         }
 
