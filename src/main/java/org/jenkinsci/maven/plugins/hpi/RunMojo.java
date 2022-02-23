@@ -141,12 +141,6 @@ public class RunMojo extends AbstractJettyMojo {
     protected String dependencyResolution;
 
     /**
-     * The directory where the webapp is built.
-     */
-    @Parameter(defaultValue = "${project.build.directory}/${project.build.finalName}")
-    private File webappDirectory;
-
-    /**
      * Single directory for extra files to include in the WAR.
      */
     @Parameter(defaultValue = "${basedir}/src/main/webapp")
@@ -517,7 +511,6 @@ public class RunMojo extends AbstractJettyMojo {
                 MojoExecutor.configuration(
                         MojoExecutor.element(MojoExecutor.name("jenkinsHome"), jenkinsHome.toString()),
                         MojoExecutor.element(MojoExecutor.name("pluginName"), project.getName()),
-                        MojoExecutor.element(MojoExecutor.name("webappDirectory"), webappDirectory.toString()),
                         MojoExecutor.element(MojoExecutor.name("warSourceDirectory"), warSourceDirectory.toString()),
                         MojoExecutor.element(MojoExecutor.name("jenkinsCoreId"), jenkinsCoreId),
                         MojoExecutor.element(MojoExecutor.name("pluginFirstClassLoader"), Boolean.toString(pluginFirstClassLoader)),

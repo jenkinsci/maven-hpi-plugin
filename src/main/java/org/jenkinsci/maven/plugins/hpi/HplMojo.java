@@ -95,12 +95,7 @@ public class HplMojo extends AbstractJenkinsManifestMojo {
             mainSection.addAttributeAndCheck(new Attribute("Libraries", String.join(",", paths)));
 
             // compute Resource-Path entry
-            if (webappDirectory != null && webappDirectory.isDirectory()) {
-                mainSection.addAttributeAndCheck(new Attribute("Resource-Path",webappDirectory.getAbsolutePath()));
-            } else {
-                getLog().info("webappDirectory does not exist, will use warSourceDirectory");
-                mainSection.addAttributeAndCheck(new Attribute("Resource-Path",warSourceDirectory.getAbsolutePath()));
-            }
+            mainSection.addAttributeAndCheck(new Attribute("Resource-Path", warSourceDirectory.getAbsolutePath()));
 
             mf.write(printWriter);
         } catch (ManifestException | IOException e) {
