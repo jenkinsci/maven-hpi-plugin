@@ -1,13 +1,12 @@
 package org.jenkinsci.maven.plugins.hpi;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.plugins.annotations.ResolutionScope;
-
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -19,21 +18,28 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
-import org.apache.maven.artifact.resolver.AbstractArtifactResolutionException;
-import org.apache.maven.artifact.resolver.ArtifactCollector;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.artifact.versioning.OverConstrainedVersionException;
 import org.apache.maven.artifact.versioning.VersionRange;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
+import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.shared.dependency.tree.DependencyNode;
-import org.apache.maven.shared.dependency.tree.DependencyTreeBuilder;
-import org.apache.maven.shared.dependency.tree.DependencyTreeBuilderException;
-import org.apache.maven.shared.dependency.tree.traversal.DependencyNodeVisitor;
+import org.apache.maven.project.ProjectBuildingRequest;
+import org.apache.maven.shared.dependency.graph.DependencyCollectorBuilder;
+import org.apache.maven.shared.dependency.graph.DependencyCollectorBuilderException;
+import org.apache.maven.shared.dependency.graph.DependencyNode;
+import org.apache.maven.shared.dependency.graph.traversal.DependencyNodeVisitor;
+import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException;
 
 /**
  * Places test-dependency plugins into somewhere the test harness can pick up.
@@ -48,10 +54,7 @@ import org.apache.maven.shared.dependency.tree.traversal.DependencyNodeVisitor;
 public class TestDependencyMojo extends AbstractHpiMojo {
 
     @Component
-    private DependencyTreeBuilder dependencyTreeBuilder;
-
-    @Component
-    private ArtifactCollector collector;
+    private DependencyCollectorBuilder dependencyCollectorBuilder;
 
     /**
      * List of dependency version overrides in the form {@code groupId:artifactId:version} to apply during testing.
@@ -82,13 +85,15 @@ public class TestDependencyMojo extends AbstractHpiMojo {
             }
         }
         File testDir = new File(project.getBuild().getTestOutputDirectory(),"test-dependencies");
-        testDir.mkdirs();
-
         try {
-            Writer w = new OutputStreamWriter(new FileOutputStream(new File(testDir,"index")),"UTF-8");
+            Files.createDirectories(testDir.toPath());
+        } catch (IOException e) {
+            throw new MojoExecutionException("Failed to create directories for '" + testDir + "'", e);
+        }
 
+        try (FileOutputStream fos = new FileOutputStream(new File(testDir, "index")); Writer w = new OutputStreamWriter(fos, StandardCharsets.UTF_8)) {
             for (MavenArtifact a : getProjectArtfacts()) {
-                if(!a.isPlugin())
+                if (!a.isPluginBestEffort(getLog()))
                     continue;
 
                 String artifactId = a.getActualArtifactId();
@@ -109,8 +114,6 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                 FileUtils.copyFile(src, dst);
                 w.write(artifactId + "\n");
             }
-
-            w.close();
         } catch (IOException e) {
             throw new MojoExecutionException("Failed to copy dependency plugins",e);
         }
@@ -119,7 +122,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
             if (useUpperBounds) {
                 DependencyNode node;
                 try {
-                    MavenProject shadow = (MavenProject) project.clone();
+                    MavenProject shadow = project.clone();
                     // first pass: adjust direct dependencies in place
                     Set<String> updated = new HashSet<>();
                     @SuppressWarnings("unchecked")
@@ -156,8 +159,11 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                         throw new MojoFailureException("could not find dependencies " + unapplied);
                     }
                     getLog().debug("adjusted dependencyArtifacts: " + dependencyArtifacts);
-                    node = dependencyTreeBuilder.buildDependencyTree(shadow, localRepository, artifactFactory, artifactMetadataSource, /* all scopes */null, collector);
-                } catch (DependencyTreeBuilderException | CloneNotSupportedException x) {
+                    ProjectBuildingRequest pbr = new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
+                    pbr.setRemoteRepositories(remoteRepos);
+                    pbr.setLocalRepository(localRepository);
+                    node = dependencyCollectorBuilder.collectDependencyGraph(pbr, /* all scopes */null);
+                } catch (DependencyCollectorBuilderException x) {
                     throw new MojoExecutionException("could not analyze dependency tree for useUpperBounds: " + x, x);
                 }
                 RequireUpperBoundDepsVisitor visitor = new RequireUpperBoundDepsVisitor();
@@ -203,15 +209,17 @@ public class TestDependencyMojo extends AbstractHpiMojo {
 
     private Artifact replace(Artifact a, String version) throws MojoExecutionException {
         Artifact a2 = new DefaultArtifact(a.getGroupId(), a.getArtifactId(), VersionRange.createFromVersion(version), a.getScope(), a.getType(), a.getClassifier(), a.getArtifactHandler(), a.isOptional());
+        ProjectBuildingRequest pbr = new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
+        pbr.setRemoteRepositories(remoteRepos);
+        pbr.setLocalRepository(localRepository);
         try {
-            artifactResolver.resolve(a2, remoteRepos, localRepository);
-        } catch (AbstractArtifactResolutionException x) {
+            return artifactResolver.resolveArtifact(pbr, a2).getArtifact();
+        } catch (ArtifactResolverException x) {
             throw new MojoExecutionException("could not find " + a + " in version " + version + ": " + x, x);
         }
-        return a2;
     }
 
-    // Adapted from RequireUpperBoundDeps @ 3.0.0-M1. TODO delete extraneous stuff and simplify to the logic we actually need here:
+    // Adapted from RequireUpperBoundDeps @ 731ea7a693a0986f2054b6a73a86a31373df59ec. TODO delete extraneous stuff and simplify to the logic we actually need here:
     private class RequireUpperBoundDepsVisitor implements DependencyNodeVisitor {
 
         private boolean uniqueVersions;
@@ -323,7 +331,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
         }
 
         public int compareTo(DependencyNodeHopCountPair other) {
-            return Integer.valueOf(hopCount).compareTo(Integer.valueOf(other.getHopCount()));
+            return Integer.compare(hopCount, other.getHopCount());
         }
     }
 

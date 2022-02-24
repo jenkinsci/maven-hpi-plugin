@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>1.424</version>
+    <version>3.29</version>
   </parent>
 
     <groupId>org.jenkins-ci.tools.hpi.its</groupId>
@@ -16,6 +16,11 @@
 
     <name>MyNewPlugin</name>
 
+  <properties>
+    <jenkins.version>2.60.3</jenkins.version>
+    <java.level>8</java.level>
+  </properties>
+
   <build>
     <pluginManagement>
       <plugins>
@@ -23,11 +28,6 @@
           <groupId>@project.groupId@</groupId>
           <artifactId>@project.artifactId@</artifactId>
           <version>@project.version@</version>
-        </plugin>
-        <plugin>
-          <groupId>org.kohsuke</groupId>
-          <artifactId>access-modifier-checker</artifactId>
-          <version>1.0</version>
         </plugin>
       </plugins>
     </pluginManagement>

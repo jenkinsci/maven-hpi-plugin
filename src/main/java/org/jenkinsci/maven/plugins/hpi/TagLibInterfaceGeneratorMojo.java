@@ -13,7 +13,6 @@ import com.sun.codemodel.writer.FileCodeWriter;
 import com.sun.codemodel.writer.FilterCodeWriter;
 import groovy.lang.Closure;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -32,13 +31,15 @@ import org.kohsuke.stapler.jelly.groovy.TagFile;
 import org.kohsuke.stapler.jelly.groovy.TagLibraryUri;
 import org.kohsuke.stapler.jelly.groovy.TypedTagLibrary;
 
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileFilter;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.Map;
 
@@ -52,7 +53,7 @@ public class TagLibInterfaceGeneratorMojo extends AbstractMojo {
     /**
      * The maven project.
      */
-    @Component
+    @Parameter(defaultValue = "${project}", readonly = true)
     protected MavenProject project;
 
     /**
@@ -69,6 +70,7 @@ public class TagLibInterfaceGeneratorMojo extends AbstractMojo {
 
     private SAXReader saxReader = new SAXReader();
 
+    @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
             JCodeModel codeModel = new JCodeModel();
@@ -76,7 +78,7 @@ public class TagLibInterfaceGeneratorMojo extends AbstractMojo {
                 walk(new File(res.getDirectory()),codeModel.rootPackage(),"");
             }
 
-            outputDirectory.mkdirs();
+            Files.createDirectories(outputDirectory.toPath());
             CodeWriter w = new FilterCodeWriter(encoding != null ? new FileCodeWriter(outputDirectory, encoding) : new FileCodeWriter(outputDirectory)) {
                 // Cf. ProgressCodeWriter:
                 @Override public Writer openSource(JPackage pkg, String fileName) throws IOException {
@@ -105,31 +107,24 @@ public class TagLibInterfaceGeneratorMojo extends AbstractMojo {
     }
 
     private void walk(File dir,JPackage pkg,String dirName) throws JClassAlreadyExistsException, IOException {
-        File[] children = dir.listFiles(new FileFilter() {
-            public boolean accept(File f) {
-                return f.isDirectory();
-            }
-        });
+        File[] children = dir.listFiles(File::isDirectory);
         if (children!=null) {
             for (File child : children)
                 walk(child,pkg.subPackage(h2j(child.getName())),dirName+'/'+child.getName());
         }
 
         if (isTagLibDir(dir)) {
-            JDefinedClass c = pkg.parent()._interface(StringUtils.capitalize(h2j(dir.getName())) + "TagLib");
+            String taglib = h2j(dir.getName());
+            JDefinedClass c = pkg.parent()._interface(taglib.substring(0, 1).toUpperCase() + taglib.substring(1) + "TagLib");
             c._implements(TypedTagLibrary.class);
             c.annotate(TagLibraryUri.class).param("value",dirName);
 
             JBinaryFile _gdsl = new JBinaryFile(c.name()+".gdsl");
-            PrintWriter gdsl = new PrintWriter(_gdsl.getDataStore());
+            PrintWriter gdsl = new PrintWriter(new BufferedWriter(new OutputStreamWriter(_gdsl.getDataStore(), StandardCharsets.UTF_8)));
             gdsl.printf("package %s;\n",pkg.parent().name());
             gdsl.printf("contributor(context(ctype:'%s')) {\n",c.fullName());
 
-            File[] tags = dir.listFiles(new FilenameFilter() {
-                public boolean accept(File dir, String name) {
-                    return name.endsWith(".jelly");
-                }
-            });
+            File[] tags = dir.listFiles((unused, name) -> name.endsWith(".jelly"));
 
             long timestamp = -1;
 
@@ -181,7 +176,7 @@ public class TagLibInterfaceGeneratorMojo extends AbstractMojo {
                         gdsl.printf("  ], dummy:void, c:Closure]\n");
                     }
                 } catch (DocumentException e) {
-                    throw (IOException)new IOException("Failed to parse "+tag).initCause(e);
+                    throw new IOException("Failed to parse " + tag, e);
                 }
             }
 

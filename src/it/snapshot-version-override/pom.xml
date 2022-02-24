@@ -1,0 +1,69 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    
+    <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.jenkins-ci.plugins</groupId>
+    <artifactId>plugin</artifactId>
+    <version>3.29</version>
+  </parent>
+
+    <groupId>org.jenkins-ci.tools.hpi.its</groupId>
+    <artifactId>snapshot-version-override</artifactId>
+    <version>1.x-SNAPSHOT</version>
+
+    <packaging>hpi</packaging>
+
+    <name>MyNewPlugin</name>
+
+  <properties>
+    <jenkins.version>2.60.3</jenkins.version>
+    <java.level>8</java.level>
+  </properties>
+
+  <scm>
+    <connection>scm:git:git://github.com/jenkinsci/maven-hpi-plugin.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/jenkinsci/maven-hpi-plugin.git</developerConnection>
+    <url>https://github.com/jenkinsci/maven-hpi-plugin</url>
+    <tag>HEAD</tag>
+  </scm>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>@project.groupId@</groupId>
+          <artifactId>@project.artifactId@</artifactId>
+          <version>@project.version@</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>com.github.stephenc.continuous</groupId>
+        <artifactId>git-timestamp-maven-plugin</artifactId>
+        <version>1.1</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>timestamp</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <versionProperty>actual-version</versionProperty>
+          <versionFile>target/version.txt</versionFile>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>@project.groupId@</groupId>
+        <artifactId>@project.artifactId@</artifactId>
+        <version>@project.version@</version>
+        <configuration>
+          <snapshotPluginVersionOverride>${actual-version}</snapshotPluginVersionOverride>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

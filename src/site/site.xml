@@ -4,7 +4,7 @@
   <bannerLeft>
     <name>${project.name}</name>
     <src>images/jenkins_logo.png</src>
-    <href>http://jenkins-ci.org/</href>
+    <href>https://jenkins.io/</href>
   </bannerLeft>
 
   <publishDate format="yyyy-MM-dd" position="right" />
@@ -12,19 +12,17 @@
 
   <poweredBy>
     <logo name="Built by Maven" href="http://maven.apache.org/" img="images/logos/maven-feather.png" />
-    <logo name="Built on CloudBees" href="https://jenkins.ci.cloudbees.com/job/plugins/job/maven-hpi-plugin/"
-          img="images/built-on-cloudbees.png" />
   </poweredBy>
 
   <skin>
     <groupId>org.apache.maven.skins</groupId>
     <artifactId>maven-fluido-skin</artifactId>
-    <version>1.3.0</version>
+    <version>1.9</version>
   </skin>
 
   <body>
     <breadcrumbs>
-      <item name="Jenkins" href="http://jenkins-ci.org/" />
+      <item name="Jenkins" href="https://jenkins.io/" />
     </breadcrumbs>
 
     <!-- Menus that every project will inherit -->

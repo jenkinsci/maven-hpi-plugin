@@ -1,6 +1,8 @@
 package org.jenkinsci.maven.plugins.hpi;
 
 import org.apache.maven.plugins.annotations.Component;
+import org.apache.maven.project.DefaultProjectBuildingRequest;
+import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
 import org.apache.maven.shared.dependency.graph.DependencyGraphBuilderException;
 import org.apache.maven.shared.dependency.graph.DependencyNode;
@@ -16,7 +18,10 @@ public abstract class AbstractDependencyGraphTraversingMojo extends AbstractJenk
      * Traverses the whole dependency tree rooted at the project.
      */
     protected void traverseProject() throws DependencyGraphBuilderException {
-        visit(graphBuilder.buildDependencyGraph(project, null));
+        ProjectBuildingRequest buildingRequest =
+                new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
+        buildingRequest.setProject(project);
+        visit(graphBuilder.buildDependencyGraph(buildingRequest, null));
     }
 
     /**

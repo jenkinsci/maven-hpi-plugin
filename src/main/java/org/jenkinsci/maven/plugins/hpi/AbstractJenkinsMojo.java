@@ -1,11 +1,10 @@
 package org.jenkinsci.maven.plugins.hpi;
 
-import org.apache.commons.lang.StringUtils;
+import hudson.util.VersionNumber;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
-import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.resolver.ArtifactResolver;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -14,6 +13,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.project.MavenProjectHelper;
+import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver;
 
 import java.util.List;
 
@@ -27,8 +27,11 @@ public abstract class AbstractJenkinsMojo extends AbstractMojo {
     /**
      * The maven project.
      */
-    @Component
+    @Parameter(defaultValue = "${project}", readonly = true)
     protected MavenProject project;
+
+    @Parameter(defaultValue = "${session}", required = true, readonly = true)
+    protected MavenSession session;
 
     /**
      * Optional string that represents "groupId:artifactId" of Jenkins core jar.
@@ -59,9 +62,6 @@ public abstract class AbstractJenkinsMojo extends AbstractMojo {
     protected ArtifactRepository localRepository;
 
     @Component
-    protected ArtifactMetadataSource artifactMetadataSource;
-
-    @Component
     protected ArtifactFactory artifactFactory;
 
     @Component
@@ -75,7 +75,7 @@ public abstract class AbstractJenkinsMojo extends AbstractMojo {
 
 
     protected String findJenkinsVersion() throws MojoExecutionException {
-        for(Dependency a : (List<Dependency>)project.getDependencies()) {
+        for(Dependency a : project.getDependencies()) {
             boolean match;
             if (jenkinsCoreId!=null)
                 match = (a.getGroupId()+':'+a.getArtifactId()).equals(jenkinsCoreId);
@@ -84,7 +84,7 @@ public abstract class AbstractJenkinsMojo extends AbstractMojo {
                      && (a.getArtifactId().equals("jenkins-core") || a.getArtifactId().equals("hudson-core"));
 
             if (match) {
-                if (StringUtils.isNotBlank(jenkinsCoreVersionOverride)) {
+                if (jenkinsCoreVersionOverride != null && !jenkinsCoreVersionOverride.trim().isEmpty()) {
                     VersionNumber v1 = new VersionNumber(a.getVersion());
                     VersionNumber v2 = new VersionNumber(jenkinsCoreVersionOverride);
                     if (v1.compareTo(v2) == -1) {
@@ -97,13 +97,20 @@ public abstract class AbstractJenkinsMojo extends AbstractMojo {
                 return a.getVersion();
             }
         }
-        if (StringUtils.isNotBlank(jenkinsCoreVersionOverride)) {
+        if (jenkinsCoreVersionOverride != null && !jenkinsCoreVersionOverride.trim().isEmpty()) {
             return jenkinsCoreVersionOverride;
         }
         throw new MojoExecutionException("Failed to determine Jenkins version this plugin depends on.");
     }
 
     protected MavenArtifact wrap(Artifact a) {
-        return new MavenArtifact(a,artifactResolver,artifactFactory,projectBuilder,remoteRepos,localRepository);
+        return new MavenArtifact(
+                a,
+                artifactResolver,
+                artifactFactory,
+                projectBuilder,
+                remoteRepos,
+                localRepository,
+                session);
     }
 }

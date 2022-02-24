@@ -1,14 +1,13 @@
 package org.jenkinsci.maven.plugins.hpi;
 
-import com.google.common.base.Predicate;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * Collection filter operations on a set of {@link Artifact}s.
@@ -37,90 +36,52 @@ public class Artifacts extends ArrayList<Artifact> {
     }
 
     public Artifacts retainAll(Predicate<Artifact> filter) {
-        for (Iterator<Artifact> itr = iterator(); itr.hasNext(); ) {
-            if (!filter.apply(itr.next()))
-                itr.remove();
-        }
+        removeIf(artifact -> !filter.test(artifact));
         return this;
     }
 
     public Artifacts removeAll(Predicate<Artifact> filter) {
-        for (Iterator<Artifact> itr = iterator(); itr.hasNext(); ) {
-            if (filter.apply(itr.next()))
-                itr.remove();
-        }
+        removeIf(filter);
         return this;
     }
     
     public Artifacts scopeIs(String... scopes) {
         final List<String> s = Arrays.asList(scopes);
-        return retainAll(new Predicate<Artifact>() {
-            public boolean apply(Artifact a) {
-                return s.contains(a.getScope());
-            }
-        });
+        return retainAll(a -> s.contains(a.getScope()));
     }
 
     public Artifacts scopeIsNot(String... scopes) {
         final List<String> s = Arrays.asList(scopes);
-        return removeAll(new Predicate<Artifact>() {
-            public boolean apply(Artifact a) {
-                return s.contains(a.getScope());
-            }
-        });
+        return removeAll(a -> s.contains(a.getScope()));
     }
 
     public Artifacts typeIs(String... type) {
         final List<String> s = Arrays.asList(type);
-        return retainAll(new Predicate<Artifact>() {
-            public boolean apply(Artifact a) {
-                return s.contains(a.getType());
-            }
-        });
+        return retainAll(a -> s.contains(a.getType()));
     }
 
     public Artifacts typeIsNot(String... type) {
         final List<String> s = Arrays.asList(type);
-        return removeAll(new Predicate<Artifact>() {
-            public boolean apply(Artifact a) {
-                return s.contains(a.getType());
-            }
-        });
+        return removeAll(a -> s.contains(a.getType()));
     }
 
     public Artifacts groupIdIs(String... groupId) {
         final List<String> s = Arrays.asList(groupId);
-        return retainAll(new Predicate<Artifact>() {
-            public boolean apply(Artifact a) {
-                return s.contains(a.getType());
-            }
-        });
+        return retainAll(a -> s.contains(a.getType()));
     }
 
     public Artifacts groupIdIsNot(String... groupId) {
         final List<String> s = Arrays.asList(groupId);
-        return removeAll(new Predicate<Artifact>() {
-            public boolean apply(Artifact a) {
-                return s.contains(a.getType());
-            }
-        });
+        return removeAll(a -> s.contains(a.getType()));
     }
 
     public Artifacts artifactIdIs(String... artifactId) {
         final List<String> s = Arrays.asList(artifactId);
-        return retainAll(new Predicate<Artifact>() {
-            public boolean apply(Artifact a) {
-                return s.contains(a.getType());
-            }
-        });
+        return retainAll(a -> s.contains(a.getType()));
     }
 
     public Artifacts artifactIdIsNot(String... artifactId) {
         final List<String> s = Arrays.asList(artifactId);
-        return removeAll(new Predicate<Artifact>() {
-            public boolean apply(Artifact a) {
-                return s.contains(a.getType());
-            }
-        });
+        return removeAll(a -> s.contains(a.getType()));
     }
 }

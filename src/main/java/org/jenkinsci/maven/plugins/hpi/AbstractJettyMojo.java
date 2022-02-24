@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -51,9 +52,7 @@ import org.eclipse.jetty.maven.plugin.SystemProperty;
 import org.eclipse.jetty.security.LoginService;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.NCSARequestLog;
-import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.RequestLog;
-import org.eclipse.jetty.server.Response;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ShutdownMonitor;
 import org.eclipse.jetty.server.handler.ContextHandler;
@@ -233,7 +232,7 @@ public abstract class AbstractJettyMojo extends AbstractMojo
     /**
      * The maven project.
      */
-    @Component
+    @Parameter(defaultValue = "${project}", readonly = true)
     protected MavenProject project;
 
 
@@ -241,7 +240,7 @@ public abstract class AbstractJettyMojo extends AbstractMojo
      * The artifacts for the project.
      */
     @Parameter(defaultValue = "${project.artifacts}")
-    protected Set projectArtifacts;
+    protected Set<Artifact> projectArtifacts;
 
 
     @Parameter(defaultValue = "${mojoExecution}", readonly = true)
@@ -252,7 +251,7 @@ public abstract class AbstractJettyMojo extends AbstractMojo
      * The artifacts for the plugin itself.
      */
     @Parameter(defaultValue = "${plugin.artifacts}", readonly = true)
-    protected List pluginArtifacts;
+    protected List<Artifact> pluginArtifacts;
 
 
 
@@ -323,6 +322,7 @@ public abstract class AbstractJettyMojo extends AbstractMojo
     /** 
      * @see org.apache.maven.plugin.Mojo#execute()
      */
+    @Override
     public void execute() throws MojoExecutionException, MojoFailureException
     {
         getLog().info("Configuring Jetty for project: " + this.project.getName());
@@ -348,9 +348,6 @@ public abstract class AbstractJettyMojo extends AbstractMojo
 
     
     
-    /**
-     * @throws MojoExecutionException
-     */
     public void configurePluginClasspath() throws MojoExecutionException
     {
         //if we are configured to include the provided dependencies on the plugin's classpath
@@ -361,12 +358,10 @@ public abstract class AbstractJettyMojo extends AbstractMojo
         {
             try
             {
-                List<URL> provided = new ArrayList<URL>();
-                URL[] urls = null;
+                List<URL> provided = new ArrayList<>();
+                URL[] urls;
 
-                for ( Iterator<Artifact> iter = projectArtifacts.iterator(); iter.hasNext(); )
-                {
-                    Artifact artifact = iter.next();
+                for (Artifact artifact : projectArtifacts) {
                     if (Artifact.SCOPE_PROVIDED.equals(artifact.getScope()) && !isPluginArtifact(artifact))
                     {
                         provided.add(artifact.getFile().toURI().toURL());
@@ -393,10 +388,6 @@ public abstract class AbstractJettyMojo extends AbstractMojo
 
     
     
-    /**
-     * @param artifact
-     * @return
-     */
     public boolean isPluginArtifact(Artifact artifact)
     {
         if (pluginArtifacts == null || pluginArtifacts.isEmpty())
@@ -417,14 +408,11 @@ public abstract class AbstractJettyMojo extends AbstractMojo
     
     
     
-    /**
-     * @throws Exception
-     */
     public void finishConfigurationBeforeStart() throws Exception
     {
-        HandlerCollection contexts = (HandlerCollection)server.getChildHandlerByClass(ContextHandlerCollection.class);
+        HandlerCollection contexts = server.getChildHandlerByClass(ContextHandlerCollection.class);
         if (contexts==null)
-            contexts = (HandlerCollection)server.getChildHandlerByClass(HandlerCollection.class);
+            contexts = server.getChildHandlerByClass(HandlerCollection.class);
 
         for (int i=0; (this.contextHandlers != null) && (i < this.contextHandlers.length); i++)
         {
@@ -435,9 +423,6 @@ public abstract class AbstractJettyMojo extends AbstractMojo
 
 
 
-    /**
-     * @throws Exception
-     */
     public void applyJettyXml() throws Exception
     {
         if (getJettyXmlFiles() == null)
@@ -448,9 +433,6 @@ public abstract class AbstractJettyMojo extends AbstractMojo
 
 
     
-    /**
-     * @throws MojoExecutionException
-     */
     public void startJetty () throws MojoExecutionException
     {
         try
@@ -579,8 +561,6 @@ public abstract class AbstractJettyMojo extends AbstractMojo
     /**
      * Subclasses should invoke this to setup basic info
      * on the webapp
-     *
-     * @throws MojoExecutionException
      */
     public void configureWebApplication () throws Exception
     {
@@ -611,16 +591,17 @@ public abstract class AbstractJettyMojo extends AbstractMojo
         if (webApp.getTempDirectory() == null)
         {
             File target = new File(project.getBuild().getDirectory());
-            File tmp = new File(target,"tmp");
-            if (!tmp.exists())
-                tmp.mkdirs();            
+            File tmp = new File(target, "jetty");
+            if (!Files.isDirectory(tmp.toPath())) {
+                Files.createDirectories(tmp.toPath());
+            }
             webApp.setTempDirectory(tmp);
         }
 
         getLog().info("Context path = " + webApp.getContextPath());
-        getLog().info("Tmp directory = "+ (webApp.getTempDirectory()== null? " determined at runtime": webApp.getTempDirectory()));
-        getLog().info("Web defaults = "+(webApp.getDefaultsDescriptor()==null?" jetty default":webApp.getDefaultsDescriptor()));
-        getLog().info("Web overrides = "+(webApp.getOverrideDescriptor()==null?" none":webApp.getOverrideDescriptor()));
+        getLog().info("Tmp directory = " + (webApp.getTempDirectory()== null ? "(determined at runtime)" : webApp.getTempDirectory()));
+        getLog().info("Web defaults = " + (webApp.getDefaultsDescriptor()== null ? "(jetty default)" : webApp.getDefaultsDescriptor()));
+        getLog().info("Web overrides = " + (webApp.getOverrideDescriptor()== null ? "(none)" : webApp.getOverrideDescriptor()));
     }
 
 
@@ -687,10 +668,7 @@ public abstract class AbstractJettyMojo extends AbstractMojo
         {
             if (systemProperties != null)
             {
-                Iterator itor = systemProperties.getSystemProperties().iterator();
-                while (itor.hasNext())
-                {
-                    SystemProperty prop = (SystemProperty)itor.next();
+                for (SystemProperty prop : systemProperties.getSystemProperties()) {
                     getLog().debug("Property "+prop.getName()+"="+prop.getValue()+" was "+ (prop.isSet() ? "set" : "skipped"));
                 }
             }
@@ -703,7 +681,6 @@ public abstract class AbstractJettyMojo extends AbstractMojo
     /**
      * Try and find a jetty-web.xml file, using some
      * historical naming conventions if necessary.
-     * @param webInfDir
      * @return the jetty web xml file
      */
     public File findJettyWebXmlFile (File webInfDir)
@@ -728,10 +705,6 @@ public abstract class AbstractJettyMojo extends AbstractMojo
 
 
 
-    /**
-     * @param file
-     * @throws Exception
-     */
     public void setSystemPropertiesFile(File file) throws Exception
     {
         this.systemPropertiesFile = file;
@@ -760,9 +733,6 @@ public abstract class AbstractJettyMojo extends AbstractMojo
     
     
     
-    /**
-     * @param systemProperties
-     */
     public void setSystemProperties(SystemProperties systemProperties)
     {
         if (this.systemProperties == null)
@@ -782,9 +752,6 @@ public abstract class AbstractJettyMojo extends AbstractMojo
     
     
     
-    /**
-     * @return
-     */
     public List<File> getJettyXmlFiles()
     {
         if ( this.jettyXml == null )
@@ -792,7 +759,7 @@ public abstract class AbstractJettyMojo extends AbstractMojo
             return null;
         }
 
-        List<File> jettyXmlFiles = new ArrayList<File>();
+        List<File> jettyXmlFiles = new ArrayList<>();
 
         if ( this.jettyXml.indexOf(',') == -1 )
         {
@@ -813,10 +780,6 @@ public abstract class AbstractJettyMojo extends AbstractMojo
 
 
 
-    /**
-     * @param goal
-     * @return
-     */
     public boolean isExcluded (String goal)
     {
         if (excludedGoals == null || goal == null)

@@ -1,8 +1,6 @@
 package org.jenkinsci.maven.plugins.hpi;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -12,14 +10,13 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.codehaus.plexus.archiver.jar.Manifest;
 import org.codehaus.plexus.archiver.jar.Manifest.Attribute;
-import org.codehaus.plexus.archiver.jar.Manifest.Section;
 import org.codehaus.plexus.archiver.jar.ManifestException;
-import org.codehaus.plexus.util.IOUtil;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -31,7 +28,7 @@ import java.util.Set;
  * @author Kohsuke Kawaguchi
  */
 @Mojo(name="hpl", requiresDependencyResolution = ResolutionScope.RUNTIME)
-public class HplMojo extends AbstractHpiMojo {
+public class HplMojo extends AbstractJenkinsManifestMojo {
     /**
      * Path to {@code $JENKINS_HOME}. A .hpl file will be generated to this location.
      * @deprecated Use {@link #jenkinsHome}.
@@ -57,6 +54,7 @@ public class HplMojo extends AbstractHpiMojo {
         this.jenkinsHome = jenkinsHome;
     }
 
+    @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         if(!project.getPackaging().equals("hpi")) {
             getLog().info("Skipping "+project.getName()+" because it's not <packaging>hpi</packaging>");
@@ -71,18 +69,17 @@ public class HplMojo extends AbstractHpiMojo {
         File hplFile = computeHplFile();
         getLog().info("Generating "+hplFile);
 
-        PrintWriter printWriter = null;
-        try {
+        try (PrintWriter printWriter = new PrintWriter(Files.newBufferedWriter(hplFile.toPath(), StandardCharsets.UTF_8))) {
             Manifest mf = new Manifest();
-            Section mainSection = mf.getMainSection();
+            Manifest.ExistingSection mainSection = mf.getMainSection();
             setAttributes(mainSection);
 
             // compute Libraries entry
-            List<String> paths = new ArrayList<String>();
+            List<String> paths = new ArrayList<>();
 
             // we want resources to be picked up before target/classes,
             // so that the original (not in the copy) will be picked up first.
-            for (Resource r : (List<Resource>) project.getBuild().getResources()) {
+            for (Resource r : project.getBuild().getResources()) {
                 File dir = new File(r.getDirectory());
                 if (!dir.isAbsolute())
                     dir = new File(project.getBasedir(),r.getDirectory());
@@ -95,19 +92,14 @@ public class HplMojo extends AbstractHpiMojo {
 
             buildLibraries(paths);
 
-            mainSection.addAttributeAndCheck(new Attribute("Libraries", StringUtils.join(paths, ",")));
+            mainSection.addAttributeAndCheck(new Attribute("Libraries", String.join(",", paths)));
 
             // compute Resource-Path entry
-            mainSection.addAttributeAndCheck(new Attribute("Resource-Path",warSourceDirectory.getAbsolutePath()));
+            mainSection.addAttributeAndCheck(new Attribute("Resource-Path", warSourceDirectory.getAbsolutePath()));
 
-            printWriter = new PrintWriter(new FileWriter(hplFile));
             mf.write(printWriter);
-        } catch (ManifestException e) {
+        } catch (ManifestException | IOException e) {
             throw new MojoExecutionException("Error preparing the manifest: " + e.getMessage(), e);
-        } catch (IOException e) {
-            throw new MojoExecutionException("Error preparing the manifest: " + e.getMessage(), e);
-        } finally {
-            IOUtil.close(printWriter);
         }
     }
 
@@ -123,9 +115,9 @@ public class HplMojo extends AbstractHpiMojo {
         Set<MavenArtifact> artifacts = getProjectArtfacts();
 
         // List up IDs of Jenkins plugin dependencies
-        Set<String> jenkinsPlugins = new HashSet<String>();
+        Set<String> jenkinsPlugins = new HashSet<>();
         for (MavenArtifact artifact : artifacts) {
-            if(artifact.isPlugin())
+            if (artifact.isPluginBestEffort(getLog()))
                 jenkinsPlugins.add(artifact.getId());
         }
 
@@ -133,6 +125,10 @@ public class HplMojo extends AbstractHpiMojo {
         for (MavenArtifact artifact : artifacts) {
             if(jenkinsPlugins.contains(artifact.getId()))
                 continue;   // plugin dependencies
+            if (artifact.getDependencyTrail().size() < 2) {
+                throw new IllegalStateException(
+                        "invalid dependency trail: " + artifact.getDependencyTrail());
+            }
             if(artifact.getDependencyTrail().size() >= 1 && jenkinsPlugins.contains(artifact.getDependencyTrail().get(1)))
                 continue;   // no need to have transitive dependencies through plugins
 

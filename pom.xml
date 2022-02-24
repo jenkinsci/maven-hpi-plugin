@@ -1,20 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.37</version>
+    <version>1.71</version>
     <relativePath />
   </parent>
 
   <groupId>org.jenkins-ci.tools</groupId>
   <artifactId>maven-hpi-plugin</artifactId>
-  <version>2.1-SNAPSHOT</version>
+  <version>${revision}${changelist}</version>
   <packaging>maven-plugin</packaging>
 
   <name>Maven Jenkins Plugin</name>
   <description>Maven2 plugin for developing Jenkins plugins</description>
+  <url>https://github.com/jenkinsci/${project.artifactId}</url>
   <licenses>
     <license>
       <name>The Apache Software License, Version 2.0</name>
@@ -23,15 +25,11 @@
   </licenses>
 
   <scm>
-    <connection>scm:git:git://github.com/jenkinsci/maven-hpi-plugin.git</connection>
-    <developerConnection>scm:git:ssh://git@github.com/jenkinsci/maven-hpi-plugin.git</developerConnection>
-    <url>https://github.com/jenkinsci/maven-hpi-plugin</url>
-    <tag>HEAD</tag>
+    <connection>scm:git:git://github.com/${gitHubRepo}.git</connection>
+    <developerConnection>scm:git:git@github.com:${gitHubRepo}.git</developerConnection>
+    <tag>${scmTag}</tag>
+    <url>https://github.com/${gitHubRepo}</url>
   </scm>
-  <ciManagement>
-    <system>jenkins</system>
-    <url>https://buildhive.cloudbees.com/job/jenkinsci/job/maven-hpi-plugin/</url>
-  </ciManagement>
   <distributionManagement>
     <site>
       <!-- if this deployment fails, it's probably you are missing the entry to set the username in ~/.m2/settings.xml
@@ -46,6 +44,8 @@
   </distributionManagement>
 
   <properties>
+    <revision>3.26</revision>
+    <changelist>-SNAPSHOT</changelist>
     <!-- used for escape -->
     <begin>${${$}}{</begin>
     <end>$}</end>
@@ -53,39 +53,87 @@
     <openbracket>{</openbracket>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <java.level>8</java.level>
+    <gitHubRepo>jenkinsci/${project.artifactId}</gitHubRepo>
+    <maven.version>3.8.4</maven.version>
+    <maven-plugin-tools.version>3.6.4</maven-plugin-tools.version>
+    <plexus-containers.version>2.1.1</plexus-containers.version>
+    <aether.version>1.1.0</aether.version>
+
+    <!-- TODO lots of violations -->
+    <spotbugs.threshold>High</spotbugs.threshold>
   </properties>
 
-  <repositories>
-    <repository>
-      <id>repo.jenkins-ci.org</id>
-      <url>http://repo.jenkins-ci.org/public/</url>
-    </repository>
-  </repositories>
-  <pluginRepositories>
-    <pluginRepository>
-      <id>repo.jenkins-ci.org</id>
-      <url>http://repo.jenkins-ci.org/public/</url>
-    </pluginRepository>
-  </pluginRepositories>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>javax.annotation</groupId>
+        <artifactId>javax.annotation-api</artifactId>
+        <version>1.3.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-core</artifactId>
+        <version>${maven.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-model</artifactId>
+        <version>${maven.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-repository-metadata</artifactId>
+        <version>${maven.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-settings</artifactId>
+        <version>${maven.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.shared</groupId>
+        <artifactId>maven-shared-utils</artifactId>
+        <version>3.3.4</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.aether</groupId>
+        <artifactId>aether-api</artifactId>
+        <version>${aether.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.aether</groupId>
+        <artifactId>aether-impl</artifactId>
+        <version>${aether.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.aether</groupId>
+        <artifactId>aether-spi</artifactId>
+        <version>${aether.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.aether</groupId>
+        <artifactId>aether-util</artifactId>
+        <version>${aether.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <dependencies>
     <dependency>
-      <groupId>org.apache.maven.plugin-tools</groupId>
-      <artifactId>maven-plugin-annotations</artifactId>
-      <version>3.5</version>
-      <!-- annotations are not needed for plugin execution, so exclude using provided scope -->
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.codehaus.plexus</groupId>
-      <artifactId>plexus-utils</artifactId>
-      <!-- generated help mojo has a dependency on plexus utils -->
-      <version>3.0.1</version>
+      <groupId>com.github.spotbugs</groupId>
+      <artifactId>spotbugs-annotations</artifactId>
+      <optional>true</optional>
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.code.findbugs</groupId>
+          <artifactId>jsr305</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.ibm.icu</groupId>
       <artifactId>icu4j</artifactId>
-      <version>52.1</version>
+      <version>70.1</version>
       <!-- stapler plugin pulls jaxen pulls ancient ver that blows up annotation processing -->
     </dependency>
     <dependency>
@@ -94,100 +142,137 @@
       <version>2.6</version>
     </dependency>
     <dependency>
-      <groupId>org.kohsuke.stapler</groupId>
-      <artifactId>stapler-groovy</artifactId>
-      <version>1.237</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-plugin-api</artifactId>
-      <version>2.2.0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-project</artifactId>
-      <version>2.2.0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-archiver</artifactId>
-      <version>2.0.1</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-artifact</artifactId>
-      <version>2.2.0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-maven-plugin</artifactId>
-      <version>9.4.5.v20170502</version>
+      <groupId>io.jenkins.lib</groupId>
+      <artifactId>support-log-formatter</artifactId>
+      <version>1.1</version>
     </dependency>
     <dependency>
       <groupId>net.java.sezpoz</groupId>
       <artifactId>sezpoz</artifactId>
-      <version>1.9</version>
+      <version>1.13</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-archiver</artifactId>
+      <version>3.5.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-artifact</artifactId>
+      <version>${maven.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-plugin-api</artifactId>
+      <version>${maven.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.plugin-tools</groupId>
+      <artifactId>maven-plugin-annotations</artifactId>
+      <version>${maven-plugin-tools.version}</version>
+      <!-- annotations are not needed for plugin execution, so exclude using provided scope -->
+      <scope>provided</scope>
     </dependency>
     <!-- for copy-dependency-plugins -->
     <dependency>
       <groupId>org.apache.maven.plugins</groupId>
       <artifactId>maven-dependency-plugin</artifactId>
-      <version>2.8</version>
+      <version>3.2.0</version>
     </dependency>
-    <!-- for the create goal -->
     <dependency>
-      <groupId>org.apache.maven.plugins</groupId>
-      <artifactId>maven-archetype-plugin</artifactId>
-      <version>1.0-alpha-4</version>
+      <groupId>org.apache.maven.shared</groupId>
+      <artifactId>maven-artifact-transfer</artifactId>
+      <version>0.13.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-component-annotations</artifactId>
+      <version>${plexus-containers.version}</version>
     </dependency>
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-interactivity-api</artifactId>
-      <version>1.0-alpha-4</version>
+      <version>1.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-utils</artifactId>
+      <!-- generated help mojo has a dependency on plexus utils -->
+      <version>3.4.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-maven-plugin</artifactId>
+      <version>9.4.45.v20220203</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci</groupId>
+      <artifactId>version-number</artifactId>
+      <version>1.9</version>
     </dependency>
     <!-- for using annotation processor -->
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>maven-stapler-plugin</artifactId>
-      <version>1.16</version>
+      <version>1.17</version>
       <!-- make sure to exclude servlet so that the one in Jetty (which has different groupId) will win -->
       <exclusions>
         <exclusion>
           <groupId>javax.servlet</groupId>
           <artifactId>servlet-api</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>org.kohsuke.stapler</groupId>
+          <artifactId>stapler</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.codehaus.plexus</groupId>
-      <artifactId>plexus-component-annotations</artifactId>
-      <version>1.6</version>
+      <groupId>org.kohsuke.stapler</groupId>
+      <artifactId>stapler-groovy</artifactId>
+      <version>1642.ve454c4518974</version>
+    </dependency>
+    <dependency>
+      <groupId>org.twdata.maven</groupId>
+      <artifactId>mojo-executor</artifactId>
+      <version>2.3.3</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.shared</groupId>
+      <artifactId>maven-dependency-tree</artifactId>
+      <version>3.1.0</version>
     </dependency>
   </dependencies>
 
+  <repositories>
+    <repository>
+      <id>repo.jenkins-ci.org</id>
+      <url>https://repo.jenkins-ci.org/public/</url>
+    </repository>
+  </repositories>
+  <pluginRepositories>
+    <pluginRepository>
+      <id>repo.jenkins-ci.org</id>
+      <url>https://repo.jenkins-ci.org/public/</url>
+    </pluginRepository>
+  </pluginRepositories>
+
   <build>
-    <resources>
-      <resource>
-        <directory>src/main/resources</directory>
-        <filtering>true</filtering>
-      </resource>
-    </resources>
     <pluginManagement>
       <plugins>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-site-plugin</artifactId>
-          <version>3.6</version>
           <dependencies>
             <dependency>
               <groupId>com.github.stephenc.wagon</groupId>
               <artifactId>wagon-gitsite</artifactId>
-              <version>0.4.1</version>
+              <version>0.5</version>
             </dependency>
-            <dependency> <!-- TODO https://maven.apache.org/plugins/maven-site-plugin/migrate.html 1.7 fails with: org.apache.velocity.exception.ParseErrorException: Encountered "source" at META-INF/maven/site.vm[line 1039, column 52] -->
+            <dependency>
               <groupId>org.apache.velocity</groupId>
               <artifactId>velocity</artifactId>
-              <version>1.5</version>
+              <version>1.7</version>
             </dependency>
           </dependencies>
         </plugin>
@@ -195,7 +280,6 @@
         <plugin>
           <groupId>org.eclipse.m2e</groupId>
           <artifactId>lifecycle-mapping</artifactId>
-          <version>1.0.0</version>
           <configuration>
             <lifecycleMappingMetadata>
               <pluginExecutions>
@@ -220,81 +304,42 @@
     </pluginManagement>
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-release-plugin</artifactId>
-        <version>2.5.1</version>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <version>1.8</version>
+        <artifactId>maven-enforcer-plugin</artifactId>
         <executions>
           <execution>
-            <!-- maven resources plugin can't handle escapes, so we need to fall back to Ant to get the job done -->
-            <phase>process-resources</phase>
+            <id>display-info</id>
             <configuration>
-              <tasks>
-                <ant antfile="${basedir}/copyArchetype.xml" />
-              </tasks>
+              <rules>
+                <requireUpperBoundDeps>
+                  <excludes combine.children="append">
+                    <exclude>com.google.guava:guava</exclude>
+                    <exclude>com.google.inject:guice</exclude>
+                    <exclude>commons-beanutils:commons-beanutils</exclude>
+                    <exclude>commons-codec:commons-codec</exclude>
+                    <exclude>commons-io:commons-io</exclude>
+                    <exclude>commons-lang:commons-lang</exclude>
+                    <exclude>org.apache.commons:commons-compress</exclude>
+                    <exclude>org.apache.httpcomponents:httpclient</exclude>
+                    <exclude>org.apache.httpcomponents:httpcore</exclude>
+                    <exclude>org.apache.maven.doxia:doxia-decoration-model</exclude>
+                    <exclude>org.apache.maven:maven-project</exclude>
+                    <exclude>org.apache.maven.wagon:wagon-provider-api</exclude>
+                    <exclude>org.codehaus.plexus:plexus-container-default</exclude>
+                    <exclude>org.ow2.asm:asm</exclude>
+                    <exclude>org.slf4j:slf4j-api</exclude>
+                    <exclude>xerces:xercesImpl</exclude>
+                    <exclude>xml-apis:xml-apis</exclude>
+                  </excludes>
+                </requireUpperBoundDeps>
+              </rules>
             </configuration>
-            <goals>
-              <goal>run</goal>
-            </goals>
-          </execution>
-        </executions>
-        <dependencies>
-          <dependency>
-            <groupId>ant</groupId>
-            <artifactId>ant-apache-regexp</artifactId>
-            <version>1.6.5</version>
-            <scope>runtime</scope>
-          </dependency>
-          <dependency>
-            <groupId>jakarta-regexp</groupId>
-            <artifactId>jakarta-regexp</artifactId>
-            <version>1.4</version>
-          </dependency>
-        </dependencies>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-plugin-plugin</artifactId>
-        <version>3.5</version>
-        <configuration>
-          <goalPrefix>hpi</goalPrefix>
-          <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
-          <!-- see MNG-5346 -->
-        </configuration>
-        <executions>
-          <execution>
-            <id>mojo-descriptor</id>
-            <goals>
-              <goal>descriptor</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>help-goal</id>
-            <goals>
-              <goal>helpmojo</goal>
-            </goals>
           </execution>
         </executions>
       </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>mrm-maven-plugin</artifactId>
-        <version>1.1.0</version>
-        <configuration>
-          <propertyName>repository.proxy.url</propertyName>
-          <repositories>
-            <proxyRepo />
-          </repositories>
-        </configuration>
-      </plugin>          
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-invoker-plugin</artifactId>
-        <version>2.0.0</version>
+        <version>3.2.2</version>
         <configuration>
           <projectsDirectory>src/it</projectsDirectory>
           <cloneProjectsTo>${project.build.directory}/its</cloneProjectsTo>
@@ -312,37 +357,44 @@
         </configuration>
       </plugin>
       <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>animal-sniffer-maven-plugin</artifactId>
-        <version>1.15</version>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-plugin-plugin</artifactId>
+        <version>${maven-plugin-tools.version}</version>
+        <configuration>
+          <goalPrefix>hpi</goalPrefix>
+          <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
+          <!-- see MNG-5346 -->
+        </configuration>
         <executions>
           <execution>
+            <id>help-goal</id>
             <goals>
-              <goal>check</goal>
+              <goal>helpmojo</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>mojo-descriptor</id>
+            <goals>
+              <goal>descriptor</goal>
             </goals>
           </execution>
         </executions>
-        <configuration>
-          <signature>
-            <groupId>org.codehaus.mojo.signature</groupId>
-            <artifactId>java1${java.level}</artifactId>
-            <version>1.0</version>
-          </signature>
-        </configuration>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.6.1</version>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>mrm-maven-plugin</artifactId>
+        <version>1.3.0</version>
         <configuration>
-          <source>1.${java.level}</source>
-          <target>1.${java.level}</target>
+          <propertyName>repository.proxy.url</propertyName>
+          <repositories>
+            <proxyRepo />
+          </repositories>
         </configuration>
       </plugin>
       <plugin>
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-component-metadata</artifactId>
-        <version>1.6</version>
+        <version>${plexus-containers.version}</version>
         <executions>
           <execution>
             <goals>
@@ -356,7 +408,7 @@
       <extension>
         <groupId>org.apache.maven.wagon</groupId>
         <artifactId>wagon-ssh</artifactId>
-        <version>1.0-beta-7</version>
+        <version>3.5.1</version>
       </extension>
     </extensions>
   </build>
@@ -366,7 +418,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-plugin-plugin</artifactId>
-        <version>3.5</version>
+        <version>${maven-plugin-tools.version}</version>
       </plugin>
     </plugins>
   </reporting>
@@ -377,18 +429,6 @@
       <build>
         <plugins>
           <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>mrm-maven-plugin</artifactId>
-            <executions>
-              <execution>
-                <goals>
-                  <goal>start</goal>
-                  <goal>stop</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
             <artifactId>maven-invoker-plugin</artifactId>
             <executions>
               <execution>
@@ -398,9 +438,24 @@
                   <goal>run</goal>
                 </goals>
                 <configuration>
-                  <streamLogs>false</streamLogs>
-                  <debug>true</debug>
+                  <streamLogs>true</streamLogs>
+                  <environmentVariables>
+                    <!-- block anything set by a CI environment -->
+                    <JENKINS_HOME />
+                  </environmentVariables>
                 </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>mrm-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>start</goal>
+                  <goal>stop</goal>
+                </goals>
               </execution>
             </executions>
           </plugin>

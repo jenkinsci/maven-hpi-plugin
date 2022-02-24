@@ -37,9 +37,6 @@ public class ConsoleScanner extends Thread
     
     
     
-    /**
-     * @param mojo
-     */
     public ConsoleScanner(AbstractJettyMojo mojo) 
     {
         this.mojo = mojo;
@@ -53,6 +50,7 @@ public class ConsoleScanner extends Thread
     /** 
      * @see java.lang.Thread#run()
      */
+    @Override
     public void run() 
     {  
         try 
@@ -90,9 +88,6 @@ public class ConsoleScanner extends Thread
     
     
     
-    /**
-     * @throws IOException
-     */
     private void checkSystemInput() throws IOException 
     {     
         while (System.in.available() > 0) {

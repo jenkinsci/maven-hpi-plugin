@@ -18,8 +18,7 @@ package org.jenkinsci.maven.plugins.hpi;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
-import org.apache.commons.lang.StringUtils;
+import java.util.Objects;
 import org.apache.maven.archiver.MavenArchiveConfiguration;
 import org.apache.maven.archiver.MavenArchiver;
 import org.apache.maven.artifact.Artifact;
@@ -43,7 +42,7 @@ import org.codehaus.plexus.archiver.jar.ManifestException;
  * @version $Id: HpiMojo.java 33552 2010-08-03 23:28:55Z olamy $
  */
 @Mojo(name="hpi", defaultPhase = LifecyclePhase.PACKAGE, requiresDependencyResolution = ResolutionScope.RUNTIME)
-public class HpiMojo extends AbstractHpiMojo {
+public class HpiMojo extends AbstractJenkinsManifestMojo {
 
     /**
      * The name of the generated hpi.
@@ -89,28 +88,17 @@ public class HpiMojo extends AbstractHpiMojo {
      *
      * @throws MojoExecutionException if an error occurred while building the webapp
      */
+    @Override
     public void execute() throws MojoExecutionException {
         try {
             performPackaging();
-        } catch (DependencyResolutionRequiredException e) {
-            throw new MojoExecutionException("Error assembling hpi: " + e.getMessage(), e);
-        } catch (ManifestException e) {
-            throw new MojoExecutionException("Error assembling hpi", e);
-        } catch (IOException e) {
-            throw new MojoExecutionException("Error assembling hpi", e);
-        } catch (ArchiverException e) {
+        } catch (IOException | ArchiverException | ManifestException | DependencyResolutionRequiredException e) {
             throw new MojoExecutionException("Error assembling hpi: " + e.getMessage(), e);
         }
     }
 
     /**
      * Generates the webapp according to the {@code mode} attribute.
-     *
-     * @throws IOException
-     * @throws ArchiverException
-     * @throws ManifestException
-     * @throws DependencyResolutionRequiredException
-     *
      */
     private void performPackaging()
         throws IOException, ArchiverException, ManifestException, DependencyResolutionRequiredException, MojoExecutionException {
@@ -121,16 +109,16 @@ public class HpiMojo extends AbstractHpiMojo {
         Manifest manifest = loadManifest(manifestFile);
 
         getLog().info("Checking for attached .jar artifact "
-                + (StringUtils.isBlank(jarClassifier) ? "..." : "with classifier " + jarClassifier + "..."));
+                + (jarClassifier == null || jarClassifier.trim().isEmpty() ? "..." : "with classifier " + jarClassifier + "..."));
         File jarFile = null;
-        for (Artifact artifact: (List<Artifact>)project.getAttachedArtifacts()) {
-            if (StringUtils.equals(project.getGroupId(), artifact.getGroupId())
-                    && StringUtils.equals(project.getArtifactId(), artifact.getArtifactId())
+        for (Artifact artifact: project.getAttachedArtifacts()) {
+            if (Objects.equals(project.getGroupId(), artifact.getGroupId())
+                    && Objects.equals(project.getArtifactId(), artifact.getArtifactId())
                     && project.getArtifact().getVersionRange().equals(artifact.getVersionRange())
-                    && StringUtils.equals("jar", artifact.getType())
-                    && (StringUtils.isBlank(jarClassifier)
+                    && Objects.equals("jar", artifact.getType())
+                    && (jarClassifier == null || jarClassifier.trim().isEmpty()
                     ? !artifact.hasClassifier()
-                    : StringUtils.equals(jarClassifier, artifact.getClassifier()))
+                    : Objects.equals(jarClassifier, artifact.getClassifier()))
                     && artifact.getFile() != null && artifact.getFile().isFile()) {
                 jarFile = artifact.getFile();
                 getLog().info("Found attached .jar artifact: " + jarFile.getAbsolutePath());
@@ -146,7 +134,7 @@ public class HpiMojo extends AbstractHpiMojo {
             archiver.setOutputFile(jarFile);
             jarArchiver.addConfiguredManifest(manifest);
             jarArchiver.addDirectory(getClassesDirectory());
-            archiver.createArchive(project, archive);
+            archiver.createArchive(session, project, archive);
         }
         // HACK Alert... due to how this plugin hacks the maven dependency model (by using a dependency on the
         // jar file and then rewriting them for hpi projects) we need to add the jar as an attached artifact
@@ -172,7 +160,7 @@ public class HpiMojo extends AbstractHpiMojo {
         hpiArchiver.addDirectory(getWebappDirectory(), getIncludes(), getExcludes());
 
         // create archive
-        archiver.createArchive(project, archive);
+        archiver.createArchive(session, project, archive);
         project.getArtifact().setFile(hpiFile);
 
     }

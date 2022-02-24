@@ -1,5 +1,7 @@
 package org.jenkinsci.maven.plugins.hpi;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import org.codehaus.plexus.component.annotations.Component;
 
 import java.io.File;
@@ -32,17 +34,15 @@ public class PluginWorkspaceMapImpl implements PluginWorkspaceMap {
     private Properties loadMap() throws IOException {
         Properties p = new Properties();
         if (mapFile.isFile()) {
-            InputStream is = new FileInputStream(mapFile);
-            try {
+            try (InputStream is = new FileInputStream(mapFile)) {
                 p.load(is);
-            } finally {
-                is.close();
             }
         }
         return p;
     }
 
     @Override
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "TODO needs triage")
     public /*@CheckForNull*/ File read(String id) throws IOException {
         for (Map.Entry<Object,Object> entry : loadMap().entrySet()) {
             if (entry.getValue().equals(id)) {
@@ -60,11 +60,8 @@ public class PluginWorkspaceMapImpl implements PluginWorkspaceMap {
     public void write(String id, File f) throws IOException {
         Properties p = loadMap();
         p.setProperty(f.getAbsolutePath(), id);
-        OutputStream os = new FileOutputStream(mapFile);
-        try {
+        try (OutputStream os = new FileOutputStream(mapFile)) {
             p.store(os, " List of development files for Jenkins plugins that have been built.");
-        } finally {
-            os.close();
         }
     }
 }

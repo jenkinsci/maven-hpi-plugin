@@ -10,8 +10,6 @@ Maven Jenkins Plugin
 
 * Common Goals Overview
 
-  * {{{./create-mojo.html}hpi:create}} Creates a skeleton of a new plugin.
-
   * {{{./hpi-mojo.html}hpi:hpi}} Builds the .hpi file
 
   * {{{./hpl-mojo.html}hpi:hpl}} Generates the .hpl file
@@ -20,4 +18,4 @@ Maven Jenkins Plugin
 
   For a list of all goals see the full {{{./plugin-info.html}plugin documentation}}
 
-  For more information about how to develop Jenkins plugins, refer to the {{{http://wiki.jenkins-ci.org/display/JENKINS/Extend+Jenkins}Wiki}}
+  For more information about how to develop Jenkins plugins, refer to the {{{https://www.jenkins.io/doc/developer/}docs site}}
