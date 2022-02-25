@@ -32,9 +32,7 @@ import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
-import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.shared.dependency.graph.DependencyCollectorBuilder;
 import org.apache.maven.shared.dependency.graph.DependencyCollectorBuilderException;
 import org.apache.maven.shared.dependency.graph.DependencyNode;
@@ -159,10 +157,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                         throw new MojoFailureException("could not find dependencies " + unapplied);
                     }
                     getLog().debug("adjusted dependencyArtifacts: " + dependencyArtifacts);
-                    ProjectBuildingRequest pbr = new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
-                    pbr.setRemoteRepositories(remoteRepos);
-                    pbr.setLocalRepository(localRepository);
-                    node = dependencyCollectorBuilder.collectDependencyGraph(pbr, /* all scopes */null);
+                    node = dependencyCollectorBuilder.collectDependencyGraph(session.getProjectBuildingRequest(), /* all scopes */null);
                 } catch (DependencyCollectorBuilderException x) {
                     throw new MojoExecutionException("could not analyze dependency tree for useUpperBounds: " + x, x);
                 }
@@ -209,11 +204,8 @@ public class TestDependencyMojo extends AbstractHpiMojo {
 
     private Artifact replace(Artifact a, String version) throws MojoExecutionException {
         Artifact a2 = new DefaultArtifact(a.getGroupId(), a.getArtifactId(), VersionRange.createFromVersion(version), a.getScope(), a.getType(), a.getClassifier(), a.getArtifactHandler(), a.isOptional());
-        ProjectBuildingRequest pbr = new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
-        pbr.setRemoteRepositories(remoteRepos);
-        pbr.setLocalRepository(localRepository);
         try {
-            return artifactResolver.resolveArtifact(pbr, a2).getArtifact();
+            return artifactResolver.resolveArtifact(session.getProjectBuildingRequest(), a2).getArtifact();
         } catch (ArtifactResolverException x) {
             throw new MojoExecutionException("could not find " + a + " in version " + version + ": " + x, x);
         }
