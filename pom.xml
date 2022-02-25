@@ -345,8 +345,6 @@
           <cloneProjectsTo>${project.build.directory}/its</cloneProjectsTo>
           <localRepositoryPath>${basedir}/target/local-repo</localRepositoryPath>
           <settingsFile>src/it/settings.xml</settingsFile>
-          <showErrors>true</showErrors>
-          <streamLogs>true</streamLogs>
           <pomIncludes>
             <pomInclude>*/pom.xml</pomInclude>
           </pomIncludes>
@@ -354,6 +352,10 @@
           <filterProperties>
             <repository.proxy.url>${repository.proxy.url}</repository.proxy.url>
           </filterProperties>
+          <environmentVariables>
+            <!-- block anything set by a CI environment -->
+            <JENKINS_HOME />
+          </environmentVariables>
         </configuration>
       </plugin>
       <plugin>
@@ -437,13 +439,6 @@
                   <goal>install</goal>
                   <goal>run</goal>
                 </goals>
-                <configuration>
-                  <streamLogs>true</streamLogs>
-                  <environmentVariables>
-                    <!-- block anything set by a CI environment -->
-                    <JENKINS_HOME />
-                  </environmentVariables>
-                </configuration>
               </execution>
             </executions>
           </plugin>
@@ -461,6 +456,29 @@
           </plugin>
         </plugins>
       </build>
+    </profile>
+    <profile>
+      <id>all-tests</id>
+      <activation>
+        <property>
+          <name>!invoker.test</name>
+        </property>
+      </activation>
+      <properties>
+        <invoker.writeJunitReport>true</invoker.writeJunitReport>
+        <invoker.junitPackageName>io.jenkins.tools.maven_hpi_plugin.its</invoker.junitPackageName>
+      </properties>
+    </profile>
+    <profile>
+      <id>specific-tests</id>
+      <activation>
+        <property>
+          <name>invoker.test</name>
+        </property>
+      </activation>
+      <properties>
+        <invoker.streamLogs>true</invoker.streamLogs>
+      </properties>
     </profile>
   </profiles>
 </project>
