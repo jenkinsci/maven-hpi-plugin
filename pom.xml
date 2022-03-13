@@ -54,7 +54,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <java.level>8</java.level>
     <gitHubRepo>jenkinsci/${project.artifactId}</gitHubRepo>
-    <maven.version>3.8.4</maven.version>
+    <maven.version>3.8.5</maven.version>
     <maven-plugin-tools.version>3.6.4</maven-plugin-tools.version>
     <plexus-containers.version>2.1.1</plexus-containers.version>
     <spotbugs.excludeFilterFile>${project.basedir}/src/spotbugs/spotbugs-excludes.xml</spotbugs.excludeFilterFile>
