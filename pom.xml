@@ -154,7 +154,7 @@
     <dependency>
       <groupId>org.apache.maven.plugins</groupId>
       <artifactId>maven-dependency-plugin</artifactId>
-      <version>3.2.0</version>
+      <version>3.3.0</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.shared</groupId>
@@ -291,12 +291,14 @@
                     <exclude>commons-io:commons-io</exclude>
                     <exclude>commons-lang:commons-lang</exclude>
                     <exclude>org.apache.commons:commons-compress</exclude>
+                    <exclude>org.apache.commons:commons-lang3</exclude>
                     <exclude>org.apache.httpcomponents:httpclient</exclude>
                     <exclude>org.apache.httpcomponents:httpcore</exclude>
                     <exclude>org.apache.maven.doxia:doxia-decoration-model</exclude>
                     <exclude>org.apache.maven:maven-project</exclude>
                     <exclude>org.apache.maven.wagon:wagon-provider-api</exclude>
                     <exclude>org.codehaus.plexus:plexus-container-default</exclude>
+                    <exclude>org.eclipse.aether:aether-util</exclude>
                     <exclude>org.ow2.asm:asm</exclude>
                     <exclude>org.slf4j:slf4j-api</exclude>
                     <exclude>xerces:xercesImpl</exclude>
