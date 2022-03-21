@@ -24,6 +24,7 @@ import org.apache.maven.archiver.MavenArchiver;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -89,7 +90,7 @@ public class HpiMojo extends AbstractJenkinsManifestMojo {
      * @throws MojoExecutionException if an error occurred while building the webapp
      */
     @Override
-    public void execute() throws MojoExecutionException {
+    public void execute() throws MojoExecutionException, MojoFailureException {
         try {
             performPackaging();
         } catch (IOException | ArchiverException | ManifestException | DependencyResolutionRequiredException e) {
@@ -101,7 +102,7 @@ public class HpiMojo extends AbstractJenkinsManifestMojo {
      * Generates the webapp according to the {@code mode} attribute.
      */
     private void performPackaging()
-        throws IOException, ArchiverException, ManifestException, DependencyResolutionRequiredException, MojoExecutionException {
+        throws IOException, ArchiverException, ManifestException, DependencyResolutionRequiredException, MojoExecutionException, MojoFailureException {
 
         // generate a manifest
         File manifestFile = new File(getWebappDirectory(), "META-INF/MANIFEST.MF");
@@ -133,6 +134,14 @@ public class HpiMojo extends AbstractJenkinsManifestMojo {
             archiver.setArchiver(jarArchiver);
             archiver.setOutputFile(jarFile);
             jarArchiver.addConfiguredManifest(manifest);
+            File indexJelly = new File(getClassesDirectory(), "index.jelly");
+            if (!indexJelly.isFile()) {
+                throw new MojoFailureException("Missing " + indexJelly + ". Delete any <description> from pom.xml and create src/main/resources/index.jelly:\n" +
+                    "<?jelly escape-by-default='true'?>\n" +
+                    "<div>\n" +
+                    "    The description here…\n" +
+                    "</div>");
+            }
             jarArchiver.addDirectory(getClassesDirectory());
             archiver.createArchive(session, project, archive);
         }
