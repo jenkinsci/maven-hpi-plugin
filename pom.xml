@@ -54,6 +54,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <java.level>8</java.level>
     <gitHubRepo>jenkinsci/${project.artifactId}</gitHubRepo>
+    <aether.version>1.1.0</aether.version>
     <maven.version>3.8.5</maven.version>
     <maven-plugin-tools.version>3.6.4</maven-plugin-tools.version>
     <plexus-containers.version>2.1.1</plexus-containers.version>
@@ -92,6 +93,16 @@
         <artifactId>maven-shared-utils</artifactId>
         <version>3.3.4</version>
       </dependency>
+      <dependency>
+        <groupId>org.eclipse.aether</groupId>
+        <artifactId>aether-api</artifactId>
+        <version>${aether.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.aether</groupId>
+        <artifactId>aether-util</artifactId>
+        <version>${aether.version}</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -114,6 +125,11 @@
       <!-- stapler plugin pulls jaxen pulls ancient ver that blows up annotation processing -->
     </dependency>
     <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>31.1-jre</version>
+    </dependency>
+    <dependency>
       <groupId>com.sun.codemodel</groupId>
       <artifactId>codemodel</artifactId>
       <version>2.6</version>
@@ -127,6 +143,11 @@
       <groupId>net.java.sezpoz</groupId>
       <artifactId>sezpoz</artifactId>
       <version>1.13</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.ant</groupId>
+      <artifactId>ant</artifactId>
+      <version>1.10.12</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
@@ -186,23 +207,6 @@
       <groupId>org.jenkins-ci</groupId>
       <artifactId>version-number</artifactId>
       <version>1.9</version>
-    </dependency>
-    <!-- for using annotation processor -->
-    <dependency>
-      <groupId>org.kohsuke.stapler</groupId>
-      <artifactId>maven-stapler-plugin</artifactId>
-      <version>1.17</version>
-      <!-- make sure to exclude servlet so that the one in Jetty (which has different groupId) will win -->
-      <exclusions>
-        <exclusion>
-          <groupId>javax.servlet</groupId>
-          <artifactId>servlet-api</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.kohsuke.stapler</groupId>
-          <artifactId>stapler</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
@@ -284,25 +288,13 @@
               <rules>
                 <requireUpperBoundDeps>
                   <excludes combine.children="append">
-                    <exclude>com.google.guava:guava</exclude>
-                    <exclude>com.google.inject:guice</exclude>
-                    <exclude>commons-beanutils:commons-beanutils</exclude>
-                    <exclude>commons-codec:commons-codec</exclude>
                     <exclude>commons-io:commons-io</exclude>
                     <exclude>commons-lang:commons-lang</exclude>
                     <exclude>org.apache.commons:commons-compress</exclude>
                     <exclude>org.apache.commons:commons-lang3</exclude>
-                    <exclude>org.apache.httpcomponents:httpclient</exclude>
-                    <exclude>org.apache.httpcomponents:httpcore</exclude>
-                    <exclude>org.apache.maven.doxia:doxia-decoration-model</exclude>
-                    <exclude>org.apache.maven:maven-project</exclude>
                     <exclude>org.apache.maven.wagon:wagon-provider-api</exclude>
                     <exclude>org.codehaus.plexus:plexus-container-default</exclude>
-                    <exclude>org.eclipse.aether:aether-util</exclude>
-                    <exclude>org.ow2.asm:asm</exclude>
                     <exclude>org.slf4j:slf4j-api</exclude>
-                    <exclude>xerces:xercesImpl</exclude>
-                    <exclude>xml-apis:xml-apis</exclude>
                   </excludes>
                 </requireUpperBoundDeps>
               </rules>

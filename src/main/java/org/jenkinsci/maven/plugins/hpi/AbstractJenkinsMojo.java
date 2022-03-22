@@ -11,8 +11,8 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.project.MavenProjectHelper;
+import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver;
 
 import java.util.List;
@@ -68,7 +68,7 @@ public abstract class AbstractJenkinsMojo extends AbstractMojo {
     protected ArtifactResolver artifactResolver;
 
     @Component
-    protected MavenProjectBuilder projectBuilder;
+    protected ProjectBuilder projectBuilder;
 
     @Component
     protected MavenProjectHelper projectHelper;
