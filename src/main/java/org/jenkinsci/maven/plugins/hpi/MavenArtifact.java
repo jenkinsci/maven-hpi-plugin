@@ -34,7 +34,6 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
     public final ArtifactFactory artifactFactory;
     public final ProjectBuilder builder;
     public final List<ArtifactRepository> remoteRepositories;
-    public final List<ArtifactRepository> pluginArtifactRepositories;
     public final ArtifactRepository localRepository;
     public final Artifact artifact;
     public final ArtifactResolver resolver;
@@ -46,7 +45,6 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
             ArtifactFactory artifactFactory,
             ProjectBuilder builder,
             List<ArtifactRepository> remoteRepositories,
-            List<ArtifactRepository> pluginArtifactRepositories,
             ArtifactRepository localRepository,
             MavenSession session) {
         this.artifact = artifact;
@@ -54,7 +52,6 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
         this.artifactFactory = artifactFactory;
         this.builder = builder;
         this.remoteRepositories = Objects.requireNonNull(remoteRepositories);
-        this.pluginArtifactRepositories = Objects.requireNonNull(pluginArtifactRepositories);
         this.localRepository = localRepository;
         this.session = Objects.requireNonNull(session);
     }
@@ -63,8 +60,8 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
         ProjectBuildingRequest buildingRequest =
                 new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
         buildingRequest.setRemoteRepositories(remoteRepositories);
-        buildingRequest.setPluginArtifactRepositories(pluginArtifactRepositories);
         buildingRequest.setLocalRepository(localRepository);
+        buildingRequest.setProcessPlugins(false); // improve performance
         return builder.build(artifact, buildingRequest).getProject();
     }
 
@@ -142,7 +139,6 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
             }
         return artifact.getFile();
     }
-
     /**
      * Returns {@link MavenArtifact} for the hpi variant of this artifact.
      */
@@ -155,7 +151,6 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
                 artifactFactory,
                 builder,
                 remoteRepositories,
-                pluginArtifactRepositories,
                 localRepository,
                 session);
     }

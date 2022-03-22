@@ -57,9 +57,6 @@ public abstract class AbstractJenkinsMojo extends AbstractMojo {
     @Parameter(defaultValue = "${project.remoteArtifactRepositories}",readonly = true, required = true)
     protected List<ArtifactRepository> remoteRepos;
 
-    @Parameter(defaultValue = "${project.pluginArtifactRepositories}", readonly = true, required = true)
-    protected List<ArtifactRepository> pluginArtifactRepositories;
-
     @Component
     @Parameter(defaultValue = "${localRepository}", readonly = true, required = true)
     protected ArtifactRepository localRepository;
@@ -113,7 +110,6 @@ public abstract class AbstractJenkinsMojo extends AbstractMojo {
                 artifactFactory,
                 projectBuilder,
                 remoteRepos,
-                pluginArtifactRepositories,
                 localRepository,
                 session);
     }

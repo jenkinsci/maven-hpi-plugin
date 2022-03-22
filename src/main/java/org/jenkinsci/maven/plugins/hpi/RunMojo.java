@@ -845,7 +845,6 @@ public class RunMojo extends AbstractJettyMojo {
                 artifactFactory,
                 projectBuilder,
                 getProject().getRemoteArtifactRepositories(),
-                getProject().getPluginArtifactRepositories(),
                 localRepository,
                 session);
     }
