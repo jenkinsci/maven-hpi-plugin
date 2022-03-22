@@ -11,7 +11,7 @@
 
   <groupId>org.jenkins-ci.tools</groupId>
   <artifactId>maven-hpi-plugin</artifactId>
-  <version>${revision}${changelist}</version>
+  <version>3.26</version>
   <packaging>maven-plugin</packaging>
 
   <name>Maven Jenkins Plugin</name>
@@ -27,7 +27,7 @@
   <scm>
     <connection>scm:git:git://github.com/${gitHubRepo}.git</connection>
     <developerConnection>scm:git:git@github.com:${gitHubRepo}.git</developerConnection>
-    <tag>${scmTag}</tag>
+    <tag>maven-hpi-plugin-3.26</tag>
     <url>https://github.com/${gitHubRepo}</url>
   </scm>
   <distributionManagement>
