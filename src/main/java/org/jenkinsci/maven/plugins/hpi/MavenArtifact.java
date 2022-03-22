@@ -139,6 +139,7 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
             }
         return artifact.getFile();
     }
+
     /**
      * Returns {@link MavenArtifact} for the hpi variant of this artifact.
      */
