@@ -39,7 +39,7 @@ import org.apache.maven.project.DependencyResolutionException;
 import org.apache.maven.project.DependencyResolutionRequest;
 import org.apache.maven.project.DependencyResolutionResult;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.MavenProjectBuilder;
+import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.project.ProjectDependenciesResolver;
 import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver;
@@ -196,7 +196,7 @@ public class RunMojo extends AbstractJettyMojo {
     protected boolean consoleForceReload;
 
     @Component
-    protected MavenProjectBuilder projectBuilder;
+    protected ProjectBuilder projectBuilder;
 
     /**
      * Optional string that represents "groupId:artifactId" of Jenkins core jar.
@@ -845,6 +845,7 @@ public class RunMojo extends AbstractJettyMojo {
                 artifactFactory,
                 projectBuilder,
                 getProject().getRemoteArtifactRepositories(),
+                getProject().getPluginArtifactRepositories(),
                 localRepository,
                 session);
     }

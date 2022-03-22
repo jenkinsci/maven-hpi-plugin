@@ -11,8 +11,8 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.project.MavenProjectHelper;
+import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver;
 
 import java.util.List;
@@ -57,6 +57,9 @@ public abstract class AbstractJenkinsMojo extends AbstractMojo {
     @Parameter(defaultValue = "${project.remoteArtifactRepositories}",readonly = true, required = true)
     protected List<ArtifactRepository> remoteRepos;
 
+    @Parameter(defaultValue = "${project.pluginArtifactRepositories}", readonly = true, required = true)
+    protected List<ArtifactRepository> pluginArtifactRepositories;
+
     @Component
     @Parameter(defaultValue = "${localRepository}", readonly = true, required = true)
     protected ArtifactRepository localRepository;
@@ -68,7 +71,7 @@ public abstract class AbstractJenkinsMojo extends AbstractMojo {
     protected ArtifactResolver artifactResolver;
 
     @Component
-    protected MavenProjectBuilder projectBuilder;
+    protected ProjectBuilder projectBuilder;
 
     @Component
     protected MavenProjectHelper projectHelper;
@@ -110,6 +113,7 @@ public abstract class AbstractJenkinsMojo extends AbstractMojo {
                 artifactFactory,
                 projectBuilder,
                 remoteRepos,
+                pluginArtifactRepositories,
                 localRepository,
                 session);
     }

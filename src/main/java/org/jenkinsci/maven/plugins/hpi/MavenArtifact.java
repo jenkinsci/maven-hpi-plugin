@@ -10,7 +10,7 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.MavenProjectBuilder;
+import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver;
@@ -32,8 +32,9 @@ import java.util.jar.JarFile;
  */
 public class MavenArtifact implements Comparable<MavenArtifact> {
     public final ArtifactFactory artifactFactory;
-    public final MavenProjectBuilder builder;
+    public final ProjectBuilder builder;
     public final List<ArtifactRepository> remoteRepositories;
+    public final List<ArtifactRepository> pluginArtifactRepositories;
     public final ArtifactRepository localRepository;
     public final Artifact artifact;
     public final ArtifactResolver resolver;
@@ -43,8 +44,9 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
             Artifact artifact,
             ArtifactResolver resolver,
             ArtifactFactory artifactFactory,
-            MavenProjectBuilder builder,
+            ProjectBuilder builder,
             List<ArtifactRepository> remoteRepositories,
+            List<ArtifactRepository> pluginArtifactRepositories,
             ArtifactRepository localRepository,
             MavenSession session) {
         this.artifact = artifact;
@@ -52,12 +54,18 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
         this.artifactFactory = artifactFactory;
         this.builder = builder;
         this.remoteRepositories = Objects.requireNonNull(remoteRepositories);
+        this.pluginArtifactRepositories = Objects.requireNonNull(pluginArtifactRepositories);
         this.localRepository = localRepository;
         this.session = Objects.requireNonNull(session);
     }
 
     public MavenProject resolvePom() throws ProjectBuildingException {
-        return builder.buildFromRepository(artifact,remoteRepositories,localRepository);
+        ProjectBuildingRequest buildingRequest =
+                new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
+        buildingRequest.setRemoteRepositories(remoteRepositories);
+        buildingRequest.setPluginArtifactRepositories(pluginArtifactRepositories);
+        buildingRequest.setLocalRepository(localRepository);
+        return builder.build(artifact, buildingRequest).getProject();
     }
 
     /**
@@ -147,6 +155,7 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
                 artifactFactory,
                 builder,
                 remoteRepositories,
+                pluginArtifactRepositories,
                 localRepository,
                 session);
     }
