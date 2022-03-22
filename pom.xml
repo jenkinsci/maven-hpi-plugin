@@ -119,12 +119,6 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>com.ibm.icu</groupId>
-      <artifactId>icu4j</artifactId>
-      <version>70.1</version>
-      <!-- stapler plugin pulls jaxen pulls ancient ver that blows up annotation processing -->
-    </dependency>
-    <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
       <version>31.1-jre</version>
