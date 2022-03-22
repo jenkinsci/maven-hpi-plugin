@@ -20,7 +20,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
-import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.lifecycle.internal.LifecycleDependencyResolver;
 import org.apache.maven.model.Resource;
@@ -34,13 +33,11 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.DefaultDependencyResolutionRequest;
-import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.DependencyResolutionException;
 import org.apache.maven.project.DependencyResolutionRequest;
 import org.apache.maven.project.DependencyResolutionResult;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
-import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.project.ProjectDependenciesResolver;
 import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver;
 import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException;
@@ -151,12 +148,6 @@ public class RunMojo extends AbstractJettyMojo {
 
     @Component
     protected ArtifactFactory artifactFactory;
-
-    @Parameter(defaultValue = "${project.remoteArtifactRepositories}", readonly = true, required = true)
-    protected List<ArtifactRepository> remoteRepos;
-
-    @Parameter(defaultValue = "${localRepository}")
-    protected ArtifactRepository localRepository;
 
     @Component
     private ProjectDependenciesResolver dependenciesResolver;
@@ -332,12 +323,8 @@ public class RunMojo extends AbstractJettyMojo {
 
         if (webAppFile == null) {
             Artifact jenkinsWarArtifact = getJenkinsWarArtifact();
-            ProjectBuildingRequest buildingRequest =
-                    new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
-            buildingRequest.setRemoteRepositories(remoteRepos);
-            buildingRequest.setLocalRepository(localRepository);
             try {
-                jenkinsWarArtifact = artifactResolver.resolveArtifact(buildingRequest, jenkinsWarArtifact).getArtifact();
+                jenkinsWarArtifact = artifactResolver.resolveArtifact(session.getProjectBuildingRequest(), jenkinsWarArtifact).getArtifact();
             } catch (ArtifactResolverException x) {
                 throw new MojoExecutionException("Could not resolve " + jenkinsWarArtifact + ": " + x, x);
             }
@@ -385,11 +372,7 @@ public class RunMojo extends AbstractJettyMojo {
 
                 // find corresponding .hpi file
                 Artifact hpi = artifactFactory.createArtifact(a.getGroupId(),a.getArtifactId(),a.getVersion(),null,"hpi");
-                ProjectBuildingRequest buildingRequest =
-                        new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
-                buildingRequest.setRemoteRepositories(getProject().getRemoteArtifactRepositories());
-                buildingRequest.setLocalRepository(localRepository);
-                hpi = artifactResolver.resolveArtifact(buildingRequest, hpi).getArtifact();
+                hpi = artifactResolver.resolveArtifact(session.getProjectBuildingRequest(), hpi).getArtifact();
 
                 // check recursive dependency. this is a rare case that happens when we split out some things from the core
                 // into a plugin
@@ -844,8 +827,6 @@ public class RunMojo extends AbstractJettyMojo {
                 artifactResolver,
                 artifactFactory,
                 projectBuilder,
-                getProject().getRemoteArtifactRepositories(),
-                localRepository,
                 session);
     }
 

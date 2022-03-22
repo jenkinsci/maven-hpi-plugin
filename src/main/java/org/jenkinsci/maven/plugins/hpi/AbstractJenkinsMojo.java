@@ -3,7 +3,6 @@ package org.jenkinsci.maven.plugins.hpi;
 import hudson.util.VersionNumber;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
-import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.AbstractMojo;
@@ -14,8 +13,6 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver;
-
-import java.util.List;
 
 /**
  * Mojos that need to figure out the Jenkins version it's working with.
@@ -49,17 +46,6 @@ public abstract class AbstractJenkinsMojo extends AbstractMojo {
      */
     @Parameter
     private String jenkinsCoreVersionOverride;
-
-
-    /**
-     * List of Remote Repositories used by the resolver
-     */
-    @Parameter(defaultValue = "${project.remoteArtifactRepositories}",readonly = true, required = true)
-    protected List<ArtifactRepository> remoteRepos;
-
-    @Component
-    @Parameter(defaultValue = "${localRepository}", readonly = true, required = true)
-    protected ArtifactRepository localRepository;
 
     @Component
     protected ArtifactFactory artifactFactory;
@@ -109,8 +95,6 @@ public abstract class AbstractJenkinsMojo extends AbstractMojo {
                 artifactResolver,
                 artifactFactory,
                 projectBuilder,
-                remoteRepos,
-                localRepository,
                 session);
     }
 }
