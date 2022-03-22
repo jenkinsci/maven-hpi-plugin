@@ -3,7 +3,6 @@ package org.jenkinsci.maven.plugins.hpi;
 import hudson.util.VersionNumber;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
-import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.OverConstrainedVersionException;
 import org.apache.maven.execution.MavenSession;
@@ -33,8 +32,6 @@ import java.util.jar.JarFile;
 public class MavenArtifact implements Comparable<MavenArtifact> {
     public final ArtifactFactory artifactFactory;
     public final ProjectBuilder builder;
-    public final List<ArtifactRepository> remoteRepositories;
-    public final ArtifactRepository localRepository;
     public final Artifact artifact;
     public final ArtifactResolver resolver;
     public final MavenSession session;
@@ -44,23 +41,17 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
             ArtifactResolver resolver,
             ArtifactFactory artifactFactory,
             ProjectBuilder builder,
-            List<ArtifactRepository> remoteRepositories,
-            ArtifactRepository localRepository,
             MavenSession session) {
         this.artifact = artifact;
         this.resolver = resolver;
         this.artifactFactory = artifactFactory;
         this.builder = builder;
-        this.remoteRepositories = Objects.requireNonNull(remoteRepositories);
-        this.localRepository = localRepository;
         this.session = Objects.requireNonNull(session);
     }
 
     public MavenProject resolvePom() throws ProjectBuildingException {
         ProjectBuildingRequest buildingRequest =
                 new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
-        buildingRequest.setRemoteRepositories(remoteRepositories);
-        buildingRequest.setLocalRepository(localRepository);
         buildingRequest.setProcessPlugins(false); // improve performance
         return builder.build(artifact, buildingRequest).getProject();
     }
@@ -129,11 +120,7 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
     public File getFile() {
         if (artifact.getFile()==null)
             try {
-                ProjectBuildingRequest buildingRequest =
-                        new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
-                buildingRequest.setRemoteRepositories(remoteRepositories);
-                buildingRequest.setLocalRepository(localRepository);
-                return resolver.resolveArtifact(buildingRequest, artifact).getArtifact().getFile();
+                return resolver.resolveArtifact(session.getProjectBuildingRequest(), artifact).getArtifact().getFile();
             } catch (ArtifactResolverException e) {
                 throw new RuntimeException("Failed to resolve "+getId(),e);
             }
@@ -151,8 +138,6 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
                 resolver,
                 artifactFactory,
                 builder,
-                remoteRepositories,
-                localRepository,
                 session);
     }
 
