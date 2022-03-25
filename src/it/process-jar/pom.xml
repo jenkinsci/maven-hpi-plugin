@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
@@ -6,7 +7,8 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>3.29</version>
+    <version>4.38</version>
+    <relativePath />
   </parent>
 
   <groupId>org.jenkins-ci.tools.hpi.its</groupId>
@@ -16,8 +18,9 @@
   <packaging>hpi</packaging>
 
   <properties>
-    <jenkins.version>2.60.3</jenkins.version>
+    <jenkins.version>2.249.1</jenkins.version>
     <java.level>8</java.level>
+    <hpi-plugin.version>@project.version@</hpi-plugin.version>
   </properties>
 
   <name>MyNewPlugin</name>
@@ -26,21 +29,12 @@
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-      <version>2.9.10.8</version>
+      <version>2.13.2.1</version>
       <optional>true</optional>
     </dependency>
   </dependencies>
 
   <build>
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <groupId>@project.groupId@</groupId>
-          <artifactId>@project.artifactId@</artifactId>
-          <version>@project.version@</version>
-        </plugin>
-      </plugins>
-    </pluginManagement>
     <plugins>
       <plugin>
         <groupId>@project.groupId@</groupId>
@@ -91,7 +85,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jarsigner-plugin</artifactId>
-        <version>1.4</version>
+        <version>3.0.0</version>
         <executions>
           <execution>
             <id>sign</id>

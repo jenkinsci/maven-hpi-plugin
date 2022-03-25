@@ -25,9 +25,9 @@ assert new File(basedir, 'target/classes/org/jenkinsci/tools/hpi/its/HelloWorldB
 assert new File(basedir, 'target/classes/org/jenkinsci/tools/hpi/its/HelloWorldBuilder$DescriptorImpl.class').exists();
 assert new File(basedir, 'target/classes/org/jenkinsci/tools/hpi/its/HelloWorldBuilder.stapler').exists();
 assert new File(basedir, 'target/classes/org/jenkinsci/tools/hpi/its/Messages.class').exists();
-assert !new File(basedir, 'target/process-jar/WEB-INF/lib/jackson-annotations-2.6.0.jar').exists();
-assert !new File(basedir, 'target/process-jar/WEB-INF/lib/jackson-core-2.6.3.jar').exists();
-assert !new File(basedir, 'target/process-jar/WEB-INF/lib/jackson-databind-2.6.3').exists();
+assert !new File(basedir, 'target/process-jar/WEB-INF/lib/jackson-annotations-2.13.2').exists();
+assert !new File(basedir, 'target/process-jar/WEB-INF/lib/jackson-core-2.13.2.jar').exists();
+assert !new File(basedir, 'target/process-jar/WEB-INF/lib/jackson-databind-2.13.2.1.jar').exists();
 assert new File(basedir, 'target/process-jar.hpi').exists();
 assert new File(basedir, 'target/process-jar.jar').exists();
 
