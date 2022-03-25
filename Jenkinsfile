@@ -5,9 +5,6 @@ properties([
 
 def runTests(Map params = [:]) {
   def agentContainerLabel = params['jdk'] == 8 ? 'maven' : 'maven-' + params['jdk']
-  if (params['platform'] == 'windows') {
-    agentContainerLabel += '-windows'
-  }
   node(agentContainerLabel) {
     timeout(time: 1, unit: 'HOURS') {
       ansiColor('xterm') {
@@ -31,6 +28,5 @@ def runTests(Map params = [:]) {
 parallel(
     'linux-8': { runTests(platform: 'linux', jdk: 8) },
     'linux-11': { runTests(platform: 'linux', jdk: 11) },
-    'windows-11': { runTests(platform: 'windows', jdk: 11) },
     'linux-17': { runTests(platform: 'linux', jdk: 17) }
 )
