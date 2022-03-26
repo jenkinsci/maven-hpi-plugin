@@ -5,17 +5,17 @@
 
 Maven Jenkins Plugin
 
-  This maven2 plugin provides various goals for developing Jenkins plugins.
+  This Maven 3 plugin provides various goals for developing Jenkins plugins.
 
 
 * Common Goals Overview
 
-  * {{{./hpi-mojo.html}hpi:hpi}} Builds the .hpi file
+  * {{{./hpi-mojo.html}hpi:hpi}} Builds the <<<.hpi>>> file
 
-  * {{{./hpl-mojo.html}hpi:hpl}} Generates the .hpl file
+  * {{{./hpl-mojo.html}hpi:hpl}} Generates the <<<.hpl>>> file
 
   * {{{./run-mojo.html}hpi:run}} Runs Jenkins with the current plugin project
 
-  For a list of all goals see the full {{{./plugin-info.html}plugin documentation}}
+  For a list of all goals see the full {{{./plugin-info.html}plugin documentation}}.
 
-  For more information about how to develop Jenkins plugins, refer to the {{{https://www.jenkins.io/doc/developer/}docs site}}
+  For more information about how to develop Jenkins plugins, refer to the {{{https://www.jenkins.io/doc/developer/}docs site}}.
