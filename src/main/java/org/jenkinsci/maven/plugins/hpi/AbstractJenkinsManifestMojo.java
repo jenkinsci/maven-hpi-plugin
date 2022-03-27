@@ -15,6 +15,7 @@
  */
 package org.jenkinsci.maven.plugins.hpi;
 
+import org.apache.maven.archiver.ManifestConfiguration;
 import org.apache.maven.archiver.MavenArchiveConfiguration;
 import org.apache.maven.archiver.MavenArchiver;
 import org.apache.maven.artifact.Artifact;
@@ -96,7 +97,10 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
         ma.setOutputFile(manifestFile);
 
         try (PrintWriter printWriter = new PrintWriter(new OutputStreamWriter(new FileOutputStream(manifestFile), StandardCharsets.UTF_8))) {
-            Manifest mf = ma.getManifest(project, archive.getManifest());
+            ManifestConfiguration config = archive.getManifest();
+            config.setAddDefaultSpecificationEntries(true);
+            config.setAddDefaultImplementationEntries(true);
+            Manifest mf = ma.getManifest(project, config);
             Manifest.ExistingSection mainSection = mf.getMainSection();
             setAttributes(mainSection);
 
@@ -114,23 +118,6 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
             in.close();
 
             mainSection.addAttributeAndCheck(new Manifest.Attribute("Plugin-Class",pluginClassName));
-        }
-
-        mainSection.addAttributeAndCheck(
-                new Manifest.Attribute("Extension-Name", project.getArtifactId()));
-        mainSection.addAttributeAndCheck(
-                new Manifest.Attribute("Implementation-Title", project.getArtifactId()));
-        mainSection.addAttributeAndCheck(
-                new Manifest.Attribute("Implementation-Version", project.getVersion()));
-        if (project.getOrganization() != null) {
-            mainSection.addAttributeAndCheck(
-                    new Manifest.Attribute("Implementation-Vendor", project.getOrganization().getName()));
-        }
-        mainSection.addAttributeAndCheck(
-                new Manifest.Attribute("Specification-Title", project.getDescription()));
-        if (project.getOrganization() != null) {
-            mainSection.addAttributeAndCheck(
-                    new Manifest.Attribute("Specification-Vendor", project.getOrganization().getName()));
         }
 
         mainSection.addAttributeAndCheck(new Manifest.Attribute("Group-Id",project.getGroupId()));
