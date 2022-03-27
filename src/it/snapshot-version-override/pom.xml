@@ -26,7 +26,7 @@
 
   <scm>
     <connection>scm:git:https://github.com/jenkinsci/maven-hpi-plugin.git</connection>
-    <developerConnection>scm:git:ssh://git@github.com/jenkinsci/maven-hpi-plugin.git</developerConnection>
+    <developerConnection>scm:git:git@github.com:jenkinsci/maven-hpi-plugin.git</developerConnection>
     <url>https://github.com/jenkinsci/maven-hpi-plugin</url>
     <tag>HEAD</tag>
   </scm>
