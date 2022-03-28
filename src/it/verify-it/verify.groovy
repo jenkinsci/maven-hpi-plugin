@@ -17,7 +17,6 @@
  * under the License.
  */
 
-import java.io.InputStream
 import java.nio.file.Files
 import java.util.jar.Manifest
 
@@ -37,8 +36,7 @@ assert content.contains(" holder.format(\"it.msg\");");
 
 assert new File(basedir, 'target/verify-it/META-INF/MANIFEST.MF').exists()
 
-InputStream is = Files.newInputStream(new File(basedir, 'target/verify-it/META-INF/MANIFEST.MF').toPath())
-try {
+Files.newInputStream(new File(basedir, 'target/verify-it/META-INF/MANIFEST.MF').toPath()).withCloseable { is ->
   Manifest manifest = new Manifest(is)
   assert !manifest.getMainAttributes().getValue('Build-Jdk-Spec').isEmpty()
   assert manifest.getMainAttributes().getValue('Created-By').startsWith('Maven Archiver')
@@ -54,13 +52,11 @@ try {
   assert manifest.getMainAttributes().getValue('Plugin-Developers').equals('Noam Chomsky:nchomsky:nchomsky@example.com')
   assert manifest.getMainAttributes().getValue('Plugin-License-Name').equals('MIT License')
   assert manifest.getMainAttributes().getValue('Plugin-License-Url').equals('https://opensource.org/licenses/MIT')
-  assert manifest.getMainAttributes().getValue('Plugin-ScmUrl').equals('https://github.com/jenkinsci/maven-hpi-plugin')
+  assert manifest.getMainAttributes().getValue('Plugin-ScmUrl').equals('https://github.com/jenkinsci/verify-it-plugin')
   assert manifest.getMainAttributes().getValue('Plugin-Version').startsWith('1.0-SNAPSHOT')
   assert manifest.getMainAttributes().getValue('Short-Name').equals('verify-it')
   assert manifest.getMainAttributes().getValue('Specification-Title').equals('MyNewPlugin') // was project.description in previous versions, now project.name
-  assert manifest.getMainAttributes().getValue('Url').equals('https://github.com/jenkinsci/maven-hpi-plugin')
-} finally {
-  is.close()
+  assert manifest.getMainAttributes().getValue('Url').equals('https://github.com/jenkinsci/verify-it-plugin')
 }
 
 // TODO add some test on hpi file content
