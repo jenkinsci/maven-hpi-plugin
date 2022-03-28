@@ -18,7 +18,7 @@
 
     <name>MyNewPlugin</name>
     <description>My New Plugin</description>
-    <url>https://github.com/jenkinsci/maven-hpi-plugin</url>
+    <url>https://github.com/jenkinsci/verify-it-plugin</url>
 
     <licenses>
         <license>
