@@ -17,6 +17,30 @@
     <packaging>hpi</packaging>
 
     <name>MyNewPlugin</name>
+    <description>My New Plugin</description>
+    <url>https://github.com/jenkinsci/verify-it-plugin</url>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>https://opensource.org/licenses/MIT</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>nchomsky</id>
+            <name>Noam Chomsky</name>
+            <email>nchomsky@example.com</email>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:https://github.com/jenkinsci/verify-it-plugin.git</connection>
+        <developerConnection>scm:git:git@github.com:jenkinsci/verify-it-plugin.git</developerConnection>
+        <tag>HEAD</tag>
+        <url>https://github.com/jenkinsci/verify-it-plugin</url>
+    </scm>
 
     <properties>
         <jenkins.version>2.249.1</jenkins.version>
