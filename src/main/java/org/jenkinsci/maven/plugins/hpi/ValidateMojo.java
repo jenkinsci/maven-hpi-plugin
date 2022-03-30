@@ -24,6 +24,8 @@ public class ValidateMojo extends AbstractJenkinsMojo {
 
         MavenProject parent = project.getParent();
         if (parent != null
+                && parent.getGroupId().equals("org.jenkins-ci.plugins")
+                && parent.getArtifactId().equals("plugin")
                 && !parent.getProperties().containsKey("java.level")
                 && project.getProperties().containsKey("java.level")) {
             getLog().warn("Ignoring deprecated java.level property."
