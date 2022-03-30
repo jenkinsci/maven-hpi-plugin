@@ -17,18 +17,29 @@ public class InitializeMojo extends AbstractJenkinsMojo {
 
     @Override
     public void execute() throws MojoExecutionException {
-        String addOpens = getAddOpens();
-        if (addOpens != null
-                && JavaSpecificationVersion.forCurrentJVM().isNewerThanOrEqualTo(new JavaSpecificationVersion("9"))) {
-            String argLine = project.getProperties().getProperty("argLine");
-            if (argLine != null) {
-                argLine += " " + buildArgLine(addOpens);
-            } else {
-                argLine = buildArgLine(addOpens);
-            }
-            getLog().info("Setting argLine to " + argLine);
-            project.getProperties().setProperty("argLine", argLine);
+        setSurefireProperties();
+    }
+
+    private void setSurefireProperties() throws MojoExecutionException {
+        if (JavaSpecificationVersion.forCurrentJVM().isOlderThan(new JavaSpecificationVersion("9"))) {
+            // nothing to do
+            return;
         }
+
+        String addOpens = getAddOpens();
+        if (addOpens == null) {
+            // core older than 2.339, ignore
+            return;
+        }
+
+        String argLine = project.getProperties().getProperty("argLine");
+        if (argLine != null) {
+            argLine += " " + buildArgLine(addOpens);
+        } else {
+            argLine = buildArgLine(addOpens);
+        }
+        getLog().info("Setting argLine to " + argLine);
+        project.getProperties().setProperty("argLine", argLine);
     }
 
     private static String buildArgLine(String addOpens) {
