@@ -1,8 +1,8 @@
 package org.jenkinsci.maven.plugins.hpi;
 
 import hudson.util.VersionNumber;
+import io.jenkins.lib.versionnumber.JavaSpecificationVersion;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.project.MavenProject;
@@ -14,13 +14,17 @@ import org.apache.maven.project.MavenProject;
  */
 @Mojo(name = "validate", defaultPhase = LifecyclePhase.VALIDATE)
 public class ValidateMojo extends AbstractJenkinsMojo {
-    @Override
-    public void execute() throws MojoExecutionException, MojoFailureException {
-        if (!isMustangOrAbove())
-            throw new MojoExecutionException("JDK6 or later is necessary to build a Jenkins plugin");
 
-        if (new VersionNumber(findJenkinsVersion()).compareTo(new VersionNumber("1.419.99"))<=0)
-            throw new MojoExecutionException("This version of maven-hpi-plugin requires Jenkins 1.420 or later");
+    @Override
+    public void execute() throws MojoExecutionException {
+        JavaSpecificationVersion javaVersion = getMinimumJavaVersion();
+        if (JavaSpecificationVersion.forCurrentJVM().isOlderThan(javaVersion)) {
+            throw new MojoExecutionException("Java " + javaVersion + " or later is necessary to build this plugin.");
+        }
+
+        if (new VersionNumber(findJenkinsVersion()).compareTo(new VersionNumber("2.204")) < 0) {
+            throw new MojoExecutionException("This version of maven-hpi-plugin requires Jenkins 2.204 or later");
+        }
 
         MavenProject parent = project.getParent();
         if (parent != null
@@ -31,18 +35,6 @@ public class ValidateMojo extends AbstractJenkinsMojo {
             getLog().warn("Ignoring deprecated java.level property."
                     + " This property should be removed from your plugin's POM."
                     + " In the future this warning will be changed to an error and will break the build.");
-        }
-    }
-
-    /**
-     * Are we running on JDK6 or above?
-     */
-    private static boolean isMustangOrAbove() {
-        try {
-            Class.forName("javax.annotation.processing.Processor");
-            return true;
-        } catch(ClassNotFoundException e) {
-            return false;
         }
     }
 }
