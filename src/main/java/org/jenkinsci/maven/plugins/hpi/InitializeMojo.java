@@ -22,16 +22,16 @@ public class InitializeMojo extends AbstractJenkinsMojo {
                 && JavaSpecificationVersion.forCurrentJVM().isNewerThanOrEqualTo(new JavaSpecificationVersion("9"))) {
             String argLine = project.getProperties().getProperty("argLine");
             if (argLine != null) {
-                argLine += " " + buildargLine(addOpens);
+                argLine += " " + buildArgLine(addOpens);
             } else {
-                argLine = buildargLine(addOpens);
+                argLine = buildArgLine(addOpens);
             }
             getLog().info("Setting argLine to " + argLine);
             project.getProperties().setProperty("argLine", argLine);
         }
     }
 
-    private static String buildargLine(String addOpens) {
+    private static String buildArgLine(String addOpens) {
         List<String> arguments = new ArrayList<>();
         for (String module : addOpens.split("\\s+")) {
             if (!module.isEmpty()) {
