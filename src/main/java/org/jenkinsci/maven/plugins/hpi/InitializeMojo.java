@@ -1,18 +1,23 @@
 package org.jenkinsci.maven.plugins.hpi;
 
+import com.google.common.collect.Iterables;
 import io.jenkins.lib.versionnumber.JavaSpecificationVersion;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.tools.ant.util.StringUtils;
 
 /**
  * Configure Maven for the desired version of Java.
  *
  * @author Basil Crow
  */
-@Mojo(name = "initialize", defaultPhase = LifecyclePhase.INITIALIZE)
+@Mojo(name = "initialize", requiresDependencyResolution = ResolutionScope.TEST, defaultPhase = LifecyclePhase.INITIALIZE)
 public class InitializeMojo extends AbstractJenkinsMojo {
 
     @Override
@@ -38,6 +43,27 @@ public class InitializeMojo extends AbstractJenkinsMojo {
         } else {
             argLine = buildArgLine(addOpens);
         }
+
+        // TODO fetch the org-netbeans-insane-hook.jar artifact from Maven Central, once it is published there (see apache/netbeans#3743)
+        // for now hard-coding /tmp/org-netbeans-insane-hook.jar
+        boolean insaneHook;
+        List<Artifact> insaneArtifacts = project.getArtifacts().stream()
+                 .filter(artifact -> artifact.getGroupId().equals("org.netbeans.modules") && artifact.getArtifactId().equals("org-netbeans-insane"))
+                 .collect(Collectors.toList());
+        if (!insaneArtifacts.isEmpty()) {
+            Artifact insane = Iterables.getOnlyElement(insaneArtifacts);
+            insaneHook = Integer.parseInt(StringUtils.removePrefix(insane.getVersion(), "RELEASE")) >= 130;
+        } else {
+            insaneHook = false;
+        }
+        if (insaneHook) {
+            if (JavaSpecificationVersion.forCurrentJVM().isNewerThanOrEqualTo(new JavaSpecificationVersion("9"))) {
+                argLine += " --patch-module=java.base=/tmp/org-netbeans-insane-hook.jar --add-exports=java.base/org.netbeans.insane.hook=ALL-UNNAMED";
+            } else {
+                argLine += " -Xbootclasspath/p:/tmp/org-netbeans-insane-hook.jar";
+            }
+        }
+
         getLog().info("Setting argLine to " + argLine);
         project.getProperties().setProperty("argLine", argLine);
     }
