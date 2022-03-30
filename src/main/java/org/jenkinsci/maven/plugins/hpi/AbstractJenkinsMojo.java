@@ -1,6 +1,13 @@
 package org.jenkinsci.maven.plugins.hpi;
 
 import hudson.util.VersionNumber;
+import io.jenkins.lib.versionnumber.JavaSpecificationVersion;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.jar.JarFile;
+import java.util.zip.ZipEntry;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.execution.MavenSession;
@@ -12,7 +19,9 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
 import org.apache.maven.project.ProjectBuilder;
+import org.apache.maven.shared.transfer.artifact.DefaultArtifactCoordinate;
 import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver;
+import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException;
 
 /**
  * Mojos that need to figure out the Jenkins version it's working with.
@@ -87,6 +96,48 @@ public abstract class AbstractJenkinsMojo extends AbstractMojo {
             return jenkinsCoreVersionOverride;
         }
         throw new MojoExecutionException("Failed to determine Jenkins version this plugin depends on.");
+    }
+
+    protected JavaSpecificationVersion getMinimumJavaVersion() throws MojoExecutionException {
+        Artifact core = resolveJenkinsCore();
+        File jar = wrap(core).getFile();
+        try (JarFile jarFile = new JarFile(jar)) {
+            ZipEntry entry = jarFile.getEntry("jenkins/model/Jenkins.class");
+            if (entry == null) {
+                throw new MojoExecutionException("Failed to find Jenkins.class in " + jar);
+            }
+            try (InputStream is = jarFile.getInputStream(entry); DataInputStream dis = new DataInputStream(is)) {
+                int magic = dis.readInt();
+                if (magic != 0xcafebabe) {
+                    throw new MojoExecutionException("Jenkins.class is not a valid class file in " + jar);
+                }
+                dis.readUnsignedShort(); // discard minor version
+                return JavaSpecificationVersion.fromClassVersion(dis.readUnsignedShort());
+            }
+        } catch (IOException e) {
+            throw new MojoExecutionException("Failed to read minimum Java version from " + jar, e);
+        }
+    }
+
+    private Artifact resolveJenkinsCore() throws MojoExecutionException {
+        DefaultArtifactCoordinate artifactCoordinate = new DefaultArtifactCoordinate();
+        if (jenkinsCoreId != null) {
+            String[] parts = jenkinsCoreId.split(":");
+            artifactCoordinate.setGroupId(parts[0]);
+            artifactCoordinate.setArtifactId(parts[1]);
+        } else {
+            artifactCoordinate.setGroupId("org.jenkins-ci.main");
+            artifactCoordinate.setArtifactId("jenkins-core");
+        }
+        artifactCoordinate.setVersion(findJenkinsVersion());
+
+        try {
+            return artifactResolver
+                    .resolveArtifact(session.getProjectBuildingRequest(), artifactCoordinate)
+                    .getArtifact();
+        } catch (ArtifactResolverException e) {
+            throw new MojoExecutionException("Couldn't download artifact: ", e);
+        }
     }
 
     protected MavenArtifact wrap(Artifact a) {
