@@ -1,5 +1,6 @@
 package org.jenkinsci.maven.plugins.hpi;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.util.VersionNumber;
 import io.jenkins.lib.versionnumber.JavaSpecificationVersion;
 import java.io.DataInputStream;
@@ -7,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
@@ -130,6 +132,37 @@ public abstract class AbstractJenkinsMojo extends AbstractMojo {
             artifactCoordinate.setArtifactId("jenkins-core");
         }
         artifactCoordinate.setVersion(findJenkinsVersion());
+
+        try {
+            return artifactResolver
+                    .resolveArtifact(session.getProjectBuildingRequest(), artifactCoordinate)
+                    .getArtifact();
+        } catch (ArtifactResolverException e) {
+            throw new MojoExecutionException("Couldn't download artifact: ", e);
+        }
+    }
+
+    @CheckForNull
+    protected String getAddOpens() throws MojoExecutionException {
+        Artifact artifact = resolveJenkinsWar();
+        File war = wrap(artifact).getFile();
+        try (JarFile jarFile = new JarFile(war)) {
+            Manifest manifest = jarFile.getManifest();
+            if (manifest == null) {
+                throw new MojoExecutionException("No manifest found in " + war);
+            }
+            return manifest.getMainAttributes().getValue("Add-Opens");
+        } catch (IOException e) {
+            throw new MojoExecutionException("Failed to read MANIFEST.MF from " + war, e);
+        }
+    }
+
+    private Artifact resolveJenkinsWar() throws MojoExecutionException {
+        DefaultArtifactCoordinate artifactCoordinate = new DefaultArtifactCoordinate();
+        artifactCoordinate.setGroupId("org.jenkins-ci.main");
+        artifactCoordinate.setArtifactId("jenkins-war");
+        artifactCoordinate.setVersion(findJenkinsVersion());
+        artifactCoordinate.setExtension("war");
 
         try {
             return artifactResolver
