@@ -5,6 +5,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.project.MavenProject;
 
 /**
  * Make sure that we are running in the right environment.
@@ -20,6 +21,15 @@ public class ValidateMojo extends AbstractJenkinsMojo {
 
         if (new VersionNumber(findJenkinsVersion()).compareTo(new VersionNumber("1.419.99"))<=0)
             throw new MojoExecutionException("This version of maven-hpi-plugin requires Jenkins 1.420 or later");
+
+        MavenProject parent = project.getParent();
+        if (parent != null
+                && !parent.getProperties().containsKey("java.level")
+                && project.getProperties().containsKey("java.level")) {
+            getLog().warn("Ignoring deprecated java.level property."
+                    + " This property should be removed from your plugin's POM."
+                    + " In the future this warning will be changed to an error and will break the build.");
+        }
     }
 
     /**
