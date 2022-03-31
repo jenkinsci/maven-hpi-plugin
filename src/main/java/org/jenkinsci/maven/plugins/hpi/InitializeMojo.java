@@ -1,19 +1,26 @@
 package org.jenkinsci.maven.plugins.hpi;
 
+import com.google.common.io.ByteStreams;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.util.VersionNumber;
 import io.jenkins.lib.versionnumber.JavaSpecificationVersion;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import java.util.zip.ZipEntry;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.shared.transfer.artifact.DefaultArtifactCoordinate;
 import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException;
 
@@ -22,13 +29,14 @@ import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverExcepti
  *
  * @author Basil Crow
  */
-@Mojo(name = "initialize", defaultPhase = LifecyclePhase.INITIALIZE)
+@Mojo(name = "initialize", requiresDependencyResolution = ResolutionScope.TEST, defaultPhase = LifecyclePhase.INITIALIZE)
 public class InitializeMojo extends AbstractJenkinsMojo {
 
     @Override
     public void execute() throws MojoExecutionException {
         setCompilerProperties();
-        setSurefireProperties();
+        setAddOpensProperty();
+        setInsaneHookProperty();
     }
 
     private void setCompilerProperties() throws MojoExecutionException {
@@ -85,7 +93,7 @@ public class InitializeMojo extends AbstractJenkinsMojo {
         }
     }
 
-    private void setSurefireProperties() throws MojoExecutionException {
+    private void setAddOpensProperty() throws MojoExecutionException {
         if (JavaSpecificationVersion.forCurrentJVM().isOlderThan(new JavaSpecificationVersion("9"))) {
             // nothing to do prior to JEP 261
             return;
@@ -143,5 +151,48 @@ public class InitializeMojo extends AbstractJenkinsMojo {
             }
         }
         return String.join(" ", arguments);
+    }
+
+    private void setInsaneHookProperty() throws MojoExecutionException {
+        Artifact insane = project.getArtifactMap().get("org.netbeans.modules:org-netbeans-insane");
+        if (insane == null || Integer.parseInt(insane.getVersion().substring("RELEASE".length())) < 130) {
+            // older versions of insane do not need a hook
+            return;
+        }
+
+        Artifact jth = project.getArtifactMap().get("org.jenkins-ci.main:jenkins-test-harness");
+        if (jth == null) {
+            return;
+        }
+
+        Path insaneHook = getInsaneHook(wrap(jth));
+
+        String argLine;
+        if (JavaSpecificationVersion.forCurrentJVM().isNewerThanOrEqualTo(new JavaSpecificationVersion("9"))) {
+            argLine = String.format("--patch-module=java.base=%s --add-exports=java.base/org.netbeans.insane.hook=ALL-UNNAMED", insaneHook);
+        } else {
+            argLine = String.format("-Xbootclasspath/p:%s", insaneHook);
+        }
+        getLog().info("Setting jenkins.insaneHook to " + argLine);
+        project.getProperties().setProperty("jenkins.insaneHook", argLine);
+    }
+
+    @NonNull
+    private static Path getInsaneHook(MavenArtifact artifact) throws MojoExecutionException {
+        File jar = artifact.getFile();
+        try (JarFile jarFile = new JarFile(jar)) {
+            ZipEntry entry = jarFile.getEntry("netbeans/harness/modules/ext/org-netbeans-insane-hook.jar");
+            if (entry == null) {
+                throw new MojoExecutionException("Failed to find org-netbeans-insane-hook.jar in " + jar);
+            }
+            Path tempFile = Files.createTempFile("org-netbeans-insane-hook", ".jar");
+            tempFile.toFile().deleteOnExit();
+            try (InputStream is = jarFile.getInputStream(entry); OutputStream os = Files.newOutputStream(tempFile)) {
+                ByteStreams.copy(is, os);
+            }
+            return tempFile.toAbsolutePath();
+        } catch (IOException e) {
+            throw new MojoExecutionException("Failed to read org-netbeans-insane-hook.jar from " + jar, e);
+        }
     }
 }
