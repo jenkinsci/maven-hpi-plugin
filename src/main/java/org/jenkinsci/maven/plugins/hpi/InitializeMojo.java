@@ -34,35 +34,19 @@ public class InitializeMojo extends AbstractJenkinsMojo {
             return;
         }
 
-        String addOpens = getAddOpens();
-        if (addOpens == null) {
+        String manifestEntry = getManifestEntry();
+        if (manifestEntry == null) {
             // core older than 2.339, ignore
             return;
         }
 
-        String argLine = project.getProperties().getProperty("argLine");
-        if (argLine != null) {
-            argLine += " " + buildArgLine(addOpens);
-        } else {
-            argLine = buildArgLine(addOpens);
-        }
-        getLog().info("Setting argLine to " + argLine);
-        project.getProperties().setProperty("argLine", argLine);
-    }
-
-    private static String buildArgLine(String addOpens) {
-        List<String> arguments = new ArrayList<>();
-        for (String module : addOpens.split("\\s+")) {
-            if (!module.isEmpty()) {
-                arguments.add("--add-opens");
-                arguments.add(module + "=ALL-UNNAMED");
-            }
-        }
-        return String.join(" ", arguments);
+        String argLine = buildArgLine(manifestEntry);
+        getLog().info("Setting jenkins.addOpens to " + argLine);
+        project.getProperties().setProperty("jenkins.addOpens", argLine);
     }
 
     @CheckForNull
-    private String getAddOpens() throws MojoExecutionException {
+    private String getManifestEntry() throws MojoExecutionException {
         Artifact artifact = resolveJenkinsWar();
         File war = wrap(artifact).getFile();
         try (JarFile jarFile = new JarFile(war)) {
@@ -90,5 +74,16 @@ public class InitializeMojo extends AbstractJenkinsMojo {
         } catch (ArtifactResolverException e) {
             throw new MojoExecutionException("Couldn't download artifact: ", e);
         }
+    }
+
+    private static String buildArgLine(String manifestEntry) {
+        List<String> arguments = new ArrayList<>();
+        for (String module : manifestEntry.split("\\s+")) {
+            if (!module.isEmpty()) {
+                arguments.add("--add-opens");
+                arguments.add(module + "=ALL-UNNAMED");
+            }
+        }
+        return String.join(" ", arguments);
     }
 }
