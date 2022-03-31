@@ -186,6 +186,7 @@ public class InitializeMojo extends AbstractJenkinsMojo {
                 throw new MojoExecutionException("Failed to find org-netbeans-insane-hook.jar in " + jar);
             }
             Path tempFile = Files.createTempFile("org-netbeans-insane-hook", ".jar");
+            tempFile.toFile().deleteOnExit();
             try (InputStream is = jarFile.getInputStream(entry); OutputStream os = Files.newOutputStream(tempFile)) {
                 ByteStreams.copy(is, os);
             }
