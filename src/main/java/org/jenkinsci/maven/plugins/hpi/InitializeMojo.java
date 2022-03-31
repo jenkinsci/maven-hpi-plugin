@@ -162,7 +162,7 @@ public class InitializeMojo extends AbstractJenkinsMojo {
 
         Artifact jth = project.getArtifactMap().get("org.jenkins-ci.main:jenkins-test-harness");
         if (jth == null) {
-            throw new MojoExecutionException("Failed to find the Jenkins test harness on the test classpath");
+            return;
         }
 
         Path insaneHook = getInsaneHook(wrap(jth));
