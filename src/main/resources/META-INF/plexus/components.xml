@@ -19,7 +19,7 @@
               <process-test-resources>org.apache.maven.plugins:maven-resources-plugin:testResources</process-test-resources>
               <generate-test-sources>org.jenkins-ci.tools:maven-hpi-plugin:insert-test</generate-test-sources>
               <test-compile>org.apache.maven.plugins:maven-compiler-plugin:testCompile,org.jenkins-ci.tools:maven-hpi-plugin:test-hpl,org.jenkins-ci.tools:maven-hpi-plugin:resolve-test-dependencies</test-compile>
-              <test>org.apache.maven.plugins:maven-surefire-plugin:test</test>
+              <test>org.jenkins-ci.tools:maven-hpi-plugin:test-runtime,org.apache.maven.plugins:maven-surefire-plugin:test</test>
               <package>org.jenkins-ci.tools:maven-hpi-plugin:hpi</package>
               <install>org.apache.maven.plugins:maven-install-plugin:install</install>
               <deploy>org.apache.maven.plugins:maven-deploy-plugin:deploy</deploy>
