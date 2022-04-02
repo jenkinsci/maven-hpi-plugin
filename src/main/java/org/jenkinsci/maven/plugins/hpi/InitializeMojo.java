@@ -67,7 +67,8 @@ public class InitializeMojo extends AbstractJenkinsMojo {
     }
 
     private void unsetProperty(String key) {
-        if (project.getProperties().containsKey(key)) {
+        String currentValue = project.getProperties().getProperty(key);
+        if (currentValue != null && !currentValue.isEmpty()) {
             getLog().info("Unsetting " + key);
             project.getProperties().remove(key);
         }
