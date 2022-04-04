@@ -52,7 +52,6 @@
     <dollar>$</dollar>
     <openbracket>{</openbracket>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <java.level>8</java.level>
     <gitHubRepo>jenkinsci/${project.artifactId}</gitHubRepo>
     <aether.version>1.1.0</aether.version>
     <maven.version>3.8.5</maven.version>
