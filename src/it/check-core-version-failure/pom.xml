@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>4.38</version>
+    <version>4.40</version>
     <relativePath />
   </parent>
   <artifactId>check-core-version-failure</artifactId>
@@ -13,7 +13,6 @@
   <packaging>hpi</packaging>
   <properties>
     <jenkins.version>2.249.1</jenkins.version>
-    <java.level>8</java.level>
     <hpi-plugin.version>@project.version@</hpi-plugin.version>
   </properties>
   <dependencies>
