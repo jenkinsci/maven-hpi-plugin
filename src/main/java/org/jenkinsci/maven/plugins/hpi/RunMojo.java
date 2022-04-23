@@ -93,7 +93,7 @@ import java.util.zip.ZipFile;
  * </p>
  *
  * <p>
- * To specify the HTTP port, use <tt>-Djetty.port=<i>PORT</i></tt>
+ * To specify the HTTP port, use {@code -Djetty.port=PORT}
  * </p>
  *
  * @author Kohsuke Kawaguchi
