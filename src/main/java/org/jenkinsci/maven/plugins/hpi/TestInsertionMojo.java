@@ -107,10 +107,11 @@ public class TestInsertionMojo extends AbstractJenkinsMojo {
             return;
         }
 
+        File f = new File(project.getBasedir(), "target/generated-test-sources/injected");
+        File javaFile = new File(f, injectedTestName + ".java");
         try {
-            File f = new File(project.getBasedir(), "target/generated-test-sources/injected");
             Files.createDirectories(f.toPath());
-            File javaFile = new File(f, injectedTestName + ".java");
+
             PrintWriter w = new PrintWriter(new OutputStreamWriter(new FileOutputStream(javaFile), StandardCharsets.UTF_8));
             w.println("import java.util.*;");
             w.println("/**");
@@ -134,12 +135,17 @@ public class TestInsertionMojo extends AbstractJenkinsMojo {
             w.close();
 
             project.addTestCompileSourceRoot(f.getAbsolutePath());
+        } catch (IOException e) {
+            throw new MojoExecutionException("Failed to create injected tests", e);
+        }
 
+        try {
             // always set the same time stamp on this file, so that Maven will not re-compile this
             // every time we run this mojo.
             Files.setLastModifiedTime(javaFile.toPath(), FileTime.fromMillis(0L));
         } catch (IOException e) {
-            throw new MojoExecutionException("Failed to create injected tests", e);
+            // Ignore, as this is an optimization for performance rather than correctness.
+            getLog().warn("Failed to clear last modified time on " + javaFile, e);
         }
     }
 }
