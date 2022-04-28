@@ -336,7 +336,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
      * @param war The WAR to scan.
      * @return The bundled plugins in the WAR.
      */
-    @SuppressFBWarnings(value = "REDOS", justification = "TODO needs triage")
+    @SuppressFBWarnings(value = "REDOS", justification = "trusted code")
     private static Map<String, String> scanWar(File war, MavenProject project) throws MojoExecutionException {
         Map<String, String> overrides = new HashMap<>();
         try (JarFile jf = new JarFile(war)) {
