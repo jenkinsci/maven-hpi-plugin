@@ -560,14 +560,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
     }
 
     // Adapted from RequireUpperBoundDeps @ 731ea7a693a0986f2054b6a73a86a31373df59ec.
-    // TODO delete extraneous stuff and simplify to the logic we actually need here:
     private class RequireUpperBoundDepsVisitor implements DependencyNodeVisitor {
-
-        private boolean uniqueVersions;
-
-        public void setUniqueVersions(boolean uniqueVersions) {
-            this.uniqueVersions = uniqueVersions;
-        }
 
         private Map<String, List<DependencyNodeHopCountPair>> keyToPairsMap = new LinkedHashMap<>();
 
@@ -601,10 +594,10 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                     }
                 }
 
-                ArtifactVersion resolvedVersion = resolvedPair.extractArtifactVersion(uniqueVersions, false);
+                ArtifactVersion resolvedVersion = resolvedPair.extractArtifactVersion(false);
 
                 for (DependencyNodeHopCountPair pair : pairs) {
-                    ArtifactVersion version = pair.extractArtifactVersion(uniqueVersions, true);
+                    ArtifactVersion version = pair.extractArtifactVersion(true);
                     if (resolvedVersion.compareTo(version) < 0) {
                         Artifact artifact = resolvedPair.node.getArtifact();
                         String key = toKey(artifact);
@@ -648,13 +641,13 @@ public class TestDependencyMojo extends AbstractHpiMojo {
             return node;
         }
 
-        private ArtifactVersion extractArtifactVersion(boolean uniqueVersions, boolean usePremanagedVersion) {
+        private ArtifactVersion extractArtifactVersion(boolean usePremanagedVersion) {
             if (usePremanagedVersion && node.getPremanagedVersion() != null) {
                 return new DefaultArtifactVersion(node.getPremanagedVersion());
             }
 
             Artifact artifact = node.getArtifact();
-            String version = uniqueVersions ? artifact.getVersion() : artifact.getBaseVersion();
+            String version = artifact.getBaseVersion();
             if (version != null) {
                 return new DefaultArtifactVersion(version);
             }
