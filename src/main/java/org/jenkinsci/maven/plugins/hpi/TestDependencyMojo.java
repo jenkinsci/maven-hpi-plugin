@@ -555,7 +555,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
             }
             return artifacts;
         } catch (DependencyResolutionException e) {
-            throw new MojoExecutionException("Unable to copy dependency plugin", e);
+            throw new MojoExecutionException("Unable to resolve dependencies", e);
         }
     }
 
