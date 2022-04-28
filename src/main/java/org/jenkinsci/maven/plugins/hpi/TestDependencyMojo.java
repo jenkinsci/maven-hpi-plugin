@@ -124,7 +124,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
             throw new MojoExecutionException("Cannot override self");
         }
 
-        Map<String, String> bundledPlugins = overrideWar != null ? scanWar(overrideWar, project) : Collections.emptyMap();
+        Map<String, String> bundledPlugins = overrideWar != null ? scanWar(overrideWar, session, project) : Collections.emptyMap();
         if (!bundledPlugins.isEmpty()) {
             getLog().info(String.format("Scanned contents of %s with %d bundled plugins", overrideWar, bundledPlugins.size()));
         }
@@ -337,7 +337,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
      * @return The bundled plugins in the WAR.
      */
     @SuppressFBWarnings(value = "REDOS", justification = "trusted code")
-    private static Map<String, String> scanWar(File war, MavenProject project) throws MojoExecutionException {
+    private static Map<String, String> scanWar(File war, MavenSession session, MavenProject project) throws MojoExecutionException {
         Map<String, String> overrides = new HashMap<>();
         try (JarFile jf = new JarFile(war)) {
             Enumeration<JarEntry> entries = jf.entries();
@@ -386,7 +386,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
             if (coreVersion == null) {
                 throw new MojoExecutionException("no jenkins-core.jar in " + war);
             }
-            String jenkinsVersion = System.getProperties().getProperty("jenkins.version");
+            String jenkinsVersion = session.getSystemProperties().getProperty("jenkins.version");
             if (jenkinsVersion == null) {
                 jenkinsVersion = project.getProperties().getProperty("jenkins.version");
             }
