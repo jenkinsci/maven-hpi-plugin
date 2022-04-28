@@ -100,6 +100,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
      * present in the project model or their transitive dependencies will be updated to the versions
      * in the WAR. Dependencies not already present in the project model will be added to the
      * project model.
+     * May be combined with {@code overrideVersions} so long as the results do not conflict.
      */
     @Parameter(property = "overrideWar")
     private File overrideWar;
