@@ -203,6 +203,13 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                      */
                     Set<Artifact> resolved = resolveDependencies(shadow);
                     shadow.setArtifacts(resolved);
+
+                    // We intentionally want to use a lower version of this dependency.
+                    String servletHack = upperBounds.get("javax.servlet:servlet-api");
+                    if (servletHack != null && !servletHack.equals("0")) {
+                        upperBounds.remove(servletHack);
+                    }
+
                     applyOverrides(upperBounds, Collections.emptyMap(), shadow, getLog());
                 }
             }
