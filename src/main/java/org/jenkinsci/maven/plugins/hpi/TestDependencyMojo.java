@@ -196,6 +196,11 @@ public class TestDependencyMojo extends AbstractHpiMojo {
 
                 if (!upperBounds.isEmpty()) {
                     // Second pass: apply the results of the upper bounds analysis.
+
+                    /*
+                     * applyOverrides depends on resolution, so resolve again between the first pass
+                     * and the second.
+                     */
                     Set<Artifact> resolved = resolveDependencies(shadow);
                     shadow.setArtifacts(resolved);
                     applyOverrides(upperBounds, Collections.emptyMap(), shadow, getLog());
