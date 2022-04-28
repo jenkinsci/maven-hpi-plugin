@@ -294,7 +294,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                  * of different classifiers.
                  */
                 boolean found = false;
-                // Yeah, this is O(n^2)... deal with it!
+                // Yeah, this is O(n²)... deal with it!
                 for (MavenArtifact a : effectiveArtifacts) {
                     if (!a.getGroupId().equals(groupId) || !a.getArtifactId().equals(artifactId)) {
                         continue;
