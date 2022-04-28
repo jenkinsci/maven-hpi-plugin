@@ -207,7 +207,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                     // We intentionally want to use a lower version of this dependency.
                     String servletHack = upperBounds.get("javax.servlet:servlet-api");
                     if (servletHack != null && !servletHack.equals("0")) {
-                        upperBounds.remove(servletHack);
+                        upperBounds.remove("javax.servlet:servlet-api");
                     }
 
                     applyOverrides(upperBounds, Collections.emptyMap(), shadow, getLog());
