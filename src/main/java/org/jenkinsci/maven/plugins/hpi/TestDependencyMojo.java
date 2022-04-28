@@ -490,7 +490,8 @@ public class TestDependencyMojo extends AbstractHpiMojo {
 
         /*
          * If a bundled plugin was added that is neither in the model nor the transitive dependency
-         * chain, add a test-scoped direct dependency to the model.
+         * chain, add a test-scoped direct dependency to the model. This is necessary in order for
+         * us to be able to correctly populate target/test-dependencies/ later on.
          */
         Set<String> unappliedBundledPlugins = new HashSet<>(bundledPlugins.keySet());
         unappliedBundledPlugins.removeAll(appliedBundledPlugins);
