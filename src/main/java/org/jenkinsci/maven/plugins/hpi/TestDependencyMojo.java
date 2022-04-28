@@ -194,8 +194,12 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                 node.accept(visitor);
                 Map<String, String> upperBounds = visitor.upperBounds();
 
-                // Second pass: apply the results of the upper bounds analysis.
-                applyOverrides(upperBounds, Collections.emptyMap(), shadow, getLog());
+                if (!upperBounds.isEmpty()) {
+                    // Second pass: apply the results of the upper bounds analysis.
+                    Set<Artifact> resolved = resolveDependencies(shadow);
+                    shadow.setArtifacts(resolved);
+                    applyOverrides(upperBounds, Collections.emptyMap(), shadow, getLog());
+                }
             }
 
             /*
