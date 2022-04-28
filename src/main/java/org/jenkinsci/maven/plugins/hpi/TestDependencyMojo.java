@@ -142,7 +142,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                 overrides.remove(override);
             } else {
                 throw new MojoExecutionException(String.format(
-                        "Failed to override %s: conflict between %s in overrideVersions and %s in jth.jenkins-war.path",
+                        "Failed to override %s: conflict between %s in overrideVersions and %s in overrideWar",
                         override, bundledPlugins.get(override), overrides.get(override)));
             }
         }
