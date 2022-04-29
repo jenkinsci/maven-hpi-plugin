@@ -249,22 +249,23 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                     deletions.put(entry.getKey(), entry.getValue());
                 }
             }
-            getLog().info("New dependency tree:");
-            MavenSession shadowSession = session.clone();
-            shadowSession.setCurrentProject(shadow);
-            shadow.setArtifacts(resolved);
-            MojoExecutor.executeMojo(
-                    MojoExecutor.plugin(
-                            MojoExecutor.groupId("org.apache.maven.plugins"),
-                            MojoExecutor.artifactId("maven-dependency-plugin")),
-                    MojoExecutor.goal("tree"),
-                    MojoExecutor.configuration(
-                            MojoExecutor.element(MojoExecutor.name("scope"), Artifact.SCOPE_TEST)),
-                    MojoExecutor.executionEnvironment(shadow, shadowSession, pluginManager));
+            getLog().info("After resolving, additions: " + additions);
+            getLog().info("After resolving, deletions: " + deletions);
+            getLog().info("After resolving, updates: " + updates);
             if (getLog().isDebugEnabled()) {
-                getLog().debug("after re-resolving, additions: " + additions);
-                getLog().debug("after re-resolving, deletions: " + deletions);
-                getLog().debug("after re-resolving, updates: " + updates);
+                getLog().debug("New dependency tree:");
+                MavenSession shadowSession = session.clone();
+                shadowSession.setCurrentProject(shadow);
+                shadow.setArtifacts(resolved);
+                MojoExecutor.executeMojo(
+                        MojoExecutor.plugin(
+                                MojoExecutor.groupId("org.apache.maven.plugins"),
+                                MojoExecutor.artifactId("maven-dependency-plugin")),
+                        MojoExecutor.goal("tree"),
+                        MojoExecutor.configuration(
+                                MojoExecutor.element(
+                                        MojoExecutor.name("scope"), Artifact.SCOPE_TEST)),
+                        MojoExecutor.executionEnvironment(shadow, shadowSession, pluginManager));
             }
         }
 
