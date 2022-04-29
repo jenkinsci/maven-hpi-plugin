@@ -235,6 +235,13 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                     // Present in both old and new resolution: check for update.
                     String originalVersion = originalResolution.get(entry.getKey());
                     String newVersion = entry.getValue();
+                    /*
+                     * We do an equals check here rather than a new for the following reason: 
+                     *  suppose we depend on A:1.0 which depends on B:1.2. Now suppose a problem is discovered in B:1.2
+                     * that results in A:1.1 rolling back to B:1.1. We only ever directly depended on A:1.0, but now we
+                     *  override A:1.0 to A:1.1. B:1.2 was in our transitive tree before, but now for correctness we must
+                     * change B from 1.2 to 1.1.
+                     */
                     if (!newVersion.equals(originalVersion)) {
                         updates.put(entry.getKey(), newVersion);
                     }
