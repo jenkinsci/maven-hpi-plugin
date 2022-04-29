@@ -75,11 +75,12 @@ import org.twdata.maven.mojoexecutor.MojoExecutor;
  * different versions of various dependencies than what was configured in the POM.
  */
 @Mojo(name="resolve-test-dependencies", requiresDependencyResolution = ResolutionScope.TEST)
+@SuppressFBWarnings(value = "REDOS", justification = "trusted code")
 public class TestDependencyMojo extends AbstractHpiMojo {
 
-    private static final String CORE_REGEX = "WEB-INF/lib/jenkins-core-([0-9.]+(?:-[0-9a-f.]+)*(?:-(?i)([a-z]+)(-)?([0-9a-f.]+)?)?(?:-(?i)([a-z]+)(-)?([0-9a-f_.]+)?)?(?:-SNAPSHOT)?)[.]jar";
-    private static final String PLUGIN_REGEX = "WEB-INF/plugins/([^/.]+)[.][hj]pi";
-    private static final String OVERRIDE_REGEX = "([^:]+:[^:]+):([^:]+)";
+    private static final Pattern CORE_REGEX = Pattern.compile("WEB-INF/lib/jenkins-core-([0-9.]+(?:-[0-9a-f.]+)*(?:-(?i)([a-z]+)(-)?([0-9a-f.]+)?)?(?:-(?i)([a-z]+)(-)?([0-9a-f_.]+)?)?(?:-SNAPSHOT)?)[.]jar");
+    private static final Pattern PLUGIN_REGEX = Pattern.compile("WEB-INF/plugins/([^/.]+)[.][hj]pi");
+    private static final Pattern OVERRIDE_REGEX = Pattern.compile("([^:]+:[^:]+):([^:]+)");
 
     @Component private BuildPluginManager pluginManager;
 
@@ -352,7 +353,6 @@ public class TestDependencyMojo extends AbstractHpiMojo {
      * @param war The WAR to scan.
      * @return The bundled plugins in the WAR.
      */
-    @SuppressFBWarnings(value = "REDOS", justification = "trusted code")
     private static Map<String, String> scanWar(File war, MavenSession session, MavenProject project) throws MojoExecutionException {
         Map<String, String> overrides = new HashMap<>();
         try (JarFile jf = new JarFile(war)) {
@@ -361,14 +361,14 @@ public class TestDependencyMojo extends AbstractHpiMojo {
             while (entries.hasMoreElements()) {
                 JarEntry entry = entries.nextElement();
                 String name = entry.getName();
-                Matcher m = Pattern.compile(CORE_REGEX).matcher(name);
+                Matcher m = CORE_REGEX.matcher(name);
                 if (m.matches()) {
                     if (coreVersion != null) {
                         throw new MojoExecutionException("More than 1 jenkins-core JAR in " + war);
                     }
                     coreVersion = m.group(1);
                 }
-                m = Pattern.compile(PLUGIN_REGEX).matcher(name);
+                m = PLUGIN_REGEX.matcher(name);
                 if (m.matches()) {
                     try (InputStream is = jf.getInputStream(entry); JarInputStream jis = new JarInputStream(is)) {
                         Manifest manifest = jis.getManifest();
@@ -420,7 +420,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
     private static Map<String, String> parseOverrides(List<String> overrideVersions) throws MojoExecutionException {
         Map<String, String> overrides = new HashMap<>();
         for (String override : overrideVersions) {
-            Matcher m = Pattern.compile(OVERRIDE_REGEX).matcher(override);
+            Matcher m = OVERRIDE_REGEX.matcher(override);
             if (!m.matches()) {
                 throw new MojoExecutionException("illegal override: " + override);
             }
