@@ -159,10 +159,12 @@ public class TestDependencyMojo extends AbstractHpiMojo {
         if (overrides.isEmpty() && overrideWar == null) {
             effectiveArtifacts = getProjectArtfacts();
         } else {
-            /*
-             * WARNING: Under no circumstances should this code ever be executed when performing a
-             * release.
-             */
+            // Under no circumstances should this code ever be executed when performing a release.
+            for (String goal : session.getGoals()) {
+                if (goal.contains("install") || goal.contains("deploy")) {
+                    throw new MojoExecutionException("Cannot override dependencies when doing a release");
+                }
+            }
 
             // Create a shadow project for dependency analysis.
             MavenProject shadow = project.clone();
