@@ -227,11 +227,17 @@ public class TestDependencyMojo extends AbstractHpiMojo {
              * classpath.
              */
             Set<Artifact> resolved = resolveDependencies(shadow);
-            effectiveArtifacts = wrap(new Artifacts(resolved));
             Map<String, String> newResolution = new HashMap<>();
+            Set<Artifact> self = new HashSet<>();
             for (Artifact artifact : resolved) {
-                newResolution.put(toKey(artifact), artifact.getVersion());
+                if (artifact.getGroupId().equals(project.getGroupId()) && artifact.getArtifactId().equals(project.getArtifactId())) {
+                    self.add(artifact);
+                } else {
+                    newResolution.put(toKey(artifact), artifact.getVersion());
+                }
             }
+            resolved.removeAll(self);
+            effectiveArtifacts = wrap(new Artifacts(resolved));
             for (Map.Entry<String, String> entry : newResolution.entrySet()) {
                 if (originalResolution.containsKey(entry.getKey())) {
                     // Present in both old and new resolution: check for update.
@@ -499,6 +505,9 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                 dependency.setScope(artifact.getScope());
                 dependency.setType(artifact.getType());
                 dependency.setClassifier(artifact.getClassifier());
+                if (dependency.getGroupId().equals(project.getGroupId()) && dependency.getArtifactId().equals(project.getArtifactId())) {
+                    throw new MojoExecutionException("Cannot add self to dependency management section");
+                }
                 DependencyManagement dm = project.getDependencyManagement();
                 if (dm != null) {
                     log.info(String.format("Adding dependency management entry %s:%s", key, dependency.getVersion()));
@@ -533,6 +542,9 @@ public class TestDependencyMojo extends AbstractHpiMojo {
             dependency.setArtifactId(artifactId);
             dependency.setVersion(version);
             dependency.setScope(Artifact.SCOPE_TEST);
+            if (dependency.getGroupId().equals(project.getGroupId()) && dependency.getArtifactId().equals(project.getArtifactId())) {
+                throw new MojoExecutionException("Cannot add self as test-scoped dependency");
+            }
             log.info(String.format("Adding test-scoped direct dependency %s:%s", key, version));
             project.getDependencies().add(dependency);
         }
