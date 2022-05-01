@@ -176,7 +176,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
             }
 
             // First pass: apply the overrides specified by the user.
-            applyOverrides(overrides, bundledPlugins, shadow, getLog());
+            applyOverrides(overrides, bundledPlugins, false, shadow, getLog());
 
             if (useUpperBounds) {
                 /*
@@ -213,7 +213,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                         upperBounds.remove("javax.servlet:servlet-api");
                     }
 
-                    applyOverrides(upperBounds, Collections.emptyMap(), shadow, getLog());
+                    applyOverrides(upperBounds, Collections.emptyMap(), true, shadow, getLog());
                 }
             }
 
@@ -457,6 +457,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
     private static void applyOverrides(
             Map<String, String> overrides,
             Map<String, String> bundledPlugins,
+            boolean upperBounds,
             MavenProject project,
             Log log)
             throws MojoExecutionException {
@@ -522,7 +523,33 @@ public class TestDependencyMojo extends AbstractHpiMojo {
 
         // By now, we should have applied the entire override request. If not, fail.
         if (!unappliedOverrides.isEmpty()) {
-            throw new MojoExecutionException("Failed to apply the following overrides: " + unappliedOverrides);
+            if (upperBounds) {
+                /*
+                 * An upper bounds override that could not be found in the transitive tree is most likely a
+                 * provided transitive dependency of a test-scoped dependency. We could ignore these, but
+                 * we add them to the dependency management section just to be safe.
+                 */
+                for (String key : unappliedOverrides) {
+                    String[] groupArt = key.split(":");
+                    Dependency dependency = new Dependency();
+                    dependency.setGroupId(groupArt[0]);
+                    dependency.setArtifactId(groupArt[1]);
+                    dependency.setVersion(overrides.get(key));
+                    if (dependency.getGroupId().equals(project.getGroupId()) && dependency.getArtifactId().equals(project.getArtifactId())) {
+                        throw new MojoExecutionException("Cannot add self to dependency management section");
+                    }
+                    DependencyManagement dm = project.getDependencyManagement();
+                    if (dm != null) {
+                        log.info(String.format("Adding dependency management entry %s:%s", key, dependency.getVersion()));
+                        dm.addDependency(dependency);
+                    } else {
+                        throw new MojoExecutionException(String.format("Failed to add dependency management entry %s:%s because the project does not have a dependency management section", key, overrides.get(key)));
+                    }
+                    overrideAdditions.add(key);
+                }
+            } else {
+                throw new MojoExecutionException("Failed to apply the following overrides: " + unappliedOverrides);
+            }
         }
 
         /*
