@@ -179,33 +179,31 @@ public class TestDependencyMojo extends AbstractHpiMojo {
             applyOverrides(overrides, bundledPlugins, false, shadow, getLog());
 
             if (useUpperBounds) {
-                /*
-                 * Do upper bounds analysis. Upper bounds analysis consumes the model directly and
-                 * not the resolution of that model, so it is fine to invoke it at this point with
-                 * the model having been updated and the resolution having been cleared.
-                 */
-                DependencyNode node;
-                try {
-                    ProjectBuildingRequest buildingRequest = new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
-                    buildingRequest.setProject(shadow);
-                    ArtifactFilter filter = null; // Evaluate all scopes
-                    node = dependencyCollectorBuilder.collectDependencyGraph(buildingRequest, filter);
-                } catch (DependencyCollectorBuilderException e) {
-                    throw new MojoExecutionException("Failed to analyze dependency tree for useUpperBounds", e);
-                }
-                RequireUpperBoundDepsVisitor visitor = new RequireUpperBoundDepsVisitor();
-                node.accept(visitor);
-                Map<String, String> upperBounds = visitor.upperBounds();
+                boolean converged = false;
+                int i = 0;
 
-                if (!upperBounds.isEmpty()) {
-                    // Second pass: apply the results of the upper bounds analysis.
+                while (!converged) {
+                    if (i++ > 10) {
+                        throw new MojoExecutionException("Failed to iterate to convergence during upper bounds analysis");
+                    }
 
                     /*
-                     * applyOverrides depends on resolution, so resolve again between the first pass
-                     * and the second.
+                     * Do upper bounds analysis. Upper bounds analysis consumes the model directly and
+                     * not the resolution of that model, so it is fine to invoke it at this point with
+                     * the model having been updated and the resolution having been cleared.
                      */
-                    Set<Artifact> resolved = resolveDependencies(shadow);
-                    shadow.setArtifacts(resolved);
+                    DependencyNode node;
+                    try {
+                        ProjectBuildingRequest buildingRequest = new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
+                        buildingRequest.setProject(shadow);
+                        ArtifactFilter filter = null; // Evaluate all scopes
+                        node = dependencyCollectorBuilder.collectDependencyGraph(buildingRequest, filter);
+                    } catch (DependencyCollectorBuilderException e) {
+                        throw new MojoExecutionException("Failed to analyze dependency tree for useUpperBounds", e);
+                    }
+                    RequireUpperBoundDepsVisitor visitor = new RequireUpperBoundDepsVisitor();
+                    node.accept(visitor);
+                    Map<String, String> upperBounds = visitor.upperBounds();
 
                     // We intentionally want to use a lower version of this dependency.
                     String servletHack = upperBounds.get("javax.servlet:servlet-api");
@@ -213,7 +211,20 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                         upperBounds.remove("javax.servlet:servlet-api");
                     }
 
-                    applyOverrides(upperBounds, Collections.emptyMap(), true, shadow, getLog());
+                    if (upperBounds.isEmpty()) {
+                        converged = true;
+                    } else {
+                        // Second pass: apply the results of the upper bounds analysis.
+
+                        /*
+                         * applyOverrides depends on resolution, so resolve again between the first pass
+                         * and the second.
+                         */
+                        Set<Artifact> resolved = resolveDependencies(shadow);
+                        shadow.setArtifacts(resolved);
+
+                        applyOverrides(upperBounds, Collections.emptyMap(), true, shadow, getLog());
+                    }
                 }
             }
 
