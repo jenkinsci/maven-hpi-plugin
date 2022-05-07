@@ -73,6 +73,15 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
     private String sandboxStatus;
 
     /**
+     * Specify the minimum version of Java that this plugin requires.
+     *
+     * @deprecated removed without replacement
+     */
+    @Deprecated
+    @Parameter
+    protected String minimumJavaVersion;
+
+    /**
      * Generates a manifest file to be included in the .hpi file
      */
     protected void generateManifest(MavenArchiveConfiguration archive, File manifestFile) throws MojoExecutionException {
@@ -123,6 +132,12 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
 
         if (compatibleSinceVersion!=null)
             mainSection.addAttributeAndCheck(new Manifest.Attribute("Compatible-Since-Version", compatibleSinceVersion));
+
+        if (this.minimumJavaVersion != null && !this.minimumJavaVersion.isEmpty()) {
+            getLog().warn("Ignoring deprecated minimumJavaVersion parameter."
+                    + " This property should be removed from your plugin's POM."
+                    + " In the future this warning will be changed to an error and will break the build.");
+        }
 
         if (sandboxStatus!=null)
             mainSection.addAttributeAndCheck(new Manifest.Attribute("Sandbox-Status", sandboxStatus));

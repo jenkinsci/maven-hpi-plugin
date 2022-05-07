@@ -244,6 +244,15 @@ public class RunMojo extends AbstractJettyMojo {
     private Collection<Logger> loggerReferences; // just to prevent GC
 
     /**
+     * Specify the minimum version of Java that this plugin requires.
+     *
+     * @deprecated removed without replacement
+     */
+    @Deprecated
+    @Parameter
+    private String minimumJavaVersion;
+
+    /**
      * The context path for the webapp. Defaults to the
      * name of the webapp's artifact.
      *
