@@ -244,12 +244,6 @@ public class RunMojo extends AbstractJettyMojo {
     private Collection<Logger> loggerReferences; // just to prevent GC
 
     /**
-     * Specify the minimum version of Java that this plugin requires.
-     */
-    @Parameter(required = true)
-    private String minimumJavaVersion;
-
-    /**
      * The context path for the webapp. Defaults to the
      * name of the webapp's artifact.
      *
@@ -497,8 +491,7 @@ public class RunMojo extends AbstractJettyMojo {
                         MojoExecutor.element(MojoExecutor.name("warSourceDirectory"), warSourceDirectory.toString()),
                         MojoExecutor.element(MojoExecutor.name("jenkinsCoreId"), jenkinsCoreId),
                         MojoExecutor.element(MojoExecutor.name("pluginFirstClassLoader"), Boolean.toString(pluginFirstClassLoader)),
-                        MojoExecutor.element(MojoExecutor.name("maskClasses"), maskClasses),
-                        MojoExecutor.element(MojoExecutor.name("minimumJavaVersion"), minimumJavaVersion)),
+                        MojoExecutor.element(MojoExecutor.name("maskClasses"), maskClasses)),
                 MojoExecutor.executionEnvironment(project, session, pluginManager));
     }
 

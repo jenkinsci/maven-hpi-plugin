@@ -73,12 +73,6 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
     private String sandboxStatus;
 
     /**
-     * Specify the minimum version of Java that this plugin requires.
-     */
-    @Parameter(required = true)
-    protected String minimumJavaVersion;
-
-    /**
      * Generates a manifest file to be included in the .hpi file
      */
     protected void generateManifest(MavenArchiveConfiguration archive, File manifestFile) throws MojoExecutionException {
@@ -129,21 +123,6 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
 
         if (compatibleSinceVersion!=null)
             mainSection.addAttributeAndCheck(new Manifest.Attribute("Compatible-Since-Version", compatibleSinceVersion));
-
-        if (this.minimumJavaVersion == null) {
-            throw new MojoExecutionException("minimumJavaVersion attribute must be set starting from version 2.8");
-        }
-        try {
-            int res = Integer.parseInt(this.minimumJavaVersion);
-            LOGGER.log(Level.INFO, "Minimum Java version for the plugin: {0}", this.minimumJavaVersion);
-        } catch(NumberFormatException ex) {
-            if (this.minimumJavaVersion.equals("1.6") || this.minimumJavaVersion.equals("1.7") || this.minimumJavaVersion.equals("1.8")) {
-                // okay
-            } else {
-                throw new MojoExecutionException("Unsupported Java version string: `" + this.minimumJavaVersion + "`. If you use Java 9 or above, see https://openjdk.java.net/jeps/223");
-            }
-        }
-        mainSection.addAttributeAndCheck(new Manifest.Attribute("Minimum-Java-Version", this.minimumJavaVersion));
 
         if (sandboxStatus!=null)
             mainSection.addAttributeAndCheck(new Manifest.Attribute("Sandbox-Status", sandboxStatus));
