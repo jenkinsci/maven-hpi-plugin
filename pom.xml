@@ -288,6 +288,7 @@
                     <exclude>org.apache.maven.wagon:wagon-provider-api</exclude>
                     <exclude>org.codehaus.plexus:plexus-container-default</exclude>
                     <exclude>org.eclipse.sisu:org.eclipse.sisu.plexus</exclude>
+                    <exclude>org.ow2.asm:asm</exclude>
                     <exclude>org.slf4j:slf4j-api</exclude>
                   </excludes>
                 </requireUpperBoundDeps>
