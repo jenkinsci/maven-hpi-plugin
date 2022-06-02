@@ -17,6 +17,6 @@
  * under the License.
  */
 
-assert new File(basedir, 'build.log').getText('UTF-8').contains("create src/main/resources/index.jelly:");
+assert new File(basedir, 'build.log').getText('UTF-8').contains("Create src/main/resources/index.jelly:");
 
 return true;
