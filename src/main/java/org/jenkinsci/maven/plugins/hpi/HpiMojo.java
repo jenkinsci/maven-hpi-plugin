@@ -33,6 +33,7 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.archiver.Archiver;
 import org.codehaus.plexus.archiver.ArchiverException;
 import org.codehaus.plexus.archiver.jar.JarArchiver;
@@ -139,7 +140,7 @@ public class HpiMojo extends AbstractJenkinsManifestMojo {
             jarArchiver.addConfiguredManifest(manifest);
             File indexJelly = new File(getClassesDirectory(), "index.jelly");
             if (!indexJelly.isFile()) {
-                if (project.getDescription() != null && !project.getDescription().isEmpty()) {
+                if (getProjectDescription() != null) {
                     getLog().warn("src/main/resources/index.jelly does not exist. A default one will be created using the description of the pom.xml");
                     try (final FileOutputStream fos = new FileOutputStream(indexJelly);
                          final OutputStreamWriter indexJellyWriter = new OutputStreamWriter(fos, StandardCharsets.UTF_8)) {
@@ -189,4 +190,43 @@ public class HpiMojo extends AbstractJenkinsManifestMojo {
 
     }
 
+    /**
+     * When calling {@code project.getDescription()}, it may return the description set in the parent project. What we
+     * want is the effective description defined in the project's pom.xml and not an inherited value.
+     *
+     * This method checks the project's description and if a value is found, compares it to the parent's one. In case
+     * they are the same, we consider this project has no description.
+     *
+     * @return The effective project's description or {@code null} if none or inherited from parent.
+     */
+    private String getProjectDescription() {
+        String description = project.getDescription();
+        if (description != null) {
+            description = description.trim();
+        } else {
+            return null;
+        }
+
+        if (description.isEmpty()) {
+            return null;
+        }
+
+        final MavenProject parent = project.getParent();
+        if (parent == null) {
+            // Should not happen as a Jenkins plugin should have a parent.
+            getLog().debug("When getting the project description, it seems the project has no parent");
+            return description;
+        }
+
+        String parentDescription = parent.getDescription();
+        if (parentDescription != null) {
+            parentDescription = parentDescription.trim();
+        }
+
+        if (description.equals(parentDescription)) {
+            return null;
+        }
+
+        return description;
+    }
 }
