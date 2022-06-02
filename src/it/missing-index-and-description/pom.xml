@@ -14,6 +14,6 @@
     <name>MyNewPlugin</name>
     <properties>
         <jenkins.version>2.249.1</jenkins.version>
-        <hpi-plugin.version>3.29-SNAPSHOT</hpi-plugin.version>
+        <hpi-plugin.version>@project.version@</hpi-plugin.version>
     </properties>
 </project>
