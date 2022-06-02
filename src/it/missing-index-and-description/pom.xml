@@ -8,7 +8,7 @@
         <relativePath />
     </parent>
     <groupId>org.jenkins-ci.tools.hpi.its</groupId>
-    <artifactId>missing-index</artifactId>
+    <artifactId>missing-index-and-description</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>hpi</packaging>
     <name>MyNewPlugin</name>
