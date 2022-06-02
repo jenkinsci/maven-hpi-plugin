@@ -18,6 +18,9 @@ package org.jenkinsci.maven.plugins.hpi;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import org.apache.maven.archiver.MavenArchiveConfiguration;
 import org.apache.maven.archiver.MavenArchiver;
@@ -136,11 +139,23 @@ public class HpiMojo extends AbstractJenkinsManifestMojo {
             jarArchiver.addConfiguredManifest(manifest);
             File indexJelly = new File(getClassesDirectory(), "index.jelly");
             if (!indexJelly.isFile()) {
-                throw new MojoFailureException("Missing " + indexJelly + ". Delete any <description> from pom.xml and create src/main/resources/index.jelly:\n" +
-                    "<?jelly escape-by-default='true'?>\n" +
-                    "<div>\n" +
-                    "    The description here…\n" +
-                    "</div>");
+                if (project.getDescription() != null && !project.getDescription().isEmpty()) {
+                    getLog().warn("src/main/resources/index.jelly does not exist. A default one will be created using the description of the pom.xml");
+                    try (final FileOutputStream fos = new FileOutputStream(indexJelly);
+                         final OutputStreamWriter indexJellyWriter = new OutputStreamWriter(fos, StandardCharsets.UTF_8)) {
+                        indexJellyWriter.write("<?jelly escape-by-default='true'?>\n" +
+                                "<div>\n" +
+                                project.getDescription() + "\n" +
+                                "</div>");
+                        indexJellyWriter.flush();
+                    }
+                } else {
+                    throw new MojoFailureException("Missing " + indexJelly + ". Create src/main/resources/index.jelly:\n" +
+                            "<?jelly escape-by-default='true'?>\n" +
+                            "<div>\n" +
+                            "    The description here…\n" +
+                            "</div>");
+                }
             }
             jarArchiver.addDirectory(getClassesDirectory());
             archiver.createArchive(session, project, archive);
