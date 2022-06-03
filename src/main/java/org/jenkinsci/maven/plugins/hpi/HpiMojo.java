@@ -22,6 +22,8 @@ import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
+
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.maven.archiver.MavenArchiveConfiguration;
 import org.apache.maven.archiver.MavenArchiver;
 import org.apache.maven.artifact.Artifact;
@@ -140,13 +142,14 @@ public class HpiMojo extends AbstractJenkinsManifestMojo {
             jarArchiver.addConfiguredManifest(manifest);
             File indexJelly = new File(getClassesDirectory(), "index.jelly");
             if (!indexJelly.isFile()) {
-                if (getProjectDescription() != null) {
+                final String projectDescription = getProjectDescription();
+                if (projectDescription != null) {
                     getLog().warn("src/main/resources/index.jelly does not exist. A default one will be created using the description of the pom.xml");
                     try (final FileOutputStream fos = new FileOutputStream(indexJelly);
                          final OutputStreamWriter indexJellyWriter = new OutputStreamWriter(fos, StandardCharsets.UTF_8)) {
                         indexJellyWriter.write("<?jelly escape-by-default='true'?>\n" +
                                 "<div>\n" +
-                                project.getDescription() + "\n" +
+                                StringEscapeUtils.escapeXml(projectDescription) + "\n" +
                                 "</div>");
                         indexJellyWriter.flush();
                     }
