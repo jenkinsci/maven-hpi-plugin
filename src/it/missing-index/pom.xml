@@ -12,7 +12,7 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>hpi</packaging>
     <name>MyNewPlugin</name>
-    <description>Deprecated spot for plugin "description" with special chars.</description>
+    <description>Deprecated spot for plugin "description" with &lt;4 special chars.</description>
     <properties>
         <jenkins.version>2.249.1</jenkins.version>
         <hpi-plugin.version>@project.version@</hpi-plugin.version>
