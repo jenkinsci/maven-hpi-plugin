@@ -149,7 +149,7 @@ public class HpiMojo extends AbstractJenkinsManifestMojo {
                          final OutputStreamWriter indexJellyWriter = new OutputStreamWriter(fos, StandardCharsets.UTF_8)) {
                         indexJellyWriter.write("<?jelly escape-by-default='true'?>\n" +
                                 "<div>\n" +
-                                StringEscapeUtils.escapeHtml(projectDescription) + "\n" +
+                                StringEscapeUtils.escapeXml(projectDescription) + "\n" +
                                 "</div>");
                         indexJellyWriter.flush();
                     }
@@ -157,7 +157,7 @@ public class HpiMojo extends AbstractJenkinsManifestMojo {
                     throw new MojoFailureException("Missing " + indexJelly + ". Create src/main/resources/index.jelly:\n" +
                             "<?jelly escape-by-default='true'?>\n" +
                             "<div>\n" +
-                            "    The description here...\n" +
+                            "    The description here…\n" +
                             "</div>");
                 }
             }
