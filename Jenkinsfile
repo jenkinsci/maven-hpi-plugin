@@ -19,11 +19,7 @@ def runTests(Map params = [:]) {
             if (publishing) {
               args += '-Dset.changelist'
             }
-            sh 'env | grep JENKINS'
-            sh 'env | grep HUDSON'
             withEnv(['JENKINS_HOME=', 'HUDSON_HOME=']) {
-              sh 'env | grep JENKINS'
-              sh 'env | grep HUDSON'
               infra.runMaven(args, params['jdk'])
             }
           }
