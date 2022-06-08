@@ -286,21 +286,36 @@ public class RunMojo extends AbstractJettyMojo {
         }
 
         // compute jenkinsHome
+        getLog().warn("here1");
         if(jenkinsHome ==null) {
+            getLog().warn("here2");
             if (hudsonHome != null) {
+                getLog().warn("here3");
                 getLog().warn("Please use the `jenkinsHome` configuration parameter in place of the deprecated `hudsonHome` parameter");
                 jenkinsHome = hudsonHome;
+                getLog().warn("here4");
             }
+            getLog().warn("here5");
             String h = System.getenv("JENKINS_HOME");
+            getLog().warn("here6");
             if (h == null) {
+                getLog().warn("here7");
                 h = System.getenv("HUDSON_HOME");
+                getLog().warn("here8");
             }
+            getLog().warn("here9");
             if (h != null && !h.isEmpty() && /* see pom.xml override */!h.equals("null")) {
+                getLog().warn("here10");
                 jenkinsHome = new File(h);
+                getLog().warn("here11");
             } else {
+                getLog().warn("here12");
                 jenkinsHome = new File(basedir, "work");
+                getLog().warn("here13");
             }
+            getLog().warn("here14");
         }
+        getLog().warn("here15");
 
         // auto-enable stapler trace, unless otherwise configured already.
         setSystemPropertyIfEmpty("stapler.trace", "true");
