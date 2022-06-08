@@ -147,7 +147,7 @@ public class HpiMojo extends AbstractJenkinsManifestMojo {
                     getLog().warn("src/main/resources/index.jelly does not exist. A default one will be created using the description of the pom.xml");
                     try (final FileOutputStream fos = new FileOutputStream(indexJelly);
                          final OutputStreamWriter indexJellyWriter = new OutputStreamWriter(fos, StandardCharsets.UTF_8)) {
-                        indexJellyWriter.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+                        indexJellyWriter.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                                 "<?jelly escape-by-default='true'?>\n" +
                                 "<div>\n" +
                                 StringEscapeUtils.escapeXml(projectDescription) + "\n" +

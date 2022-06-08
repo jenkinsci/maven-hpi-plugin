@@ -18,7 +18,8 @@
  */
 
 assert new File(basedir, 'build.log').getText('UTF-8').contains("A default one will be created using the description of the pom.xml");
-assert new File(basedir, "target/classes/index.jelly").getText('UTF-8') == """<?jelly escape-by-default='true'?>
+assert new File(basedir, "target/classes/index.jelly").getText('UTF-8') == """<?xml version="1.0" encoding="UTF-8"?>
+<?jelly escape-by-default='true'?>
 <div>
 Deprecated spot for plugin &quot;description&quot; with &lt;4 special chars.
 </div>"""
