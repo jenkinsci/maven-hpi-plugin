@@ -19,7 +19,9 @@ def runTests(Map params = [:]) {
             if (publishing) {
               args += '-Dset.changelist'
             }
-            infra.runMaven(args, params['jdk'])
+            withEnv(['JENKINS_HOME=']) {
+              infra.runMaven(args, params['jdk'])
+            }
           }
         }
         stage("Archive (${stageIdentifier})") {
