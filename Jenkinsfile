@@ -19,7 +19,10 @@ def runTests(Map params = [:]) {
             if (publishing) {
               args += '-Dset.changelist'
             }
-            infra.runMaven(args, params['jdk'])
+            // Needed for correct computation of JenkinsHome in RunMojo#execute.
+            withEnv(['JENKINS_HOME=', 'HUDSON_HOME=']) {
+              infra.runMaven(args, params['jdk'])
+            }
           }
         }
         stage("Archive (${stageIdentifier})") {

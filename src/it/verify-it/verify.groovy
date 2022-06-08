@@ -48,7 +48,6 @@ Files.newInputStream(new File(basedir, 'target/verify-it/META-INF/MANIFEST.MF').
   assert manifest.getMainAttributes().getValue('Jenkins-Version').equals('2.249.1')
   assert manifest.getMainAttributes().getValue('Long-Name').equals('MyNewPlugin')
   assert manifest.getMainAttributes().getValue('Manifest-Version').equals('1.0')
-  assert manifest.getMainAttributes().getValue('Minimum-Java-Version').equals('1.8')
   assert manifest.getMainAttributes().getValue('Plugin-Developers').equals('Noam Chomsky:nchomsky:nchomsky@example.com')
   assert manifest.getMainAttributes().getValue('Plugin-License-Name').equals('MIT License')
   assert manifest.getMainAttributes().getValue('Plugin-License-Url').equals('https://opensource.org/licenses/MIT')

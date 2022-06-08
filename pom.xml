@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.73</version>
+    <version>1.74</version>
     <relativePath />
   </parent>
 
@@ -44,7 +44,7 @@
   </distributionManagement>
 
   <properties>
-    <revision>3.28</revision>
+    <revision>3.29</revision>
     <changelist>-SNAPSHOT</changelist>
     <!-- used for escape -->
     <begin>${${$}}{</begin>
@@ -168,7 +168,7 @@
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-utils</artifactId>
       <!-- generated help mojo has a dependency on plexus utils -->
-      <version>3.4.1</version>
+      <version>3.4.2</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
@@ -183,7 +183,7 @@
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-groovy</artifactId>
-      <version>1669.v95a_4b_919a_b_a_2</version>
+      <version>1685.v3b_5035c4ce05</version>
     </dependency>
     <dependency>
       <groupId>org.twdata.maven</groupId>
@@ -304,6 +304,7 @@
                     <exclude>org.apache.maven.wagon:wagon-provider-api</exclude>
                     <exclude>org.codehaus.plexus:plexus-container-default</exclude>
                     <exclude>org.eclipse.sisu:org.eclipse.sisu.plexus</exclude>
+                    <exclude>org.ow2.asm:asm</exclude>
                     <exclude>org.slf4j:slf4j-api</exclude>
                   </excludes>
                 </requireUpperBoundDeps>
@@ -315,7 +316,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-invoker-plugin</artifactId>
-        <version>3.2.2</version>
+        <version>3.3.0</version>
         <configuration>
           <projectsDirectory>src/it</projectsDirectory>
           <cloneProjectsTo>${project.build.directory}/its</cloneProjectsTo>
