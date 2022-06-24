@@ -479,6 +479,13 @@
               <testRelease combine.self="override" />
             </configuration>
           </plugin>
+          <plugin>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <configuration>
+              <source>1.8</source>
+              <release combine.self="override" />
+            </configuration>
+          </plugin>
         </plugins>
       </build>
     </profile>
@@ -494,6 +501,12 @@
             <configuration>
               <release>8</release>
               <testRelease>8</testRelease>
+            </configuration>
+          </plugin>
+          <plugin>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <configuration>
+              <release>8</release>
             </configuration>
           </plugin>
         </plugins>
