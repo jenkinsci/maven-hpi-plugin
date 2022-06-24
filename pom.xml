@@ -292,6 +292,13 @@
                     <exclude>org.slf4j:slf4j-api</exclude>
                   </excludes>
                 </requireUpperBoundDeps>
+                <!-- TODO When the minimum Jenkins baseline is bumped past 2.357, this can be deleted. -->
+                <requireJavaVersion>
+                  <version>[1.8.0,]</version>
+                </requireJavaVersion>
+                <enforceBytecodeVersion>
+                  <maxJdkVersion>1.8</maxJdkVersion>
+                </enforceBytecodeVersion>
               </rules>
             </configuration>
           </execution>
@@ -440,6 +447,45 @@
       <properties>
         <invoker.streamLogs>true</invoker.streamLogs>
       </properties>
+    </profile>
+    <!-- TODO When the minimum Jenkins baseline is bumped past 2.357, this can be deleted. -->
+    <profile>
+      <id>jdk-8-and-below</id>
+      <activation>
+        <jdk>(,1.8]</jdk>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+              <source>1.8</source>
+              <target>1.8</target>
+              <testSource>1.8</testSource>
+              <testTarget>1.8</testTarget>
+              <release combine.self="override" />
+              <testRelease combine.self="override" />
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>jdk-9-and-above</id>
+      <activation>
+        <jdk>[9,)</jdk>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+              <release>8</release>
+              <testRelease>8</testRelease>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
   </profiles>
 </project>
