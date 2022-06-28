@@ -523,7 +523,7 @@
           <plugin>
             <artifactId>maven-invoker-plugin</artifactId>
             <configuration>
-              <invokerTest>!java-level,!JENKINS-45740-metadata,!JENKINS-58771-packaged-plugins,!minimum-java-version,!missing-index,!parent-3x,!process-jar,!snapshot-version-override,!verify-it</invokerTest>
+              <invokerTest>*,!java-level,!JENKINS-45740-metadata,!JENKINS-58771-packaged-plugins,!minimum-java-version,!missing-index,!parent-3x,!process-jar,!snapshot-version-override,!verify-it</invokerTest>
             </configuration>
           </plugin>
         </plugins>
