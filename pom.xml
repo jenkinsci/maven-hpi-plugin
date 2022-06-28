@@ -512,5 +512,22 @@
         </plugins>
       </build>
     </profile>
+    <!-- Skip tests that cannot yet be run on Java 17. When the plugin POM's baseline supports Java 17, this can be deleted. -->
+    <profile>
+      <id>jdk-17-and-above</id>
+      <activation>
+        <jdk>[17,)</jdk>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-invoker-plugin</artifactId>
+            <configuration>
+              <invokerTest>!java-level,!JENKINS-45740-metadata,!JENKINS-58771-packaged-plugins,!minimum-java-version,!missing-index,!parent-3x,!process-jar,!snapshot-version-override,!verify-it</invokerTest>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
   </profiles>
 </project>
