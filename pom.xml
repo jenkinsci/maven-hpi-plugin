@@ -182,7 +182,7 @@
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-groovy</artifactId>
-      <version>1685.v3b_5035c4ce05</version>
+      <version>1711.v5b_1b_03f0fcf2</version>
     </dependency>
     <dependency>
       <groupId>org.twdata.maven</groupId>
