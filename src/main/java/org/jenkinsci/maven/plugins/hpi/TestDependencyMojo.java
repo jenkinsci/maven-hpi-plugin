@@ -32,6 +32,7 @@ import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
@@ -680,6 +681,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                         Artifact artifact = resolvedPair.node.getArtifact();
                         String key = toKey(artifact);
                         if (!r.containsKey(key) || new ComparableVersion(version.toString()).compareTo(new ComparableVersion(r.get(key))) > 1) {
+                            getLog().info(buildErrorMessage(pairs.stream().map(DependencyNodeHopCountPair::getNode).collect(Collectors.toList())).trim());
                             getLog().info(String.format("for %s, upper bounds forces an upgrade from %s to %s", key, resolvedVersion, version));
                             r.put(key, version.toString());
                         }
@@ -746,6 +748,71 @@ public class TestDependencyMojo extends AbstractHpiMojo {
         public int compareTo(DependencyNodeHopCountPair other) {
             return Integer.compare(hopCount, other.getHopCount());
         }
+    }
+
+    private static String buildErrorMessage(List<DependencyNode> conflict) {
+        StringBuilder errorMessage = new StringBuilder();
+        errorMessage.append(
+                "Require upper bound dependencies error for "
+                        + getFullArtifactName(conflict.get(0), false)
+                        + " paths to dependency are:"
+                        + System.lineSeparator());
+        if (conflict.size() > 0) {
+            errorMessage.append(buildTreeString(conflict.get(0)));
+        }
+        for (DependencyNode node : conflict.subList(1, conflict.size())) {
+            errorMessage.append("and" + System.lineSeparator());
+            errorMessage.append(buildTreeString(node));
+        }
+        return errorMessage.toString();
+    }
+
+    private static StringBuilder buildTreeString(DependencyNode node) {
+        List<String> loc = new ArrayList<>();
+        DependencyNode currentNode = node;
+        while (currentNode != null) {
+            StringBuilder line = new StringBuilder(getFullArtifactName(currentNode, false));
+
+            if (currentNode.getPremanagedVersion() != null) {
+                line.append(" (managed) <-- ");
+                line.append(getFullArtifactName(currentNode, true));
+            }
+
+            loc.add(line.toString());
+            currentNode = currentNode.getParent();
+        }
+        Collections.reverse(loc);
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < loc.size(); i++) {
+            for (int j = 0; j < i; j++) {
+                builder.append("  ");
+            }
+            builder.append("+-").append(loc.get(i));
+            builder.append(System.lineSeparator());
+        }
+        return builder;
+    }
+
+    private static String getFullArtifactName(DependencyNode node, boolean usePremanaged) {
+        Artifact artifact = node.getArtifact();
+
+        String version = node.getPremanagedVersion();
+        if (!usePremanaged || version == null) {
+            version = artifact.getBaseVersion();
+        }
+        String result = artifact.getGroupId() + ":" + artifact.getArtifactId() + ":" + version;
+
+        String classifier = artifact.getClassifier();
+        if (classifier != null && !classifier.isEmpty()) {
+            result += ":" + classifier;
+        }
+
+        String scope = artifact.getScope();
+        if (scope != null) {
+            result += " [" + scope + ']';
+        }
+
+        return result;
     }
 
     private static String toKey(Artifact artifact) {
