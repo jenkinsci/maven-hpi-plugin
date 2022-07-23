@@ -116,6 +116,13 @@ public class TestDependencyMojo extends AbstractHpiMojo {
     @Parameter(property = "useUpperBounds")
     private boolean useUpperBounds;
 
+    /**
+     * List of exclusions to upper bound updates in the form {@code groupId:artifactId}.
+     * Must not be provided when {@link #useUpperBounds} is false.
+     */
+    @Parameter(property = "upperBoundsExcludes")
+    private List<String> upperBoundsExcludes;
+
     @Override
     public void execute() throws MojoExecutionException {
         Map<String, String> overrides = overrideVersions != null ? parseOverrides(overrideVersions) : Collections.emptyMap();
@@ -204,13 +211,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                     }
                     RequireUpperBoundDepsVisitor visitor = new RequireUpperBoundDepsVisitor();
                     node.accept(visitor);
-                    Map<String, String> upperBounds = visitor.upperBounds();
-
-                    // We intentionally want to use a lower version of this dependency.
-                    String servletHack = upperBounds.get("javax.servlet:servlet-api");
-                    if (servletHack != null && !servletHack.equals("0")) {
-                        upperBounds.remove("javax.servlet:servlet-api");
-                    }
+                    Map<String, String> upperBounds = visitor.upperBounds(upperBoundsExcludes);
 
                     if (upperBounds.isEmpty()) {
                         converged = true;
@@ -227,6 +228,8 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                         applyOverrides(upperBounds, Collections.emptyMap(), true, shadow, getLog());
                     }
                 }
+            } else if (!upperBoundsExcludes.isEmpty()) {
+                throw new MojoExecutionException("Cannot provide upper bounds excludes when not using upper bounds");
             }
 
             /*
@@ -661,7 +664,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
         }
 
         // added for TestDependencyMojo in place of getConflicts/containsConflicts
-        public Map<String, String> upperBounds() {
+        public Map<String, String> upperBounds(List<String> upperBoundsExcludes) {
             Map<String, String> r = new HashMap<>();
             for (List<DependencyNodeHopCountPair> pairs : keyToPairsMap.values()) {
                 DependencyNodeHopCountPair resolvedPair = pairs.get(0);
@@ -681,9 +684,13 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                         Artifact artifact = resolvedPair.node.getArtifact();
                         String key = toKey(artifact);
                         if (!r.containsKey(key) || new ComparableVersion(version.toString()).compareTo(new ComparableVersion(r.get(key))) > 1) {
-                            getLog().info(buildErrorMessage(pairs.stream().map(DependencyNodeHopCountPair::getNode).collect(Collectors.toList())).trim());
-                            getLog().info(String.format("for %s, upper bounds forces an upgrade from %s to %s", key, resolvedVersion, version));
-                            r.put(key, version.toString());
+                            if (upperBoundsExcludes.contains(key)) {
+                                getLog().info( "Ignoring requireUpperBoundDeps in " + key);
+                            } else {
+                                getLog().info(buildErrorMessage(pairs.stream().map(DependencyNodeHopCountPair::getNode).collect(Collectors.toList())).trim());
+                                getLog().info(String.format("for %s, upper bounds forces an upgrade from %s to %s", key, resolvedVersion, version));
+                                r.put(key, version.toString());
+                            }
                         }
                     }
                 }
