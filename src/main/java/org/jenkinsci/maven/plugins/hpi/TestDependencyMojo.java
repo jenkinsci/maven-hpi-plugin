@@ -211,7 +211,8 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                     }
                     RequireUpperBoundDepsVisitor visitor = new RequireUpperBoundDepsVisitor();
                     node.accept(visitor);
-                    Map<String, String> upperBounds = visitor.upperBounds(upperBoundsExcludes);
+                    String self = String.format("%s:%s", shadow.getGroupId(), shadow.getArtifactId());
+                    Map<String, String> upperBounds = visitor.upperBounds(upperBoundsExcludes, self);
 
                     if (upperBounds.isEmpty()) {
                         converged = true;
@@ -664,7 +665,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
         }
 
         // added for TestDependencyMojo in place of getConflicts/containsConflicts
-        public Map<String, String> upperBounds(List<String> upperBoundsExcludes) {
+        public Map<String, String> upperBounds(List<String> upperBoundsExcludes, String self) {
             Map<String, String> r = new HashMap<>();
             for (List<DependencyNodeHopCountPair> pairs : keyToPairsMap.values()) {
                 DependencyNodeHopCountPair resolvedPair = pairs.get(0);
@@ -683,7 +684,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                     if (resolvedVersion.compareTo(version) < 0) {
                         Artifact artifact = resolvedPair.node.getArtifact();
                         String key = toKey(artifact);
-                        if (!r.containsKey(key) || new ComparableVersion(version.toString()).compareTo(new ComparableVersion(r.get(key))) > 1) {
+                        if (!key.equals(self) && (!r.containsKey(key) || new ComparableVersion(version.toString()).compareTo(new ComparableVersion(r.get(key))) > 1)) {
                             if (upperBoundsExcludes.contains(key)) {
                                 getLog().info( "Ignoring requireUpperBoundDeps in " + key);
                             } else {
