@@ -375,9 +375,24 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                 getLog().debug(String.format("Replacing POM-defined classpath elements %s with %s", classpathDependencyExcludes, additionalClasspathElements));
             }
             // cf. http://maven.apache.org/surefire/maven-surefire-plugin/test-mojo.html
-            properties.setProperty("maven.test.additionalClasspath", String.join(",", additionalClasspathElements));
-            properties.setProperty("maven.test.dependency.excludes", String.join(",", classpathDependencyExcludes));
+            appendEntries("maven.test.additionalClasspath", additionalClasspathElements, properties);
+            appendEntries("maven.test.dependency.excludes", classpathDependencyExcludes, properties);
         }
+    }
+
+    private static void appendEntries(String property, Collection<String> additions, Properties properties) {
+        String existing = properties.getProperty(property);
+        List<String> newEntries = new ArrayList<>();
+        if (existing != null && !existing.isEmpty()) {
+            for (String entry : existing.split(",")) {
+                entry = entry.trim();
+                if (!entry.isEmpty()) {
+                    newEntries.add(entry);
+                }
+            }
+        }
+        newEntries.addAll(additions);
+        properties.setProperty(property, String.join(",", newEntries));
     }
 
     /**
