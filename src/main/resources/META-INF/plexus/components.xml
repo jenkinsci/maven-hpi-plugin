@@ -41,7 +41,7 @@
       </configuration>
     </component>
 
-    <!-- Jenkins module -->
+    <!-- Jenkins module (no longer used in official components as of https://jenkins.io/jep/230) -->
     <component>
       <role>org.apache.maven.lifecycle.mapping.LifecycleMapping</role>
       <role-hint>jm</role-hint>
