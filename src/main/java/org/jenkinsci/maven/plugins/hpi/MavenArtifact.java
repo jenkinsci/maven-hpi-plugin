@@ -3,6 +3,7 @@ package org.jenkinsci.maven.plugins.hpi;
 import hudson.util.VersionNumber;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
+import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.OverConstrainedVersionException;
 import org.apache.maven.execution.MavenSession;
@@ -180,6 +181,13 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
 
     public String getClassifier() {
         return artifact.getClassifier();
+    }
+
+    /**
+     * Get the artifact handler.
+     */
+    public ArtifactHandler getArtifactHandler() {
+        return artifact.getArtifactHandler();
     }
 
     /** For a plugin artifact, unlike {@link #getArtifactId} this parses the plugin manifest. */
