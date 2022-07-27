@@ -169,7 +169,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
         } else {
             // Under no circumstances should this code ever be executed when performing a release.
             for (String goal : session.getGoals()) {
-                if (goal.contains("install") || goal.contains("deploy")) {
+                if (goal.contains("deploy")) {
                     throw new MojoExecutionException("Cannot override dependencies when doing a release");
                 }
             }
