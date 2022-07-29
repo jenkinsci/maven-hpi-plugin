@@ -44,9 +44,6 @@ public class InitializeMojo extends AbstractJenkinsMojo {
             setProperty("maven.compiler.release", Integer.toString(javaVersion.toReleaseVersion()));
             setProperty("maven.compiler.testRelease", Integer.toString(javaVersion.toReleaseVersion()));
 
-            // "release" serves the same purpose as Animal Sniffer.
-            setProperty("animal.sniffer.skip", "true");
-
             /*
              * While it does not hurt to have these set to the Java specification version, it is also not needed when
              * "release" is in use.
