@@ -98,13 +98,21 @@ public class TestDependencyMojo extends AbstractHpiMojo {
     private List<String> overrideVersions;
 
     /**
-     * Path to a Jenkins WAR file with bundled plugins to apply during testing. Dependencies already
-     * present in the project model or their transitive dependencies will be updated to the versions
-     * in the WAR. May be combined with {@code overrideVersions} so long as the results do not
-     * conflict. The version of the WAR must be identical to {@code jenkins.version}.
+     * Path to a Jenkins WAR file with bundled plugins to apply during testing.
+     * <p>Dependencies already present in the project model or their transitive dependencies will be updated to the versions in the WAR.
+     * Dependencies not already present in the project model will be added to the project model only if {@link #overrideWarAdditions} is set.
+     * <p>May be combined with {@code overrideVersions} so long as the results do not conflict.
+     * <p>The version of the WAR must be identical to {@code jenkins.version}.
      */
     @Parameter(property = "overrideWar")
     private File overrideWar;
+
+    /**
+     * Indicates that all plugins bundled in {@link #overrideWar} should be added to the project model even if not originally mentioned.
+     * Would normally complement setting the system property {@code jth.jenkins-war.path} to that WAR.
+     */
+    @Parameter(property = "overrideWarAdditions")
+    private boolean overrideWarAdditions;
 
     /**
      * Whether to update all transitive dependencies to the upper bounds. Effectively causes the
@@ -183,7 +191,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
             }
 
             // First pass: apply the overrides specified by the user.
-            applyOverrides(overrides, bundledPlugins, false, shadow, getLog());
+            applyOverrides(overrides, bundledPlugins, false, overrideWarAdditions, shadow, getLog());
 
             if (useUpperBounds) {
                 boolean converged = false;
@@ -225,7 +233,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                         Set<Artifact> resolved = resolveDependencies(shadow);
                         shadow.setArtifacts(resolved);
 
-                        applyOverrides(upperBounds, Collections.emptyMap(), true, shadow, getLog());
+                        applyOverrides(upperBounds, Collections.emptyMap(), true, overrideWarAdditions, shadow, getLog());
                     }
                 }
             } else if (!upperBoundsExcludes.isEmpty()) {
@@ -488,10 +496,12 @@ public class TestDependencyMojo extends AbstractHpiMojo {
             Map<String, String> overrides,
             Map<String, String> bundledPlugins,
             boolean upperBounds,
+            boolean overrideWarAdditions,
             MavenProject project,
             Log log)
             throws MojoExecutionException {
         Set<String> appliedOverrides = new HashSet<>();
+        Set<String> appliedBundledPlugins = new HashSet<>();
 
         // Update existing dependency entries in the model.
         for (Dependency dependency : project.getDependencies()) {
@@ -499,7 +509,9 @@ public class TestDependencyMojo extends AbstractHpiMojo {
             if (updateDependency(dependency, overrides, "direct dependency", log)) {
                 appliedOverrides.add(key);
             }
-            updateDependency(dependency, bundledPlugins, "direct dependency", log);
+            if (updateDependency(dependency, bundledPlugins, "direct dependency", log)) {
+                appliedBundledPlugins.add(key);
+            }
         }
 
         // Update existing dependency management entries in the model.
@@ -509,7 +521,9 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                 if (updateDependency(dependency, overrides, "dependency management entry", log)) {
                     appliedOverrides.add(key);
                 }
-                updateDependency(dependency, bundledPlugins, "dependency management entry", log);
+                if (updateDependency(dependency, bundledPlugins, "dependency management entry", log)) {
+                    appliedBundledPlugins.add(key);
+                }
             }
         }
 
@@ -574,6 +588,32 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                 }
             } else {
                 throw new MojoExecutionException("Failed to apply the following overrides: " + unappliedOverrides);
+            }
+        }
+
+        if (overrideWarAdditions) {
+            /*
+            * If a bundled plugin was added that is neither in the model nor the transitive dependency
+            * chain, add a test-scoped direct dependency to the model. This is necessary in order for
+            * us to be able to correctly populate target/test-dependencies/ later on.
+            */
+            Set<String> unappliedBundledPlugins = new HashSet<>(bundledPlugins.keySet());
+            unappliedBundledPlugins.removeAll(appliedBundledPlugins);
+            for (String key : unappliedBundledPlugins) {
+                String[] groupArt = key.split(":");
+                String groupId = groupArt[0];
+                String artifactId = groupArt[1];
+                String version = bundledPlugins.get(key);
+                Dependency dependency = new Dependency();
+                dependency.setGroupId(groupId);
+                dependency.setArtifactId(artifactId);
+                dependency.setVersion(version);
+                dependency.setScope(Artifact.SCOPE_TEST);
+                if (dependency.getGroupId().equals(project.getGroupId()) && dependency.getArtifactId().equals(project.getArtifactId())) {
+                    throw new MojoExecutionException("Cannot add self as test-scoped dependency");
+                }
+                log.info(String.format("Adding test-scoped direct dependency %s:%s", key, version));
+                project.getDependencies().add(dependency);
             }
         }
 
