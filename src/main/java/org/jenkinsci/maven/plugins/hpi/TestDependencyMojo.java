@@ -196,10 +196,11 @@ public class TestDependencyMojo extends AbstractHpiMojo {
             if (useUpperBounds) {
                 boolean converged = false;
                 int i = 0;
+                Map<String, String> upperBounds = null;
 
                 while (!converged) {
                     if (i++ > 10) {
-                        throw new MojoExecutionException("Failed to iterate to convergence during upper bounds analysis");
+                        throw new MojoExecutionException("Failed to iterate to convergence during upper bounds analysis: " + upperBounds);
                     }
 
                     /*
@@ -219,7 +220,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                     RequireUpperBoundDepsVisitor visitor = new RequireUpperBoundDepsVisitor();
                     node.accept(visitor);
                     String self = String.format("%s:%s", shadow.getGroupId(), shadow.getArtifactId());
-                    Map<String, String> upperBounds = visitor.upperBounds(upperBoundsExcludes, self);
+                    upperBounds = visitor.upperBounds(upperBoundsExcludes, self);
 
                     if (upperBounds.isEmpty()) {
                         converged = true;
@@ -706,6 +707,10 @@ public class TestDependencyMojo extends AbstractHpiMojo {
 
                 for (DependencyNodeHopCountPair pair : pairs) {
                     ArtifactVersion version = pair.extractArtifactVersion(true);
+                    if (version.toString().equals("[0]")) {
+                        // javax.servlet:servlet-api fake entry
+                        continue;
+                    }
                     if (resolvedVersion.compareTo(version) < 0) {
                         Artifact artifact = resolvedPair.node.getArtifact();
                         String key = toKey(artifact);
