@@ -707,10 +707,6 @@ public class TestDependencyMojo extends AbstractHpiMojo {
 
                 for (DependencyNodeHopCountPair pair : pairs) {
                     ArtifactVersion version = pair.extractArtifactVersion(true);
-                    if (version.toString().equals("[0]")) {
-                        // javax.servlet:servlet-api fake entry
-                        continue;
-                    }
                     if (resolvedVersion.compareTo(version) < 0) {
                         Artifact artifact = resolvedPair.node.getArtifact();
                         String key = toKey(artifact);
