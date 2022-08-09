@@ -150,7 +150,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                 overrides.remove(override);
             } else {
                 throw new MojoExecutionException(String.format(
-                        "Failed to override %s: conflict between %s in overrideVersions and %s in overrideWar",
+                        "Failed to override %s: conflict between %s in overrideVersions and %s in jth.jenkins-war.path",
                         override, overrides.get(override), bundledPlugins.get(override)));
             }
         }
@@ -455,9 +455,9 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                 jenkinsVersion = project.getProperties().getProperty("jenkins.version");
             }
             if (jenkinsVersion == null) {
-                throw new MojoExecutionException("jenkins.version must be set when using overrideWar");
+                throw new MojoExecutionException("jenkins.version must be set when using jth.jenkins-war.path");
             } else if (!jenkinsVersion.equals(coreVersion)) {
-                throw new MojoExecutionException("jenkins.version must match the version specified by overrideWar: " + coreVersion);
+                throw new MojoExecutionException("jenkins.version must match the version specified by jth.jenkins-war.path: " + coreVersion);
             }
         } catch (IOException e) {
             throw new MojoExecutionException("Failed to scan " + war, e);
