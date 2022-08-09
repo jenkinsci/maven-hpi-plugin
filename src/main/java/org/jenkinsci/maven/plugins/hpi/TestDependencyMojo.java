@@ -492,7 +492,6 @@ public class TestDependencyMojo extends AbstractHpiMojo {
             Log log)
             throws MojoExecutionException {
         Set<String> appliedOverrides = new HashSet<>();
-        Set<String> appliedBundledPlugins = new HashSet<>();
 
         // Update existing dependency entries in the model.
         for (Dependency dependency : project.getDependencies()) {
@@ -500,9 +499,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
             if (updateDependency(dependency, overrides, "direct dependency", log)) {
                 appliedOverrides.add(key);
             }
-            if (updateDependency(dependency, bundledPlugins, "direct dependency", log)) {
-                appliedBundledPlugins.add(key);
-            }
+            updateDependency(dependency, bundledPlugins, "direct dependency", log);
         }
 
         // Update existing dependency management entries in the model.
@@ -512,9 +509,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                 if (updateDependency(dependency, overrides, "dependency management entry", log)) {
                     appliedOverrides.add(key);
                 }
-                if (updateDependency(dependency, bundledPlugins, "dependency management entry", log)) {
-                    appliedBundledPlugins.add(key);
-                }
+                updateDependency(dependency, bundledPlugins, "dependency management entry", log);
             }
         }
 
