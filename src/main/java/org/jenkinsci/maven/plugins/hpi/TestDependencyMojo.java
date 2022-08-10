@@ -98,10 +98,10 @@ public class TestDependencyMojo extends AbstractHpiMojo {
     private List<String> overrideVersions;
 
     /**
-     * Path to a Jenkins WAR file with bundled plugins to apply during testing. Dependencies already
-     * present in the project model or their transitive dependencies will be updated to the versions
-     * May be combined with {@code overrideVersions} so long as the results do not conflict. The
-     * version of the WAR must be identical to {@code jenkins.version}.
+     * Path to a Jenkins WAR file with bundled plugins to apply during testing.
+     * <p>Dependencies already present in the project model or their transitive dependencies will be updated to the versions in the WAR.
+     * <p>May be combined with {@code overrideVersions} so long as the results do not conflict.
+     * <p>The version of the WAR must be identical to {@code jenkins.version}.
      */
     @Parameter(property = "overrideWar")
     private File overrideWar;
