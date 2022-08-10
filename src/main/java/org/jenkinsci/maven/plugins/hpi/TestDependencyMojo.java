@@ -100,9 +100,8 @@ public class TestDependencyMojo extends AbstractHpiMojo {
     /**
      * Path to a Jenkins WAR file with bundled plugins to apply during testing. Dependencies already
      * present in the project model or their transitive dependencies will be updated to the versions
-     * in the WAR. Dependencies not already present in the project model will be added to the
-     * project model. May be combined with {@code overrideVersions} so long as the results do not
-     * conflict. The version of the WAR must be identical to {@code jenkins.version}.
+     * May be combined with {@code overrideVersions} so long as the results do not conflict. The
+     * version of the WAR must be identical to {@code jenkins.version}.
      */
     @Parameter(property = "overrideWar")
     private File overrideWar;
@@ -493,7 +492,6 @@ public class TestDependencyMojo extends AbstractHpiMojo {
             Log log)
             throws MojoExecutionException {
         Set<String> appliedOverrides = new HashSet<>();
-        Set<String> appliedBundledPlugins = new HashSet<>();
 
         // Update existing dependency entries in the model.
         for (Dependency dependency : project.getDependencies()) {
@@ -501,9 +499,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
             if (updateDependency(dependency, overrides, "direct dependency", log)) {
                 appliedOverrides.add(key);
             }
-            if (updateDependency(dependency, bundledPlugins, "direct dependency", log)) {
-                appliedBundledPlugins.add(key);
-            }
+            updateDependency(dependency, bundledPlugins, "direct dependency", log);
         }
 
         // Update existing dependency management entries in the model.
@@ -513,9 +509,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                 if (updateDependency(dependency, overrides, "dependency management entry", log)) {
                     appliedOverrides.add(key);
                 }
-                if (updateDependency(dependency, bundledPlugins, "dependency management entry", log)) {
-                    appliedBundledPlugins.add(key);
-                }
+                updateDependency(dependency, bundledPlugins, "dependency management entry", log);
             }
         }
 
@@ -581,30 +575,6 @@ public class TestDependencyMojo extends AbstractHpiMojo {
             } else {
                 throw new MojoExecutionException("Failed to apply the following overrides: " + unappliedOverrides);
             }
-        }
-
-        /*
-         * If a bundled plugin was added that is neither in the model nor the transitive dependency
-         * chain, add a test-scoped direct dependency to the model. This is necessary in order for
-         * us to be able to correctly populate target/test-dependencies/ later on.
-         */
-        Set<String> unappliedBundledPlugins = new HashSet<>(bundledPlugins.keySet());
-        unappliedBundledPlugins.removeAll(appliedBundledPlugins);
-        for (String key : unappliedBundledPlugins) {
-            String[] groupArt = key.split(":");
-            String groupId = groupArt[0];
-            String artifactId = groupArt[1];
-            String version = bundledPlugins.get(key);
-            Dependency dependency = new Dependency();
-            dependency.setGroupId(groupId);
-            dependency.setArtifactId(artifactId);
-            dependency.setVersion(version);
-            dependency.setScope(Artifact.SCOPE_TEST);
-            if (dependency.getGroupId().equals(project.getGroupId()) && dependency.getArtifactId().equals(project.getArtifactId())) {
-                throw new MojoExecutionException("Cannot add self as test-scoped dependency");
-            }
-            log.info(String.format("Adding test-scoped direct dependency %s:%s", key, version));
-            project.getDependencies().add(dependency);
         }
 
         log.debug("adjusted dependencies: " + project.getDependencies());
