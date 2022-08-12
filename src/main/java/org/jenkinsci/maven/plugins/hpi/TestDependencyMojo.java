@@ -636,7 +636,8 @@ public class TestDependencyMojo extends AbstractHpiMojo {
         String key = toKey(dependency);
         String overrideVersion = overrides.get(key);
         if (overrideVersion != null) {
-            log.info(String.format("Updating %s %s from %s to %s", type, key, dependency.getVersion(), overrideVersion));
+            String classifier = dependency.getClassifier();
+            log.info(String.format("Updating %s %s%s from %s to %s", type, key, classifier != null ? ":" + classifier : "", dependency.getVersion(), overrideVersion));
             dependency.setVersion(overrideVersion);
             return true;
         }
