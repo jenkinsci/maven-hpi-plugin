@@ -188,10 +188,11 @@ public class TestDependencyMojo extends AbstractHpiMojo {
             if (useUpperBounds) {
                 boolean converged = false;
                 int i = 0;
+                Map<String, String> upperBounds = null;
 
                 while (!converged) {
                     if (i++ > 10) {
-                        throw new MojoExecutionException("Failed to iterate to convergence during upper bounds analysis");
+                        throw new MojoExecutionException("Failed to iterate to convergence during upper bounds analysis: " + upperBounds);
                     }
 
                     /*
@@ -211,7 +212,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                     RequireUpperBoundDepsVisitor visitor = new RequireUpperBoundDepsVisitor();
                     node.accept(visitor);
                     String self = String.format("%s:%s", shadow.getGroupId(), shadow.getArtifactId());
-                    Map<String, String> upperBounds = visitor.upperBounds(upperBoundsExcludes, self);
+                    upperBounds = visitor.upperBounds(upperBoundsExcludes, self);
 
                     if (upperBounds.isEmpty()) {
                         converged = true;
@@ -564,12 +565,12 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                         throw new MojoExecutionException("Cannot add self to dependency management section");
                     }
                     DependencyManagement dm = project.getDependencyManagement();
-                    if (dm != null) {
-                        log.info(String.format("Adding dependency management entry %s:%s", key, dependency.getVersion()));
-                        dm.addDependency(dependency);
-                    } else {
-                        throw new MojoExecutionException(String.format("Failed to add dependency management entry %s:%s because the project does not have a dependency management section", key, overrides.get(key)));
+                    if (dm == null) {
+                        dm = new DependencyManagement();
+                        project.getModel().setDependencyManagement(dm);
                     }
+                    log.info(String.format("Adding dependency management entry %s:%s", key, dependency.getVersion()));
+                    dm.addDependency(dependency);
                     overrideAdditions.add(key);
                 }
             } else {
@@ -595,7 +596,8 @@ public class TestDependencyMojo extends AbstractHpiMojo {
         String key = toKey(dependency);
         String overrideVersion = overrides.get(key);
         if (overrideVersion != null) {
-            log.info(String.format("Updating %s %s from %s to %s", type, key, dependency.getVersion(), overrideVersion));
+            String classifier = dependency.getClassifier();
+            log.info(String.format("Updating %s %s%s from %s to %s", type, key, classifier != null ? ":" + classifier : "", dependency.getVersion(), overrideVersion));
             dependency.setVersion(overrideVersion);
             return true;
         }
