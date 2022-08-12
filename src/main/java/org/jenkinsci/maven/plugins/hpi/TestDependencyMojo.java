@@ -579,12 +579,12 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                         throw new MojoExecutionException("Cannot add self to dependency management section");
                     }
                     DependencyManagement dm = project.getDependencyManagement();
-                    if (dm != null) {
-                        log.info(String.format("Adding dependency management entry %s:%s", key, dependency.getVersion()));
-                        dm.addDependency(dependency);
-                    } else {
-                        throw new MojoExecutionException(String.format("Failed to add dependency management entry %s:%s because the project does not have a dependency management section", key, overrides.get(key)));
+                    if (dm == null) {
+                        dm = new DependencyManagement();
+                        project.getModel().setDependencyManagement(dm);
                     }
+                    log.info(String.format("Adding dependency management entry %s:%s", key, dependency.getVersion()));
+                    dm.addDependency(dependency);
                     overrideAdditions.add(key);
                 }
             } else {
