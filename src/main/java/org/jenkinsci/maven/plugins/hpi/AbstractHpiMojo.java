@@ -847,7 +847,10 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
             if (p.waitFor()!=0)
                 return null;    // git rev-parse failed to run
 
-            return v.trim().substring(0,8);
+            if (v.length()<8)
+                return null;    // git repository present, but without commits
+
+            return v.substring(0,8);
         } catch (IOException | InterruptedException e) {
             LOGGER.log(Level.FINE, "Failed to run git rev-parse HEAD",e);
             return null;
