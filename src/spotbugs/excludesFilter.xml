@@ -25,18 +25,6 @@
         <Class name="org.jenkinsci.maven.plugins.hpi.AbstractHpiMojo"/>
       </And>
       <And>
-        <Bug pattern="EI_EXPOSE_REP"/>
-        <Class name="org.jenkinsci.maven.plugins.hpi.RunMojo"/>
-      </And>
-      <And>
-        <Bug pattern="EI_EXPOSE_REP2"/>
-        <Or>
-          <Class name="org.jenkinsci.maven.plugins.hpi.AbstractJettyMojo"/>
-          <Class name="org.jenkinsci.maven.plugins.hpi.ConsoleScanner"/>
-          <Class name="org.jenkinsci.maven.plugins.hpi.JettyAndServletApiOnlyClassLoader"/>
-        </Or>
-      </And>
-      <And>
         <Bug pattern="EQ_COMPARETO_USE_OBJECT_EQUALS"/>
         <Class name="org.jenkinsci.maven.plugins.hpi.MavenArtifact"/>
       </And>

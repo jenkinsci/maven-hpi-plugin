@@ -58,7 +58,6 @@
     <maven-plugin-tools.version>3.6.4</maven-plugin-tools.version>
     <plexus-containers.version>2.1.1</plexus-containers.version>
     <aether.version>1.1.0</aether.version>
-    <spotbugs.excludeFilterFile>${project.basedir}/src/spotbugs/spotbugs-excludes.xml</spotbugs.excludeFilterFile>
   </properties>
 
   <dependencyManagement>
