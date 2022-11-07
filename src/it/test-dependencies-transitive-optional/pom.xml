@@ -67,6 +67,15 @@
                                     <outputDirectory>${jenkins.war.directory}/WEB-INF/plugins</outputDirectory>
                                     <destFileName>workflow-cps.hpi</destFileName>
                                 </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.jenkins-ci.plugins</groupId>
+                                    <artifactId>support-core</artifactId>
+                                    <version>1206.v14049fa_b_d860</version>
+                                    <type>hpi</type>
+                                    <outputDirectory>${jenkins.war.directory}/WEB-INF/plugins</outputDirectory>
+                                    <destFileName>support-core.hpi</destFileName>
+                                </artifactItem>
+
                             </artifactItems>
                             <overWriteReleases>false</overWriteReleases>
                             <overWriteSnapshots>true</overWriteSnapshots>
@@ -122,6 +131,12 @@
                 <groupId>org.jenkins-ci</groupId>
                 <artifactId>symbol-annotation</artifactId>
                 <version>1.20</version>
+            </dependency>
+            <dependency>
+                <groupId>ant</groupId>
+                <artifactId>ant</artifactId>
+                <!-- because old version have dependencies on xml-apis:xml-apis:2.6.2 which doesn't exists -->
+                <version>1.7.0</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
