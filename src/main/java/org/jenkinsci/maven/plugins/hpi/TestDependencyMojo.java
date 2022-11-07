@@ -654,7 +654,6 @@ public class TestDependencyMojo extends AbstractHpiMojo {
     private Set<Artifact> resolveDependencies(MavenProject project) throws MojoExecutionException {
         try {
             DependencyResolutionRequest request = new DefaultDependencyResolutionRequest(project, session.getRepositorySession());
-
             DependencyResolutionResult result = dependenciesResolver.resolve(request);
 
             Set<Artifact> artifacts = new LinkedHashSet<>();
