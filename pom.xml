@@ -269,6 +269,16 @@
       <!-- annotations are not needed for plugin execution, so exclude using provided scope -->
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>org.eclipse.aether</groupId>
+      <artifactId>aether-api</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.aether</groupId>
+      <artifactId>aether-util</artifactId>
+      <scope>compile</scope> <!-- To work in Maven versions older than 3.9.0 -->
+    </dependency>
   </dependencies>
 
   <repositories>
@@ -344,6 +354,9 @@
           <pomIncludes>
             <pomInclude>*/pom.xml</pomInclude>
           </pomIncludes>
+          <setupIncludes>
+            <setupInclude>setup_test-dependencies-transitive-optional-dep/pom.xml</setupInclude>
+          </setupIncludes>
           <postBuildHookScript>verify</postBuildHookScript>
           <filterProperties>
             <repository.proxy.url>${repository.proxy.url}</repository.proxy.url>
@@ -424,6 +437,17 @@
   <profiles>
     <profile>
       <id>run-its</id>
+      <properties>
+        <jenkins.version.test>2.332.1</jenkins.version.test>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>org.jenkins-ci.main</groupId>
+          <artifactId>jenkins-war</artifactId>
+          <version>${jenkins.version.test}</version>
+          <type>war</type>
+        </dependency>
+      </dependencies>
       <build>
         <plugins>
           <plugin>
@@ -435,6 +459,9 @@
                   <goal>install</goal>
                   <goal>run</goal>
                 </goals>
+                <configuration>
+                  <extraArtifacts>org.jenkins-ci.main:jenkins-war:${jenkins.version.test}:war</extraArtifacts>
+                </configuration>
               </execution>
             </executions>
           </plugin>
