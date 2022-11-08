@@ -80,7 +80,7 @@
       </And>
       <And>
         <Bug pattern="XXE_DOCUMENT"/>
-        <Class name="org.jenkinsci.maven.plugins.hpi.HelpMojo"/>
+        <Class name="org.jenkins_ci.tools.maven_hpi_plugin.HelpMojo"/>
       </And>
     </Or>
   </Match>
