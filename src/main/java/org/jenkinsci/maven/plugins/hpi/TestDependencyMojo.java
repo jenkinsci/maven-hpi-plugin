@@ -36,7 +36,6 @@ import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
@@ -60,10 +59,15 @@ import org.apache.maven.project.DependencyResolutionResult;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.project.ProjectDependenciesResolver;
+import org.apache.maven.shared.dependency.graph.DependencyCollectorBuilder;
 import org.apache.maven.shared.dependency.graph.DependencyCollectorBuilderException;
+import org.apache.maven.shared.dependency.graph.DependencyCollectorRequest;
 import org.apache.maven.shared.dependency.graph.DependencyNode;
+import org.apache.maven.shared.dependency.graph.internal.DirectScopeDependencySelector;
 import org.apache.maven.shared.dependency.graph.traversal.DependencyNodeVisitor;
 import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.util.artifact.JavaScopes;
+import org.eclipse.aether.util.graph.selector.AndDependencySelector;
 import org.twdata.maven.mojoexecutor.MojoExecutor;
 
 /**
@@ -85,10 +89,8 @@ public class TestDependencyMojo extends AbstractHpiMojo {
 
     @Component private BuildPluginManager pluginManager;
     @Component private ProjectDependenciesResolver dependenciesResolver;
-
     @Component private RepositorySystem repositorySystem;
-
-    @Component private JenkinsHpiDependencyCollector jenkinsHpiDependencyCollector;
+    @Component private DependencyCollectorBuilder dependencyCollectorBuilder;
 
     /**
      * List of dependency version overrides in the form {@code groupId:artifactId:version} to apply
@@ -213,8 +215,12 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                     try {
                         ProjectBuildingRequest buildingRequest = new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
                         buildingRequest.setProject(shadow);
-                        ArtifactFilter filter = null; // Evaluate all scopes
-                        node = jenkinsHpiDependencyCollector.collectDependencyGraph(buildingRequest, filter, getLog());
+                        DependencyCollectorRequest dependencyCollectorRequest =
+                                new DependencyCollectorRequest(buildingRequest)
+                                        .dependencySelector(new AndDependencySelector(
+                                                new DirectScopeDependencySelector(JavaScopes.TEST),
+                                                new DirectScopeDependencySelector(JavaScopes.PROVIDED)));
+                        node = dependencyCollectorBuilder.collectDependencyGraph(dependencyCollectorRequest);
                     } catch (DependencyCollectorBuilderException e) {
                         throw new MojoExecutionException("Failed to analyze dependency tree for useUpperBounds", e);
                     }
