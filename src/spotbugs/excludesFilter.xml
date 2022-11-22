@@ -67,17 +67,6 @@
         </Or>
       </And>
       <And>
-        <Bug pattern="THROWS_METHOD_THROWS_CLAUSE_BASIC_EXCEPTION"/>
-        <Or>
-          <Class name="org.jenkinsci.maven.plugins.hpi.AbstractJettyMojo"/>
-          <Class name="org.jenkinsci.maven.plugins.hpi.RunMojo"/>
-        </Or>
-      </And>
-      <And>
-        <Bug pattern="THROWS_METHOD_THROWS_RUNTIMEEXCEPTION"/>
-        <Class name="org.jenkinsci.maven.plugins.hpi.MavenArtifact"/>
-      </And>
-      <And>
         <Bug pattern="UR_UNINIT_READ_CALLED_FROM_SUPER_CONSTRUCTOR"/>
         <Class name="org.jenkinsci.maven.plugins.hpi.RunMojo$2"/>
       </And>
