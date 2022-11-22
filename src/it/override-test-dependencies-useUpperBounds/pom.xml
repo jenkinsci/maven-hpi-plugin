@@ -65,4 +65,31 @@
             </exclusions>
         </dependency>
     </dependencies>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <!-- because jaxen:jaxen have non reacheable dependencies -->
+                <!-- https://repo.maven.apache.org/maven2/jaxen/jaxen/1.1.3/jaxen-1.1.3.pom
+                such
+                    <dependency>
+                        <groupId>maven-plugins</groupId>
+                        <artifactId>maven-cobertura-plugin</artifactId>
+                        <version>1.3</version>
+                        <type>plugin</type>
+                    </dependency>
+
+                    etc....
+                -->
+                <groupId>org.jenkins-ci.main</groupId>
+                <artifactId>jenkins-core</artifactId>
+                <version>${jenkins.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>jaxen</groupId>
+                        <artifactId>jaxen</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 </project>

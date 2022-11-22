@@ -36,7 +36,6 @@ import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
@@ -62,8 +61,13 @@ import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.project.ProjectDependenciesResolver;
 import org.apache.maven.shared.dependency.graph.DependencyCollectorBuilder;
 import org.apache.maven.shared.dependency.graph.DependencyCollectorBuilderException;
+import org.apache.maven.shared.dependency.graph.DependencyCollectorRequest;
 import org.apache.maven.shared.dependency.graph.DependencyNode;
+import org.apache.maven.shared.dependency.graph.internal.DirectScopeDependencySelector;
 import org.apache.maven.shared.dependency.graph.traversal.DependencyNodeVisitor;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.util.artifact.JavaScopes;
+import org.eclipse.aether.util.graph.selector.AndDependencySelector;
 import org.twdata.maven.mojoexecutor.MojoExecutor;
 
 /**
@@ -84,10 +88,9 @@ public class TestDependencyMojo extends AbstractHpiMojo {
     private static final Pattern OVERRIDE_REGEX = Pattern.compile("([^:]+:[^:]+):([^:]+)");
 
     @Component private BuildPluginManager pluginManager;
-
-    @Component private DependencyCollectorBuilder dependencyCollectorBuilder;
-
     @Component private ProjectDependenciesResolver dependenciesResolver;
+    @Component private RepositorySystem repositorySystem;
+    @Component private DependencyCollectorBuilder dependencyCollectorBuilder;
 
     /**
      * List of dependency version overrides in the form {@code groupId:artifactId:version} to apply
@@ -212,8 +215,12 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                     try {
                         ProjectBuildingRequest buildingRequest = new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
                         buildingRequest.setProject(shadow);
-                        ArtifactFilter filter = null; // Evaluate all scopes
-                        node = dependencyCollectorBuilder.collectDependencyGraph(buildingRequest, filter);
+                        DependencyCollectorRequest dependencyCollectorRequest =
+                                new DependencyCollectorRequest(buildingRequest)
+                                        .dependencySelector(new AndDependencySelector(
+                                                new DirectScopeDependencySelector(JavaScopes.TEST),
+                                                new DirectScopeDependencySelector(JavaScopes.PROVIDED)));
+                        node = dependencyCollectorBuilder.collectDependencyGraph(dependencyCollectorRequest);
                     } catch (DependencyCollectorBuilderException e) {
                         throw new MojoExecutionException("Failed to analyze dependency tree for useUpperBounds", e);
                     }
@@ -328,7 +335,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                     continue;
                 }
 
-                getLog().debug("Copying " + artifactId + " as a test dependency");
+                getLog().debug("Copying " + artifactId + ":" + a.getVersion() + " as a test dependency");
                 File dst = new File(testDir, artifactId + ".hpi");
                 FileUtils.copyFile(a.getHpi().getFile(),dst);
                 w.write(artifactId + "\n");
@@ -677,11 +684,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
         public boolean visit(DependencyNode node) {
             DependencyNodeHopCountPair pair = new DependencyNodeHopCountPair(node);
             String key = pair.constructKey();
-            List<DependencyNodeHopCountPair> pairs = keyToPairsMap.get(key);
-            if (pairs == null) {
-                pairs = new ArrayList<>();
-                keyToPairsMap.put(key, pairs);
-            }
+            List<DependencyNodeHopCountPair> pairs = keyToPairsMap.computeIfAbsent(key, s -> new ArrayList<>());
             pairs.add(pair);
             Collections.sort(pairs);
             return true;
@@ -699,7 +702,12 @@ public class TestDependencyMojo extends AbstractHpiMojo {
 
                 // search for artifact with lowest hopCount
                 for (DependencyNodeHopCountPair hopPair : pairs.subList(1, pairs.size())) {
-                    if (hopPair.getHopCount() < resolvedPair.getHopCount()) {
+                    if (hopPair.getHopCount() < resolvedPair.getHopCount() ||
+                            // we can have dependencies with similar hop count but one is optional and the other not
+                            // Maven will use the non optional even if the version is higher
+                            (hopPair.getHopCount() == resolvedPair.getHopCount() &&
+                            resolvedPair.getNode().getArtifact().isOptional()) &&
+                            !hopPair.getNode().getArtifact().isOptional()) {
                         resolvedPair = hopPair;
                     }
                 }
