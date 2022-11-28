@@ -37,24 +37,28 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
     public final Artifact artifact;
     public final ArtifactResolver resolver;
     public final MavenSession session;
+    public final MavenProject project;
 
     public MavenArtifact(
             Artifact artifact,
             ArtifactResolver resolver,
             ArtifactFactory artifactFactory,
             ProjectBuilder builder,
-            MavenSession session) {
+            MavenSession session,
+            MavenProject project) {
         this.artifact = artifact;
         this.resolver = resolver;
         this.artifactFactory = artifactFactory;
         this.builder = builder;
         this.session = Objects.requireNonNull(session);
+        this.project = Objects.requireNonNull(project);
     }
 
     public MavenProject resolvePom() throws ProjectBuildingException {
         ProjectBuildingRequest buildingRequest =
                 new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
         buildingRequest.setProcessPlugins(false); // improve performance
+        buildingRequest.setRemoteRepositories(project.getRemoteArtifactRepositories());
         buildingRequest.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
         return builder.build(artifact, buildingRequest).getProject();
     }
@@ -123,7 +127,10 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
     public File getFile() {
         if (artifact.getFile()==null)
             try {
-                return resolver.resolveArtifact(session.getProjectBuildingRequest(), artifact).getArtifact().getFile();
+                ProjectBuildingRequest buildingRequest =
+                        new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
+                buildingRequest.setRemoteRepositories(project.getRemoteArtifactRepositories());
+                return resolver.resolveArtifact(buildingRequest, artifact).getArtifact().getFile();
             } catch (ArtifactResolverException e) {
                 throw new RuntimeException("Failed to resolve "+getId(),e);
             }
@@ -141,7 +148,8 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
                 resolver,
                 artifactFactory,
                 builder,
-                session);
+                session,
+                project);
     }
 
     public List<String/* of IDs*/> getDependencyTrail() {

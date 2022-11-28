@@ -212,6 +212,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                     try {
                         ProjectBuildingRequest buildingRequest = new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
                         buildingRequest.setProject(shadow);
+                        buildingRequest.setRemoteRepositories(shadow.getRemoteArtifactRepositories());
                         ArtifactFilter filter = null; // Evaluate all scopes
                         node = dependencyCollectorBuilder.collectDependencyGraph(buildingRequest, filter);
                     } catch (DependencyCollectorBuilderException e) {
