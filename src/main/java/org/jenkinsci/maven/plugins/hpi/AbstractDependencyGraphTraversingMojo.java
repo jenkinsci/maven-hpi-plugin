@@ -21,6 +21,7 @@ public abstract class AbstractDependencyGraphTraversingMojo extends AbstractJenk
         ProjectBuildingRequest buildingRequest =
                 new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
         buildingRequest.setProject(project);
+        buildingRequest.setRemoteRepositories(project.getRemoteArtifactRepositories());
         visit(graphBuilder.buildDependencyGraph(buildingRequest, null));
     }
 

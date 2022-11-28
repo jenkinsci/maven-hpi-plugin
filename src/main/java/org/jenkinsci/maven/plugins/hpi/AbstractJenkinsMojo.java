@@ -16,9 +16,11 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
 import org.apache.maven.project.ProjectBuilder;
+import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.shared.transfer.artifact.DefaultArtifactCoordinate;
 import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver;
 import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException;
@@ -132,8 +134,11 @@ public abstract class AbstractJenkinsMojo extends AbstractMojo {
         artifactCoordinate.setVersion(findJenkinsVersion());
 
         try {
+            ProjectBuildingRequest buildingRequest =
+                    new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
+            buildingRequest.setRemoteRepositories(project.getRemoteArtifactRepositories());
             return artifactResolver
-                    .resolveArtifact(session.getProjectBuildingRequest(), artifactCoordinate)
+                    .resolveArtifact(buildingRequest, artifactCoordinate)
                     .getArtifact();
         } catch (ArtifactResolverException e) {
             throw new MojoExecutionException("Couldn't download artifact: ", e);
@@ -146,6 +151,7 @@ public abstract class AbstractJenkinsMojo extends AbstractMojo {
                 artifactResolver,
                 artifactFactory,
                 projectBuilder,
-                session);
+                session,
+                project);
     }
 }

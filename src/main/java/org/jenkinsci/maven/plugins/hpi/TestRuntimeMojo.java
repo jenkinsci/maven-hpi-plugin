@@ -20,6 +20,8 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.project.DefaultProjectBuildingRequest;
+import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.shared.transfer.artifact.DefaultArtifactCoordinate;
 import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException;
 
@@ -79,8 +81,11 @@ public class TestRuntimeMojo extends AbstractJenkinsMojo {
         artifactCoordinate.setExtension("war");
 
         try {
+            ProjectBuildingRequest buildingRequest =
+                    new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
+            buildingRequest.setRemoteRepositories(project.getRemoteArtifactRepositories());
             return artifactResolver
-                    .resolveArtifact(session.getProjectBuildingRequest(), artifactCoordinate)
+                    .resolveArtifact(buildingRequest, artifactCoordinate)
                     .getArtifact();
         } catch (ArtifactResolverException e) {
             throw new MojoExecutionException("Couldn't download artifact: ", e);

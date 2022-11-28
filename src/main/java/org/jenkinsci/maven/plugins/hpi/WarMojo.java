@@ -7,8 +7,10 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
+import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Zip;
@@ -84,7 +86,10 @@ public class WarMojo extends RunMojo {
 
                 // find corresponding .hpi file
                 Artifact hpi = artifactFactory.createArtifact(a.getGroupId(),a.getArtifactId(),a.getVersion(),null,"hpi");
-                hpi = artifactResolver.resolveArtifact(session.getProjectBuildingRequest(), hpi).getArtifact();
+                ProjectBuildingRequest buildingRequest =
+                        new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
+                buildingRequest.setRemoteRepositories(project.getRemoteArtifactRepositories());
+                hpi = artifactResolver.resolveArtifact(buildingRequest, hpi).getArtifact();
 
                 if (hpi.getFile().isDirectory())
                     throw new UnsupportedOperationException(hpi.getFile()+" is a directory and not packaged yet. this isn't supported");
