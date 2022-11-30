@@ -1,9 +1,9 @@
 import java.util.jar.*
 
-assert new File(basedir, 'target/parent-3x.hpi').exists()
-assert new File(basedir, 'target/parent-3x.jar').exists()
+assert new File(basedir, 'target/parent-4x.hpi').exists()
+assert new File(basedir, 'target/parent-4x.jar').exists()
 
-File installed = new File(basedir, '../../local-repo/org/jenkins-ci/tools/hpi/its/parent-3x/1.0-SNAPSHOT/')
+File installed = new File(basedir, '../../local-repo/org/jenkins-ci/tools/hpi/its/parent-4x/1.0-SNAPSHOT/')
 assert installed.directory
 
 def checkArtifact(File installed, String artifact, List<String> expectedEntries, List<String> unexpectedEntries, Map<String,String> expectedManifestEntries) {
@@ -20,43 +20,43 @@ def checkArtifact(File installed, String artifact, List<String> expectedEntries,
     }
 }
 
-checkArtifact(installed, 'parent-3x-1.0-SNAPSHOT.hpi',
+checkArtifact(installed, 'parent-4x-1.0-SNAPSHOT.hpi',
     // TODO could also check src/main/webapp/images/32x32/foo.png → images/32x32/foo.png
-    ['WEB-INF/lib/parent-3x.jar'],
+    ['WEB-INF/lib/parent-4x.jar'],
     // TODO still some problems with unwanted transitive JAR dependencies creeping in, e.g. WEB-INF/lib/jboss-marshalling-1.4.9.Final.jar in workflow-multibranch.hpi, or all kinds of junk in parameterized-trigger.hpi
     ['test/SampleRootAction.class', 'WEB-INF/lib/symbol-annotation-1.5.jar'],
-    ['Short-Name': 'parent-3x', 'Group-Id': 'org.jenkins-ci.tools.hpi.its', 'Jenkins-Version': '2.249.1' /* Plugin-Version unpredictable for a snapshot */, 'Plugin-Dependencies': 'structs:308.v852b473a2b8c'])
+    ['Short-Name': 'parent-4x', 'Group-Id': 'org.jenkins-ci.tools.hpi.its', 'Jenkins-Version': '2.361.4' /* Plugin-Version unpredictable for a snapshot */, 'Plugin-Dependencies': 'structs:324.va_f5d6774f3a_d'])
 
-checkArtifact(installed, 'parent-3x-1.0-SNAPSHOT.jar',
+checkArtifact(installed, 'parent-4x-1.0-SNAPSHOT.jar',
     ['META-INF/annotations/hudson.Extension', 'test/SampleRootAction.class', 'index.jelly'],
     [],
-    ['Short-Name': 'parent-3x'])
+    ['Short-Name': 'parent-4x'])
 
-checkArtifact(installed, 'parent-3x-1.0-SNAPSHOT-javadoc.jar',
+checkArtifact(installed, 'parent-4x-1.0-SNAPSHOT-javadoc.jar',
     ['test/SampleRootAction.html'],
     [],
     [:])
 
-checkArtifact(installed, 'parent-3x-1.0-SNAPSHOT-sources.jar',
+checkArtifact(installed, 'parent-4x-1.0-SNAPSHOT-sources.jar',
     ['test/SampleRootAction.java', 'index.jelly'],
     [],
     [:])
 
-checkArtifact(installed, 'parent-3x-1.0-SNAPSHOT-tests.jar',
+checkArtifact(installed, 'parent-4x-1.0-SNAPSHOT-tests.jar',
     ['test/SampleRootActionTest.class', 'test/expected.txt'],
     ['the.hpl', 'InjectedTest.class', 'test-dependencies/structs.hpi'],
     [:])
 
-checkArtifact(installed, 'parent-3x-1.0-SNAPSHOT-test-sources.jar',
+checkArtifact(installed, 'parent-4x-1.0-SNAPSHOT-test-sources.jar',
     ['test/SampleRootActionTest.java', 'test/expected.txt'],
-    ['InjectedTest.java'],
+    [],
     [:])
 
 // TODO check that we can access http://localhost:8080/jenkins/sample/ during hpi:run
 // (tricky since this script is called only once mvn is done)
 def text = new File(basedir, 'build.log').text
-assert text.contains('Jenkins is fully up and running') && text.contains('INFO\tjenkins.model.Jenkins#cleanUp: Jenkins stopped')
-assert new File(basedir, 'work/plugins/parent-3x.hpl').file
+assert text.contains('Jenkins is fully up and running') && text.contains('INFO\thudson.lifecycle.Lifecycle#onStatusUpdate: Jenkins stopped')
+assert new File(basedir, 'work/plugins/parent-4x.hpl').file
 assert new File(basedir, 'work/plugins/structs.jpi').file
 
 // TODO run a copy of jenkins.war with the installed *.hpi predeployed and do a similar check

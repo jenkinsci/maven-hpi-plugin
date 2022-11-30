@@ -17,6 +17,6 @@
  * under the License.
  */
 
-assert new File(basedir, 'build.log').getText('UTF-8').contains("Dependency io.jenkins:configuration-as-code:jar:1414.v878271fc496f requires Jenkins 2.289.3 or higher.")
+assert new File(basedir, 'build.log').getText('UTF-8').contains("Dependency org.jenkins-ci.plugins:credentials:jar:1214.v1de940103927 requires Jenkins 2.375 or higher.")
 
 return true;

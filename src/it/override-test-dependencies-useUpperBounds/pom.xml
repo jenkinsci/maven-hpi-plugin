@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>4.40</version>
+        <version>4.51</version>
         <relativePath/>
     </parent>
     <groupId>org.jenkins-ci.tools.hpi.its</groupId>
@@ -13,7 +13,7 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>hpi</packaging>
     <properties>
-        <jenkins.version>2.249</jenkins.version>
+        <jenkins.version>2.361.4</jenkins.version>
         <hpi-plugin.version>@project.version@</hpi-plugin.version>
         <overrideVersions>org.jenkins-ci.plugins.workflow:workflow-cps:2.33</overrideVersions> <!-- TODO also test overriding transitive dependencies -->
         <useUpperBounds>true</useUpperBounds>

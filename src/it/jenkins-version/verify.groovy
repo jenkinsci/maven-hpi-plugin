@@ -17,6 +17,6 @@
  * under the License.
  */
 
-assert new File(basedir, 'build.log').getText('UTF-8').contains('This version of maven-hpi-plugin requires Jenkins 2.204 or later')
+assert new File(basedir, 'build.log').getText('UTF-8').contains('This version of maven-hpi-plugin requires Jenkins 2.361 or later')
 
 return true

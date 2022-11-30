@@ -26,16 +26,16 @@ mvn -f ../some-plugin -Dhpi-plugin.version=2.XXX-SNAPSHOT -DskipTests -DjenkinsH
 You can also rerun one test:
 
 ```bash
-mvn -Prun-its mrm:start invoker:run mrm:stop -Dinvoker.test=parent-3x
+mvn -Prun-its mrm:start invoker:run mrm:stop -Dinvoker.test=parent-4x
 ```
 
 To rerun just the verification script:
 
 ```bash
-groovy -e "basedir='$(pwd)/target/its/parent-3x'; evaluate new File('src/it/parent-3x/verify.groovy')"
+groovy -e "basedir='$(pwd)/target/its/parent-4x'; evaluate new File('src/it/parent-4x/verify.groovy')"
 ```
 
-Also make sure `project.parent.version` in `src/it/parent-3x/pom.xml` is the latest.
+Also make sure `project.parent.version` is the latest in every integration test except `src/it/parent-4-40/pom.xml`.
 
 ## Updating Jetty
 `hpi:run` mojo is a variant of `jetty:run` mojo, and because of the way plugin descriptor is generated, this module copies some code from Jetty Maven plugin, specifically `AbstractJettyMojo.java` and `ConsoleScanner.java`.
