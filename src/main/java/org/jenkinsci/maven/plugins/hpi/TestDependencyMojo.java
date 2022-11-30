@@ -132,7 +132,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
 
     @Override
     public void execute() throws MojoExecutionException {
-        Map<String, String> overrides = overrideVersions != null ? parseOverrides(overrideVersions) : Collections.emptyMap();
+        Map<String, String> overrides = overrideVersions != null ? parseOverrides(overrideVersions) : Map.of();
         if (!overrides.isEmpty()) {
             getLog().info(String.format("Applying %d overrides.", overrides.size()));
         }
@@ -140,7 +140,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
             throw new MojoExecutionException("Cannot override self");
         }
 
-        Map<String, String> bundledPlugins = overrideWar != null ? scanWar(overrideWar, session, project) : Collections.emptyMap();
+        Map<String, String> bundledPlugins = overrideWar != null ? scanWar(overrideWar, session, project) : Map.of();
         if (!bundledPlugins.isEmpty()) {
             getLog().info(String.format("Scanned contents of %s with %d bundled plugins", overrideWar, bundledPlugins.size()));
         }
@@ -235,7 +235,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                         Set<Artifact> resolved = resolveDependencies(shadow);
                         shadow.setArtifacts(resolved);
 
-                        applyOverrides(upperBounds, Collections.emptyMap(), true, overrideWarAdditions, shadow, getLog());
+                        applyOverrides(upperBounds, Map.of(), true, overrideWarAdditions, shadow, getLog());
                     }
                 }
             } else if (!upperBoundsExcludes.isEmpty()) {
@@ -661,7 +661,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                 RepositoryUtils.toArtifacts(
                         artifacts,
                         result.getDependencyGraph().getChildren(),
-                        Collections.singletonList(project.getArtifact().getId()),
+                        List.of(project.getArtifact().getId()),
                         request.getResolutionFilter());
             }
             return artifacts;
@@ -678,11 +678,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
         public boolean visit(DependencyNode node) {
             DependencyNodeHopCountPair pair = new DependencyNodeHopCountPair(node);
             String key = pair.constructKey();
-            List<DependencyNodeHopCountPair> pairs = keyToPairsMap.get(key);
-            if (pairs == null) {
-                pairs = new ArrayList<>();
-                keyToPairsMap.put(key, pairs);
-            }
+            List<DependencyNodeHopCountPair> pairs = keyToPairsMap.computeIfAbsent(key, unused -> new ArrayList<>());
             pairs.add(pair);
             Collections.sort(pairs);
             return true;
@@ -820,9 +816,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
         Collections.reverse(loc);
         StringBuilder builder = new StringBuilder();
         for (int i = 0; i < loc.size(); i++) {
-            for (int j = 0; j < i; j++) {
-                builder.append("  ");
-            }
+            builder.append("  ".repeat(i));
             builder.append("+-").append(loc.get(i));
             builder.append(System.lineSeparator());
         }
