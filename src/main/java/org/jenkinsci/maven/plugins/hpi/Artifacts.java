@@ -4,7 +4,6 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
@@ -46,42 +45,42 @@ public class Artifacts extends ArrayList<Artifact> {
     }
     
     public Artifacts scopeIs(String... scopes) {
-        final List<String> s = Arrays.asList(scopes);
+        final List<String> s = List.of(scopes);
         return retainAll(a -> s.contains(a.getScope()));
     }
 
     public Artifacts scopeIsNot(String... scopes) {
-        final List<String> s = Arrays.asList(scopes);
+        final List<String> s = List.of(scopes);
         return removeAll(a -> s.contains(a.getScope()));
     }
 
     public Artifacts typeIs(String... type) {
-        final List<String> s = Arrays.asList(type);
+        final List<String> s = List.of(type);
         return retainAll(a -> s.contains(a.getType()));
     }
 
     public Artifacts typeIsNot(String... type) {
-        final List<String> s = Arrays.asList(type);
+        final List<String> s = List.of(type);
         return removeAll(a -> s.contains(a.getType()));
     }
 
     public Artifacts groupIdIs(String... groupId) {
-        final List<String> s = Arrays.asList(groupId);
+        final List<String> s = List.of(groupId);
         return retainAll(a -> s.contains(a.getType()));
     }
 
     public Artifacts groupIdIsNot(String... groupId) {
-        final List<String> s = Arrays.asList(groupId);
+        final List<String> s = List.of(groupId);
         return removeAll(a -> s.contains(a.getType()));
     }
 
     public Artifacts artifactIdIs(String... artifactId) {
-        final List<String> s = Arrays.asList(artifactId);
+        final List<String> s = List.of(artifactId);
         return retainAll(a -> s.contains(a.getType()));
     }
 
     public Artifacts artifactIdIsNot(String... artifactId) {
-        final List<String> s = Arrays.asList(artifactId);
+        final List<String> s = List.of(artifactId);
         return removeAll(a -> s.contains(a.getType()));
     }
 }

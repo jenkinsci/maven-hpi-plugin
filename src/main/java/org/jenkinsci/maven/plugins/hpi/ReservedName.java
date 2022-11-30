@@ -1,6 +1,5 @@
 package org.jenkinsci.maven.plugins.hpi;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -8,7 +7,7 @@ import java.util.Set;
  * @author Kohsuke Kawaguchi
  */
 class ReservedName {
-    static Set<String> NAMES = new HashSet<>(Arrays.asList(
+    static Set<String> NAMES = Set.of(
         "abstract",
         "assert",
         "boolean",
@@ -64,5 +63,5 @@ class ReservedName {
         "true",
         "false",
         "null"
-    ));
+    );
 }
