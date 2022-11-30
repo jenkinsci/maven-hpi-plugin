@@ -160,7 +160,7 @@
     <dependency>
       <groupId>org.apache.maven.plugins</groupId>
       <artifactId>maven-dependency-plugin</artifactId>
-      <version>3.3.0</version>
+      <version>3.4.0</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.shared</groupId>
@@ -313,6 +313,7 @@
                 <requireUpperBoundDeps>
                   <excludes combine.children="append">
                     <exclude>commons-lang:commons-lang</exclude>
+                    <exclude>org.codehaus.plexus:plexus-archiver</exclude>
                     <exclude>org.codehaus.plexus:plexus-container-default</exclude>
                     <exclude>org.ow2.asm:asm</exclude>
                     <exclude>org.slf4j:slf4j-api</exclude>
