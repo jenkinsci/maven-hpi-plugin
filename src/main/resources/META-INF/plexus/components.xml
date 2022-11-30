@@ -12,7 +12,6 @@
             <id>default</id>
             <phases>
               <validate>org.jenkins-ci.tools:maven-hpi-plugin:validate,org.jenkins-ci.tools:maven-hpi-plugin:validate-hpi</validate>
-              <initialize>org.jenkins-ci.tools:maven-hpi-plugin:initialize</initialize>
               <process-resources>org.apache.maven.plugins:maven-resources-plugin:resources</process-resources>
               <compile>org.apache.maven.plugins:maven-compiler-plugin:compile</compile>
               <process-classes>org.kohsuke:access-modifier-checker:enforce</process-classes>
