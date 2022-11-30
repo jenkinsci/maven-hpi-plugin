@@ -313,6 +313,7 @@
                 <requireUpperBoundDeps>
                   <excludes combine.children="append">
                     <exclude>commons-lang:commons-lang</exclude>
+                    <exclude>org.codehaus.plexus:plexus-archiver</exclude>
                     <exclude>org.codehaus.plexus:plexus-container-default</exclude>
                     <exclude>org.ow2.asm:asm</exclude>
                     <exclude>org.slf4j:slf4j-api</exclude>
