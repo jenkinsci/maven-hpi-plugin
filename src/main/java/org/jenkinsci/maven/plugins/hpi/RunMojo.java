@@ -63,11 +63,11 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -458,7 +458,7 @@ public class RunMojo extends AbstractJettyMojo {
         // TODO skip .pinned file creation if Jenkins version is >= 2.0
         // pin the dependency plugin, so that even if a different version of the same plugin is bundled to Jenkins,
         // we still use the plugin as specified by the POM of the plugin.
-        FileUtils.writeStringToFile(new File(dst + ".pinned"), "pinned");
+        Files.writeString(pluginsDir.toPath().resolve(shortName + ".jpi.pinned"), "pinned", StandardCharsets.US_ASCII);
         Files.deleteIfExists(new File(pluginsDir, shortName + ".jpl").toPath()); // in case we used to have a snapshot dependency
     }
     private VersionNumber versionOfPlugin(File p) throws IOException {
@@ -490,7 +490,7 @@ public class RunMojo extends AbstractJettyMojo {
         File dst = new File(pluginsDir, shortName + ".jpl");
         getLog().info("Copying snapshot dependency Jenkins plugin " + src);
         FileUtils.copyFile(src, dst);
-        FileUtils.writeStringToFile(new File(pluginsDir, shortName + ".jpi.pinned"), "pinned");
+        Files.writeString(pluginsDir.toPath().resolve(shortName + ".jpi.pinned"), "pinned", StandardCharsets.US_ASCII);
     }
 
     /**
@@ -800,7 +800,7 @@ public class RunMojo extends AbstractJettyMojo {
                 RepositoryUtils.toArtifacts(
                         artifacts,
                         result.getDependencyGraph().getChildren(),
-                        Collections.singletonList(getProject().getArtifact().getId()),
+                        List.of(getProject().getArtifact().getId()),
                         request.getResolutionFilter());
             }
             return artifacts;
