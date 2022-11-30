@@ -10,8 +10,6 @@ updates:
       # Must remain within Jetty 9.x until Java 8 support is removed
       - dependency-name: "org.eclipse.jetty:jetty-maven-plugin"
         versions: [">=10.0.0"]
-      # Requires Java 11 starting with version 1711.v5b_1b_03f0fcf2.
-      - dependency-name: "org.kohsuke.stapler:stapler-groovy"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:

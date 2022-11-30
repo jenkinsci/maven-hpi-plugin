@@ -51,7 +51,6 @@
     <end>$}</end>
     <dollar>$</dollar>
     <openbracket>{</openbracket>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <gitHubRepo>jenkinsci/${project.artifactId}</gitHubRepo>
     <aether.version>1.1.0</aether.version>
     <maven.version>3.8.6</maven.version>
@@ -80,6 +79,11 @@
       <dependency>
         <groupId>org.apache.maven</groupId>
         <artifactId>maven-model</artifactId>
+        <version>${maven.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-plugin-api</artifactId>
         <version>${maven.version}</version>
       </dependency>
       <dependency>
@@ -135,7 +139,7 @@
     <dependency>
       <groupId>io.jenkins.lib</groupId>
       <artifactId>support-log-formatter</artifactId>
-      <version>1.1</version>
+      <version>1.2</version>
     </dependency>
     <dependency>
       <groupId>net.java.sezpoz</groupId>
@@ -192,12 +196,12 @@
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>version-number</artifactId>
-      <version>1.10</version>
+      <version>1.11</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-groovy</artifactId>
-      <version>1685.v3b_5035c4ce05</version>
+      <version>1747.v9580b_2f1d80b</version>
     </dependency>
     <dependency>
       <groupId>org.twdata.maven</groupId>
@@ -234,7 +238,6 @@
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-plugin-api</artifactId>
-      <version>${maven.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -309,23 +312,12 @@
               <rules>
                 <requireUpperBoundDeps>
                   <excludes combine.children="append">
-                    <exclude>commons-io:commons-io</exclude>
                     <exclude>commons-lang:commons-lang</exclude>
-                    <exclude>org.apache.commons:commons-compress</exclude>
-                    <exclude>org.apache.maven.wagon:wagon-provider-api</exclude>
                     <exclude>org.codehaus.plexus:plexus-container-default</exclude>
-                    <exclude>org.eclipse.sisu:org.eclipse.sisu.plexus</exclude>
                     <exclude>org.ow2.asm:asm</exclude>
                     <exclude>org.slf4j:slf4j-api</exclude>
                   </excludes>
                 </requireUpperBoundDeps>
-                <!-- TODO When the minimum Jenkins baseline is bumped past 2.357, this can be deleted. -->
-                <requireJavaVersion>
-                  <version>[1.8.0,]</version>
-                </requireJavaVersion>
-                <enforceBytecodeVersion>
-                  <maxJdkVersion>1.8</maxJdkVersion>
-                </enforceBytecodeVersion>
               </rules>
             </configuration>
           </execution>
@@ -474,58 +466,6 @@
       <properties>
         <invoker.streamLogs>true</invoker.streamLogs>
       </properties>
-    </profile>
-    <!-- TODO When the minimum Jenkins baseline is bumped past 2.357, this can be deleted. -->
-    <profile>
-      <id>jdk-8-and-below</id>
-      <activation>
-        <jdk>(,1.8]</jdk>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <configuration>
-              <source>1.8</source>
-              <target>1.8</target>
-              <testSource>1.8</testSource>
-              <testTarget>1.8</testTarget>
-              <release combine.self="override" />
-              <testRelease combine.self="override" />
-            </configuration>
-          </plugin>
-          <plugin>
-            <artifactId>maven-javadoc-plugin</artifactId>
-            <configuration>
-              <source>1.8</source>
-              <release combine.self="override" />
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <profile>
-      <id>jdk-9-and-above</id>
-      <activation>
-        <jdk>[9,)</jdk>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <configuration>
-              <release>8</release>
-              <testRelease>8</testRelease>
-            </configuration>
-          </plugin>
-          <plugin>
-            <artifactId>maven-javadoc-plugin</artifactId>
-            <configuration>
-              <release>8</release>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
     </profile>
   </profiles>
 </project>

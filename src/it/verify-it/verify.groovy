@@ -42,10 +42,10 @@ Files.newInputStream(new File(basedir, 'target/verify-it/META-INF/MANIFEST.MF').
   assert manifest.getMainAttributes().getValue('Created-By').startsWith('Maven Archiver')
   assert manifest.getMainAttributes().getValue('Extension-Name') == null // was provided by Maven 2, but core prefers Short-Name
   assert manifest.getMainAttributes().getValue('Group-Id').equals('org.jenkins-ci.tools.hpi.its')
-  assert manifest.getMainAttributes().getValue('Hudson-Version').equals('2.249.1')
+  assert manifest.getMainAttributes().getValue('Hudson-Version').equals('2.361.4')
   assert manifest.getMainAttributes().getValue('Implementation-Title').equals('MyNewPlugin') // was project.artifactId in previous versions, now project.name
   assert manifest.getMainAttributes().getValue('Implementation-Version').equals('1.0-SNAPSHOT')
-  assert manifest.getMainAttributes().getValue('Jenkins-Version').equals('2.249.1')
+  assert manifest.getMainAttributes().getValue('Jenkins-Version').equals('2.361.4')
   assert manifest.getMainAttributes().getValue('Long-Name').equals('MyNewPlugin')
   assert manifest.getMainAttributes().getValue('Manifest-Version').equals('1.0')
   assert manifest.getMainAttributes().getValue('Plugin-Developers').equals('Noam Chomsky:nchomsky:nchomsky@example.com')
