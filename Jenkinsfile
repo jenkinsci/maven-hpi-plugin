@@ -5,8 +5,8 @@ properties([
 
 def runTests(Map params = [:]) {
   return {
-    def agentContainerLabel = params['jdk'] == 8 ? 'maven' : 'maven-' + params['jdk']
-    boolean publishing = params['jdk'] == 8
+    def agentContainerLabel = 'maven-' + params['jdk']
+    boolean publishing = params['jdk'] == 11
     node(agentContainerLabel) {
       timeout(time: 1, unit: 'HOURS') {
         def stageIdentifier = params['platform'] + '-' + params['jdk']
