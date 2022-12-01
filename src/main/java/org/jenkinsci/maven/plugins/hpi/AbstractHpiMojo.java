@@ -33,7 +33,6 @@ import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
@@ -283,7 +282,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
     protected String[] getExcludes() {
         List<String> excludeList = new ArrayList<>();
         if (StringUtils.isNotEmpty(warSourceExcludes)) {
-            excludeList.addAll(Arrays.asList(StringUtils.split(warSourceExcludes, ",")));
+            excludeList.addAll(List.of(StringUtils.split(warSourceExcludes, ",")));
         }
 
         // if contextXML is specified, omit the one in the source directory
@@ -355,7 +354,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         }
 
         try {
-            List<Resource> webResources = this.webResources != null ? Arrays.asList(this.webResources) : null;
+            List<Resource> webResources = this.webResources != null ? List.of(this.webResources) : null;
             if (webResources != null && webResources.size() > 0) {
                 Properties filterProperties = getBuildFilterProperties();
                 for (Resource resource : webResources) {
