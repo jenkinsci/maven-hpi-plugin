@@ -1,15 +1,13 @@
 package org.jenkinsci.maven.plugins.hpi;
 
-import com.google.common.io.ByteStreams;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import io.jenkins.lib.versionnumber.JavaSpecificationVersion;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.jar.JarFile;
@@ -45,6 +43,14 @@ public class TestRuntimeMojo extends AbstractJenkinsMojo {
     @Parameter(property = "maven.test.skip", defaultValue = "false")
     private boolean skip;
 
+    /**
+     * Directory where unpacked patch modules should be cached.
+     *
+     * @see #getInsaneHook
+     */
+    @Parameter(defaultValue = "${project.build.directory}/patch-modules")
+    private File patchModuleDir;
+
     @Override
     public void execute() throws MojoExecutionException {
         if (skipTests || skip) {
@@ -56,14 +62,9 @@ public class TestRuntimeMojo extends AbstractJenkinsMojo {
     }
 
     private void setAddOpensProperty() throws MojoExecutionException {
-        if (JavaSpecificationVersion.forCurrentJVM().isOlderThan(new JavaSpecificationVersion("9"))) {
-            // nothing to do prior to JEP 261
-            return;
-        }
-
         String manifestEntry = getManifestEntry(wrap(resolveJenkinsWar()));
         if (manifestEntry == null) {
-            // core older than 2.339, ignore
+            getLog().warn("Add-Opens missing from MANIFEST.MF");
             return;
         }
 
@@ -130,32 +131,27 @@ public class TestRuntimeMojo extends AbstractJenkinsMojo {
             return;
         }
 
-        Path insaneHook = getInsaneHook(wrap(jth));
+        Path insaneHook = getInsaneHook(wrap(jth), patchModuleDir.toPath());
 
-        String argLine;
-        if (JavaSpecificationVersion.forCurrentJVM().isNewerThanOrEqualTo(new JavaSpecificationVersion("9"))) {
-            argLine = String.format("--patch-module=java.base=%s --add-exports=java.base/org.netbeans.insane.hook=ALL-UNNAMED", insaneHook);
-        } else {
-            argLine = String.format("-Xbootclasspath/p:%s", insaneHook);
-        }
+        String argLine = String.format("--patch-module=java.base=%s --add-exports=java.base/org.netbeans.insane.hook=ALL-UNNAMED", insaneHook);
         getLog().info("Setting jenkins.insaneHook to " + argLine);
         project.getProperties().setProperty("jenkins.insaneHook", argLine);
     }
 
     @NonNull
-    private static Path getInsaneHook(MavenArtifact artifact) throws MojoExecutionException {
+    private static Path getInsaneHook(MavenArtifact artifact, Path patchModuleDir) throws MojoExecutionException {
         File jar = artifact.getFile();
         try (JarFile jarFile = new JarFile(jar)) {
             ZipEntry entry = jarFile.getEntry("netbeans/harness/modules/ext/org-netbeans-insane-hook.jar");
             if (entry == null) {
                 throw new MojoExecutionException("Failed to find org-netbeans-insane-hook.jar in " + jar);
             }
-            Path tempFile = Files.createTempFile("org-netbeans-insane-hook", ".jar");
-            tempFile.toFile().deleteOnExit();
-            try (InputStream is = jarFile.getInputStream(entry); OutputStream os = Files.newOutputStream(tempFile)) {
-                ByteStreams.copy(is, os);
+            Files.createDirectories(patchModuleDir);
+            Path insaneHook = patchModuleDir.resolve("org-netbeans-insane-hook.jar");
+            try (InputStream is = jarFile.getInputStream(entry)) {
+                Files.copy(is, insaneHook, StandardCopyOption.REPLACE_EXISTING);
             }
-            return tempFile.toAbsolutePath();
+            return insaneHook.toAbsolutePath();
         } catch (IOException e) {
             throw new MojoExecutionException("Failed to read org-netbeans-insane-hook.jar from " + jar, e);
         }
