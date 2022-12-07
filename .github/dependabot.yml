@@ -1,5 +1,5 @@
 # https://help.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
-
+---
 version: 2
 updates:
   - package-ecosystem: "maven"
@@ -7,9 +7,10 @@ updates:
     schedule:
       interval: "weekly"
     ignore:
-      # Must remain within Jetty 9.x until Java 8 support is removed
+      # [JENKINS-68698] Must remain within Jetty 10.x until the Jakarta EE 9
+      # migration is complete
       - dependency-name: "org.eclipse.jetty:jetty-maven-plugin"
-        versions: [">=10.0.0"]
+        versions: [">=11.0.0"]
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:

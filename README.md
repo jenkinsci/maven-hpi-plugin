@@ -36,10 +36,3 @@ groovy -e "basedir='$(pwd)/target/its/parent-4x'; evaluate new File('src/it/pare
 ```
 
 Also make sure `project.parent.version` is the latest in every integration test except `src/it/parent-4-40/pom.xml`.
-
-## Updating Jetty
-`hpi:run` mojo is a variant of `jetty:run` mojo, and because of the way plugin descriptor is generated, this module copies some code from Jetty Maven plugin, specifically `AbstractJettyMojo.java` and `ConsoleScanner.java`.
-
-To keep upstream tracking easier, pristine copies of these files are copied into `incoming-x.y` branch, then package renamed. This version specific incoming branch is then "theirs" merged into the `incoming` branch, which acts as the upstream tracking branch.
-
-This branch is then merged into `master` via `git merge -X ignore-space-at-eol incoming`. See diff between `incoming` and `master` on these files to see the exact local patches.
