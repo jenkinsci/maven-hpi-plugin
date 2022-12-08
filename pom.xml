@@ -161,6 +161,12 @@
       <groupId>org.apache.maven.plugins</groupId>
       <artifactId>maven-dependency-plugin</artifactId>
       <version>3.4.0</version>
+      <exclusions>
+        <exclusion>
+          <groupId>asm</groupId>
+          <artifactId>asm</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.shared</groupId>
@@ -191,7 +197,7 @@
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-maven-plugin</artifactId>
-      <version>9.4.49.v20220914</version>
+      <version>10.0.12</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
@@ -202,6 +208,12 @@
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-groovy</artifactId>
       <version>1756.vec9071748061</version>
+      <exclusions>
+        <exclusion>
+          <groupId>jakarta.annotation</groupId>
+          <artifactId>jakarta.annotation-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.twdata.maven</groupId>
@@ -313,9 +325,9 @@
                 <requireUpperBoundDeps>
                   <excludes combine.children="append">
                     <exclude>commons-lang:commons-lang</exclude>
+                    <exclude>org.apache.commons:commons-collections4</exclude>
                     <exclude>org.codehaus.plexus:plexus-archiver</exclude>
                     <exclude>org.codehaus.plexus:plexus-container-default</exclude>
-                    <exclude>org.ow2.asm:asm</exclude>
                     <exclude>org.slf4j:slf4j-api</exclude>
                   </excludes>
                 </requireUpperBoundDeps>

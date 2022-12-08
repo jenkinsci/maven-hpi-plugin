@@ -45,14 +45,15 @@ import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver;
 import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException;
 import org.eclipse.aether.graph.DependencyFilter;
 import org.eclipse.aether.util.filter.ScopeDependencyFilter;
-import org.eclipse.jetty.maven.plugin.JettyWebAppContext;
+import org.eclipse.jetty.http.HttpCompliance;
+import org.eclipse.jetty.http.UriCompliance;
+import org.eclipse.jetty.maven.plugin.JettyRunWarMojo;
 import org.eclipse.jetty.maven.plugin.MavenServerConnector;
+import org.eclipse.jetty.maven.plugin.MavenWebAppContext;
 import org.eclipse.jetty.security.HashLoginService;
 import org.eclipse.jetty.security.UserStore;
-import org.eclipse.jetty.server.ConnectionFactory;
-import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
-import org.eclipse.jetty.util.Scanner;
 import org.eclipse.jetty.util.security.Password;
 import org.eclipse.jetty.webapp.WebAppClassLoader;
 import org.eclipse.jetty.webapp.WebAppContext;
@@ -64,10 +65,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -101,7 +103,7 @@ import java.util.zip.ZipFile;
  */
 @Mojo(name="run", requiresDependencyResolution=ResolutionScope.TEST)
 @Execute(phase = LifecyclePhase.COMPILE)
-public class RunMojo extends AbstractJettyMojo {
+public class RunMojo extends JettyRunWarMojo {
 
     @Parameter(defaultValue = "${session}", required = true, readonly = true)
     protected MavenSession session;
@@ -161,7 +163,7 @@ public class RunMojo extends AbstractJettyMojo {
      *
      * If connectors are configured in the Mojo, that'll take precedence.
      */
-    @Parameter(property = "port")
+    @Parameter(property = "port", defaultValue = "8080")
     protected int defaultPort;
 
     /**
@@ -183,7 +185,10 @@ public class RunMojo extends AbstractJettyMojo {
     /**
      * If true, the context will be restarted after a line feed on
      * the input console. Enabled by default.
+     *
+     * @deprecated use {@link JettyRunWarMojo#scan}
      */
+    @Deprecated
     @Parameter(property = "jetty.consoleForceReload", defaultValue = "true")
     protected boolean consoleForceReload;
 
@@ -224,14 +229,6 @@ public class RunMojo extends AbstractJettyMojo {
      */
     @Parameter
     protected boolean pluginFirstClassLoader = false;
-
-    /**
-     * List of additional System properties to set
-     *
-     * @since 1.85
-     */
-    @Parameter
-    private Map<String, String> systemProperties;
 
     /**
      * List of loggers to define.
@@ -277,7 +274,7 @@ public class RunMojo extends AbstractJettyMojo {
                 getLog().warn("Please use `webApp/contextPath` configuration parameter in place of the deprecated `contextPath` parameter");
                 if (webApp == null) {
                     try {
-                        webApp = new JettyWebAppContext();
+                        webApp = new MavenWebAppContext();
                     } catch (Exception e) {
                         throw new MojoExecutionException("Failed to initialize webApp configuration", e);
                     }
@@ -311,14 +308,6 @@ public class RunMojo extends AbstractJettyMojo {
         setSystemPropertyIfEmpty("hudson.hpi.run","true");
         // expose the current top-directory of the plugin
         setSystemPropertyIfEmpty("jenkins.moduleRoot", basedir.getAbsolutePath());
-
-        if (systemProperties != null && !systemProperties.isEmpty()) {
-            for (Map.Entry<String,String> entry : systemProperties.entrySet()) {
-                if (entry.getKey() != null && entry.getValue()!=null) {
-                    System.setProperty( entry.getKey(), entry.getValue() );
-                }
-            }
-        }
 
         // look for jenkins.war
         Artifacts jenkinsArtifacts = Artifacts.of(getProject())
@@ -512,17 +501,22 @@ public class RunMojo extends AbstractJettyMojo {
     }
 
     @Override
-    public void configureWebApplication() throws Exception {
-        // Jetty tries to do this in WebAppContext.resolveWebApp but it failed to delete the directory.
-        File t = webApp.getTempDirectory();
-        if (t==null)    t = new File(getProject().getBuild().getDirectory(),"tmp");
-        File extractedWebAppDir= new File(t, "webapp");
+    public void configureWebApp() throws Exception {
+        if (webApp.getTempDirectory() == null) {
+            // Preëmpt AbstractWebAppMojo.configureWebApp and choose a better name
+            Path target = Paths.get(project.getBuild().getDirectory());
+            Path tmp = target.resolve("jetty");
+            if (!Files.isDirectory(tmp)) {
+                Files.createDirectories(tmp);
+            }
+            webApp.setTempDirectory(tmp.toFile());
+        }
+        File extractedWebAppDir = new File(webApp.getTempDirectory(), "webapp");
         if (isExtractedWebAppDirStale(extractedWebAppDir, webAppFile)) {
             FileUtils.deleteDirectory(extractedWebAppDir);
         }
-        
-        super.configureWebApplication();
         getWebAppConfig().setWar(webAppFile.getCanonicalPath());
+        super.configureWebApp();
         for (Artifact a : project.getArtifacts()) {
             if (a.getGroupId().equals("org.jenkins-ci.main") && a.getArtifactId().equals("jenkins-core")) {
                 File coreBasedir = pluginWorkspaceMap.read(a.getId());
@@ -540,6 +534,7 @@ public class RunMojo extends AbstractJettyMojo {
         userStore.addUser("bob", new Password("bob"), new String[] {"user", "male"});
         userStore.addUser("charlie", new Password("charlie"), new String[] {"user", "male"});
         getWebAppConfig().getSecurityHandler().setLoginService(hashLoginService);
+        finishConfigurationBeforeStart();
     }
 
     private static final String VERSION_PATH = "META-INF/maven/org.jenkins-ci.main/jenkins-war/pom.properties";
@@ -605,93 +600,30 @@ public class RunMojo extends AbstractJettyMojo {
     }
 
     @Override
-    public void configureScanner() throws MojoExecutionException {
+    public void startScanner() throws Exception {
         // use a bigger buffer as Stapler traces can get pretty large on deeply nested URL
-        // this can only be done after server.start() is called, which happens in AbstractJettyMojo.startJetty()
-        // and this configureScanner method is one of the few places that are run afterward.
-        for (Connector con : server.getConnectors()) {
-            for (ConnectionFactory cf : con.getConnectionFactories()) {
-                if (cf instanceof HttpConnectionFactory) {
-                    HttpConnectionFactory hcf = (HttpConnectionFactory) cf;
-                    hcf.getHttpConfiguration().setResponseHeaderSize(12*1024);
-                }
-            }
+        // this can only be done after MavenServerConnector.doStart() is called, which happens in AbstractWebAppMojo.startJetty()
+        // and this startScanner method is one of the few places that are run afterward.
+        HttpConfiguration hc = httpConnector.getConnectionFactory(HttpConnectionFactory.class).getHttpConfiguration();
+        hc.setHttpCompliance(HttpCompliance.RFC7230);
+        hc.setUriCompliance(UriCompliance.LEGACY);
+        // Use a bigger buffer, as Stapler traces can get pretty large on deeply nested URLs.
+        hc.setResponseHeaderSize(12 * 1024);
+
+        super.startScanner();
+    }
+
+    @Override
+    protected boolean isPackagingSupported() {
+        if (!supportedPackagings.contains("hpi")) {
+            List<String> newSupportedPackagings = new ArrayList<>(supportedPackagings);
+            newSupportedPackagings.add("hpi");
+            supportedPackagings = List.copyOf(newSupportedPackagings);
         }
-
-        setUpScanList();
-
-        scannerListeners = new ArrayList<>();
-        scannerListeners.add(new Scanner.BulkListener() {
-            @Override
-            public void filesChanged(List<String> changes) {
-                try {
-                    restartWebApp(changes.contains(getProject().getFile().getCanonicalPath()));
-                } catch (Exception e) {
-                    getLog().error("Error reconfiguring/restarting webapp after change in watched files", e);
-                }
-            }
-        });
+        return super.isPackagingSupported();
     }
 
-    @Override
-    public void restartWebApp(boolean reconfigureScanner) throws Exception {
-        getLog().info("restarting "+webApp);
-        getLog().debug("Stopping webapp ...");
-        webApp.stop();
-        getLog().debug("Reconfiguring webapp ...");
-
-        checkPomConfiguration();
-        configureWebApplication();
-
-        // check if we need to reconfigure the scanner,
-        // which is if the pom changes
-        if (reconfigureScanner)
-        {
-            getLog().info("Reconfiguring scanner after change to pom.xml ...");
-            generateHpl(); // regenerate hpl if POM changes.
-
-            scanList.clear();
-            if (webApp.getDescriptor() != null)
-                scanList.add(new File(webApp.getDescriptor()));
-            if (webApp.getJettyEnvXml() != null)
-                scanList.add(new File(webApp.getJettyEnvXml()));
-            scanList.add(project.getFile());
-            if (webApp.getTestClasses() != null)
-                scanList.add(webApp.getTestClasses());
-            if (webApp.getClasses() != null)
-            scanList.add(webApp.getClasses());
-            scanList.addAll(webApp.getWebInfLib());
-            scanner.setScanDirs(scanList);
-        }
-
-        getLog().debug("Restarting webapp ...");
-        webApp.start();
-        getLog().info("Restart completed at " + new Date());
-    }
-
-    private void setUpScanList() {
-        scanList = new ArrayList<>();
-        scanList.add(getProject().getFile());
-        scanList.add(webAppFile);
-        scanList.add(new File(getProject().getBuild().getOutputDirectory()));
-    }
-
-    @Override
-    protected void startConsoleScanner() throws Exception {
-        if (consoleForceReload) {
-            getLog().info("Console reloading is ENABLED. Hit ENTER on the console to restart the context.");
-            consoleScanner = new ConsoleScanner(this);
-            consoleScanner.start();
-        }
-    }
-
-    @Override
-    public void checkPomConfiguration() throws MojoExecutionException {
-    }
-
-    @Override
-    public void finishConfigurationBeforeStart() throws Exception {
-        super.finishConfigurationBeforeStart();
+    private void finishConfigurationBeforeStart() {
         WebAppContext wac = getWebAppConfig();
         wac.setAttribute("org.eclipse.jetty.server.webapp.WebInfIncludeJarPattern", ".*/classes/.*");
         // to allow the development environment to run multiple "mvn hpi:run" with different port,
@@ -747,7 +679,7 @@ public class RunMojo extends AbstractJettyMojo {
     }
 
     @Override
-    public void startJetty() throws MojoExecutionException {
+    public void startJetty() throws MojoExecutionException, MojoFailureException {
         if (httpConnector == null && (defaultPort != 0 || (defaultHost != null && !defaultHost.isEmpty()))) {
             httpConnector = new MavenServerConnector();
             if (defaultPort != 0) {

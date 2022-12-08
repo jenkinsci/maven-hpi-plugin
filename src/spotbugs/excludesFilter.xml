@@ -58,7 +58,7 @@
           <Class name="org.jenkinsci.maven.plugins.hpi.HplMojo"/>
           <Class name="org.jenkinsci.maven.plugins.hpi.JarMojo"/>
           <Class name="org.jenkinsci.maven.plugins.hpi.RunMojo"/>
-          <Class name="org.jenkinsci.maven.plugins.hpi.RunMojo$2"/>
+          <Class name="org.jenkinsci.maven.plugins.hpi.RunMojo$1"/>
           <Class name="org.jenkinsci.maven.plugins.hpi.TagLibInterfaceGeneratorMojo"/>
           <Class name="org.jenkinsci.maven.plugins.hpi.TestDependencyMojo"/>
           <Class name="org.jenkinsci.maven.plugins.hpi.TestHplMojo"/>
@@ -68,7 +68,7 @@
       </And>
       <And>
         <Bug pattern="UR_UNINIT_READ_CALLED_FROM_SUPER_CONSTRUCTOR"/>
-        <Class name="org.jenkinsci.maven.plugins.hpi.RunMojo$2"/>
+        <Class name="org.jenkinsci.maven.plugins.hpi.RunMojo$1"/>
       </And>
       <And>
         <Bug pattern="VA_FORMAT_STRING_USES_NEWLINE"/>
