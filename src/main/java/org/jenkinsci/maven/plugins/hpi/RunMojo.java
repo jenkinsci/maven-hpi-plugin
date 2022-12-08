@@ -55,7 +55,6 @@ import org.eclipse.jetty.security.UserStore;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.util.security.Password;
-import org.eclipse.jetty.webapp.WebAppClassLoader;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.twdata.maven.mojoexecutor.MojoExecutor;
 
@@ -84,7 +83,6 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -631,51 +629,6 @@ public class RunMojo extends JettyRunWarMojo {
         // http://stackoverflow.com/questions/1612177/are-http-cookies-port-specific
         wac.getSessionHandler().getSessionCookieConfig()
             .setName(  "JSESSIONID." + UUID.randomUUID().toString().replace("-", "").substring(0, 8));
-
-        try {
-            // for Jenkins modules, swap the component from jenkins.war by target/classes
-            // via classloader magic
-            WebAppClassLoader wacl = new WebAppClassLoader(new JettyAndServletApiOnlyClassLoader(ClassLoader.getPlatformClassLoader(),getClass().getClassLoader()),wac) {
-                private final Pattern exclusionPattern;
-                {
-                    if (getProject().getPackaging().equals("jenkins-module")) {
-                        // classes compiled from jenkins module should behave as if it's a part of the core
-                        // load resources from source folders directly
-                        for (Resource r : getProject().getResources())
-                            super.addURL(new File(r.getDirectory()).toURI().toURL());
-                        super.addURL(new File(getProject().getBuild().getOutputDirectory()).toURI().toURL());
-
-                        // add all the jar dependencies of the module
-                        // "provided" includes all core and others, so drop them
-                        // similarly, "test" would pull in all the harness
-                        // pom dependency is sometimes used so that one can depend on its transitive dependencies
-                        for (Artifact a : Artifacts.of(getProject()).scopeIsNot("provided","test").typeIsNot("pom")) {
-                            super.addURL(a.getFile().toURI().toURL());
-                        }
-                        
-                        exclusionPattern = Pattern.compile("[/\\\\]\\Q"+getProject().getArtifactId()+"\\E-[0-9]([^/\\\\]+)\\.jar$");
-                    } else {
-                        exclusionPattern = Pattern.compile("this should never match");
-                    }
-                }
-
-                @Override
-                public void addClassPath(String classPath) throws IOException {
-                    if (exclusionPattern != null && exclusionPattern.matcher(classPath).find()) {
-                        return;
-                    }
-                    super.addClassPath(classPath);
-                }
-
-                @Override
-                public void addJars(org.eclipse.jetty.util.resource.Resource lib) {
-                    super.addJars(lib);
-                }
-            };
-            wac.setClassLoader(wacl);
-        } catch (IOException e) {
-            throw new Error(e);
-        }
     }
 
     @Override

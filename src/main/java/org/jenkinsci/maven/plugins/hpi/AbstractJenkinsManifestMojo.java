@@ -176,13 +176,11 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
         if (pluginVersionDescription!=null)
             v += " (" + pluginVersionDescription + ")";
 
-        if (!project.getPackaging().equals("jenkins-module")) {
             // Earlier maven-hpi-plugin used to look for this attribute to determine if a jar file is a Jenkins plugin.
             // While that's fixed, people out there might be still using it, so as a precaution when building a module
             // don't put this information in there.
             // The "Implementation-Version" baked by Maven should serve the same purpose if someone needs to know the version.
             mainSection.addAttributeAndCheck(new Manifest.Attribute("Plugin-Version",v));
-        }
 
         String jv = findJenkinsVersion();
         mainSection.addAttributeAndCheck(new Manifest.Attribute("Hudson-Version",jv));
