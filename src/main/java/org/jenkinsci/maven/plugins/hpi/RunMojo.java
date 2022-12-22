@@ -43,6 +43,7 @@ import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.project.ProjectDependenciesResolver;
 import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver;
 import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException;
+import org.apache.tools.ant.Project;
 import org.eclipse.aether.graph.DependencyFilter;
 import org.eclipse.aether.util.filter.ScopeDependencyFilter;
 import org.eclipse.jetty.http.HttpCompliance;
@@ -266,7 +267,6 @@ public class RunMojo extends JettyRunWarMojo {
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         getProject().setArtifacts(resolveDependencies(dependencyResolution));
-
         File basedir = getProject().getBasedir();
 
         if (webApp == null || webApp.getContextPath() == null) {
@@ -361,6 +361,9 @@ public class RunMojo extends JettyRunWarMojo {
 
         // copy other dependency Jenkins plugins
         try {
+            
+            File rootBasedir = getRootBasedir(getProject());
+            
             for( MavenArtifact a : getProjectArtifacts() ) {
                 if(!a.isPluginBestEffort(getLog())) {
                     continue;
@@ -381,13 +384,13 @@ public class RunMojo extends JettyRunWarMojo {
                 if (hpi.getFile().isDirectory())
                     throw new UnsupportedOperationException(hpi.getFile()+" is a directory and not packaged yet. this isn't supported");
 
-                File upstreamHpl = pluginWorkspaceMap.read(hpi.getId());
+                File upstreamHpl = pluginWorkspaceMap.read(hpi.getId(), rootBasedir.getAbsolutePath());
                 String actualArtifactId = a.getActualArtifactId();
                 if (actualArtifactId == null) {
                     throw new MojoExecutionException("Failed to load actual artifactId from " + a + " ~ " + a.getFile());
                 }
                 if (upstreamHpl != null) {
-                    copyHpl(upstreamHpl, pluginsDir, actualArtifactId);
+                    copyHpl(upstreamHpl, pluginsDir, actualArtifactId, rootBasedir);
                 } else {
                     copyPlugin(hpi.getFile(), pluginsDir, actualArtifactId);
                 }
@@ -418,6 +421,16 @@ public class RunMojo extends JettyRunWarMojo {
         super.execute();
     }
 
+    private File getRootBasedir(MavenProject mavenProject) {
+        if (mavenProject.getParent() == null || 
+            mavenProject.getParent().getBasedir() == null ||
+            !mavenProject.getBasedir().getAbsolutePath()
+                         .contains(mavenProject.getParent().getBasedir().getAbsolutePath())) {
+            return mavenProject.getBasedir();
+        }
+        return getRootBasedir(mavenProject.getParent());
+    }
+    
     private boolean hasSameGavAsProject(Artifact a) {
         return getProject().getGroupId().equals(a.getGroupId())
             && getProject().getArtifactId().equals(a.getArtifactId())
@@ -474,9 +487,13 @@ public class RunMojo extends JettyRunWarMojo {
         }
     }
 
-    private void copyHpl(File src, File pluginsDir, String shortName) throws IOException {
+    private void copyHpl(File src, File pluginsDir, String shortName, File rootBasedir) throws IOException {
         File dst = new File(pluginsDir, shortName + ".jpl");
-        getLog().info("Copying snapshot dependency Jenkins plugin " + src);
+        if (src.getAbsolutePath().contains(rootBasedir.getAbsolutePath())) {
+            getLog().info("Copying snapshot dependency Jenkins plugin " + src);
+        } else {
+            getLog().warn("Copying snapshot dependency Jenkins plugin " + src + " from outside the current root base dir " + rootBasedir);
+        }
         FileUtils.copyFile(src, dst);
         Files.writeString(pluginsDir.toPath().resolve(shortName + ".jpi.pinned"), "pinned", StandardCharsets.US_ASCII);
     }

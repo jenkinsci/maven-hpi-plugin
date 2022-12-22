@@ -15,5 +15,8 @@ import java.io.IOException;
  */
 public interface PluginWorkspaceMap {
     File read(String id) throws IOException;
+    
+    File read(String id, String workspace) throws IOException;
+    
     void write(String id, File dir) throws IOException;
 }
