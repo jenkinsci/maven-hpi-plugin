@@ -376,8 +376,8 @@
         <version>${maven-plugin-tools.version}</version>
         <configuration>
           <goalPrefix>hpi</goalPrefix>
-          <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
-          <!-- see MNG-5346 -->
+          <extractors>java-annotations</extractors>
+          <mojoDependencies>org.eclipse.jetty:jetty-maven-plugin</mojoDependencies>
         </configuration>
         <executions>
           <execution>
