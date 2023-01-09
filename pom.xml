@@ -377,7 +377,7 @@
         <configuration>
           <goalPrefix>hpi</goalPrefix>
           <extractors>java-annotations</extractors>
-          <mojoDependencies></mojoDependencies>
+          <mojoDependencies>org.eclipse.jetty:jetty-maven-plugin</mojoDependencies>
         </configuration>
         <executions>
           <execution>
