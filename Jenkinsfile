@@ -6,7 +6,10 @@ properties([
 def runTests(Map params = [:]) {
   return {
     def agentContainerLabel = 'maven-' + params['jdk']
-    boolean publishing = params['jdk'] == 11
+    if (params['platform'] == 'windows') {
+      agentContainerLabel += '-windows'
+    }
+    boolean publishing = params['jdk'] == 11 && params['platform'] == 'linux'
     node(agentContainerLabel) {
       timeout(time: 1, unit: 'HOURS') {
         def stageIdentifier = params['platform'] + '-' + params['jdk']
@@ -37,6 +40,7 @@ def runTests(Map params = [:]) {
 }
 
 parallel(
+    'windows-11': runTests(platform: 'windows', jdk: 11),
     'linux-11': runTests(platform: 'linux', jdk: 11),
     'linux-17': runTests(platform: 'linux', jdk: 17)
 )
