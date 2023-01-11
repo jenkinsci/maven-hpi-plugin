@@ -17,6 +17,8 @@ package org.jenkinsci.maven.plugins.hpi;
 import hudson.util.VersionNumber;
 import io.jenkins.lib.support_log_formatter.SupportLogFormatter;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.file.PathUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
@@ -43,7 +45,6 @@ import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.project.ProjectDependenciesResolver;
 import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver;
 import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException;
-import org.apache.tools.ant.Project;
 import org.eclipse.aether.graph.DependencyFilter;
 import org.eclipse.aether.util.filter.ScopeDependencyFilter;
 import org.eclipse.jetty.http.HttpCompliance;
@@ -361,9 +362,8 @@ public class RunMojo extends JettyRunWarMojo {
 
         // copy other dependency Jenkins plugins
         try {
-            
-            File rootBasedir = getRootBasedir(getProject());
-            
+            File rootBasedir = getRootBasedir();
+
             for( MavenArtifact a : getProjectArtifacts() ) {
                 if(!a.isPluginBestEffort(getLog())) {
                     continue;
@@ -421,16 +421,20 @@ public class RunMojo extends JettyRunWarMojo {
         super.execute();
     }
 
-    private File getRootBasedir(MavenProject mavenProject) {
-        if (mavenProject.getParent() == null || 
-            mavenProject.getParent().getBasedir() == null ||
-            !mavenProject.getBasedir().getAbsolutePath()
-                         .contains(mavenProject.getParent().getBasedir().getAbsolutePath())) {
-            return mavenProject.getBasedir();
+    private File getRootBasedir() {
+        if (session.getTopLevelProject() != null) {
+            // find the greatest common path
+            String commonPrefix = StringUtils.getCommonPrefix(
+                    new String[] { session.getTopLevelProject().getBasedir().getAbsolutePath(),
+                                   getProject().getBasedir().getAbsolutePath() });
+            if (!StringUtils.isBlank(commonPrefix)) {
+                return new File(commonPrefix);
+            }
         }
-        return getRootBasedir(mavenProject.getParent());
+        // fallback to current project base dir
+        return getProject().getBasedir();
     }
-    
+
     private boolean hasSameGavAsProject(Artifact a) {
         return getProject().getGroupId().equals(a.getGroupId())
             && getProject().getArtifactId().equals(a.getArtifactId())
@@ -669,7 +673,7 @@ public class RunMojo extends JettyRunWarMojo {
                         for (Artifact a : Artifacts.of(getProject()).scopeIsNot("provided","test").typeIsNot("pom")) {
                             super.addURL(a.getFile().toURI().toURL());
                         }
-                        
+
                         exclusionPattern = Pattern.compile("[/\\\\]\\Q"+getProject().getArtifactId()+"\\E-[0-9]([^/\\\\]+)\\.jar$");
                     } else {
                         exclusionPattern = Pattern.compile("this should never match");

@@ -32,6 +32,16 @@ under the License.
   </mirrors>
   <profiles>
     <profile>
+      <id>default-properties</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <properties>
+        <!-- centralized hpi-plugin.version interpolation -->
+        <hpi-plugin.version>@project.version@</hpi-plugin.version>
+      </properties>
+    </profile>
+    <profile>
       <id>it-repo</id>
       <activation>
         <activeByDefault>true</activeByDefault>
