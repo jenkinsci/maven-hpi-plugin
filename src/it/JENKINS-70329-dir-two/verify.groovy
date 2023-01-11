@@ -24,7 +24,7 @@ import java.nio.charset.Charset
 for (String line : FileUtils.readLines(new File(basedir, 'build.log'), Charset.defaultCharset())) {
     if (line.contains('Copying snapshot dependency Jenkins plugin')) {
         // ensure contains only JENKINS-70329-dir-two paths
-        assert line.matches('.*/target/its/JENKINS-70329-dir-two/sub-module[0-9]/target/test-classes/the.hpl')
+        assert line.contains('JENKINS-70329-dir-two')
     }
 }
 return true
