@@ -36,6 +36,8 @@ public class PluginWorkspaceMapImpl implements PluginWorkspaceMap {
         if (mapFile.isFile()) {
             try (InputStream is = new FileInputStream(mapFile)) {
                 p.load(is);
+            } catch (IllegalArgumentException x) {
+                throw new IOException("Malformed " + mapFile + ": " + x, x);
             }
         }
         return p;
