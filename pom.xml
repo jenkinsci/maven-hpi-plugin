@@ -53,7 +53,7 @@
     <openbracket>{</openbracket>
     <gitHubRepo>jenkinsci/${project.artifactId}</gitHubRepo>
     <aether.version>1.1.0</aether.version>
-    <maven.version>3.8.7</maven.version>
+    <maven.version>3.9.0</maven.version>
     <maven-plugin-tools.version>3.7.1</maven-plugin-tools.version> <!-- extra work needed when https://issues.apache.org/jira/browse/MPLUGIN-449 is fixed -->
     <plexus-containers.version>2.1.1</plexus-containers.version>
     <aether.version>1.1.0</aether.version>
