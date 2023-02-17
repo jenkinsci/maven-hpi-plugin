@@ -124,6 +124,8 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
         }
 
         mainSection.addAttributeAndCheck(new Manifest.Attribute("Group-Id",project.getGroupId()));
+        mainSection.addAttributeAndCheck(new Manifest.Attribute("Artifact-Id",project.getArtifactId()));
+
         mainSection.addAttributeAndCheck(new Manifest.Attribute("Short-Name",project.getArtifactId()));
         mainSection.addAttributeAndCheck(new Manifest.Attribute("Long-Name",pluginName));
         String url = project.getUrl();
@@ -168,7 +170,7 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
             v = snapshotPluginVersionOverride;
         }
         if (v.endsWith("-SNAPSHOT") && pluginVersionDescription==null) {
-            String dt = getGitHeadSha1();
+            String dt = getGitHeadSha1(true);
             if (dt==null)   // if SHA1 isn't available, fall back to timestamp
                 dt = new SimpleDateFormat("MM/dd/yyyy HH:mm").format(new Date());
             pluginVersionDescription = "private-"+dt+"-"+System.getProperty("user.name");
@@ -213,7 +215,11 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
         addLicenseAttributesForManifest(mainSection);
         addPropertyAttributeIfNotNull(mainSection, "Plugin-ChangelogUrl", "hpi.pluginChangelogUrl");
         addPropertyAttributeIfNotNull(mainSection, "Plugin-LogoUrl", "hpi.pluginLogoUrl");
+
         addAttributeIfNotNull(mainSection, "Plugin-ScmUrl", getScmUrl());
+        addAttributeIfNotNull(mainSection, "Plugin-Scm-Connection", getSCMConnection());
+        addAttributeIfNotNull(mainSection, "Plugin-Scm-Git-Hash", getGitHeadSha1(false));
+        addAttributeIfNotNull(mainSection, "Plugin-Scm-Git-Module-Path", getGitModulePath());
     }
 
     /**
@@ -288,6 +294,37 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
         Scm scm = project.getScm();
         if (scm != null) {
             return scm.getUrl();
+        }
+        return null;
+    }
+
+    private String getSCMConnection() {
+        Scm scm = project.getScm();
+        if (scm != null) {
+            return scm.getConnection();
+        }
+        return null;
+    }
+
+    private String getGitModulePath() {
+        //execute `git rev-parse --show-toplevel` then remove that from project.baseDir and what we have left is the path
+        String topLevel = getGitRevParseOutput("--show-toplevel");
+        if (topLevel == null) {
+            return null;
+        }
+        try {
+            // rev-parse can return unix slashes on windows - so lets ensure everything is canonical
+            String f = new File(topLevel).getCanonicalPath();
+            String b = project.getBasedir().getCanonicalPath();
+            // no need to be defensive - the project must be in the git directory for git-revparse to return non null
+            String path = b.substring(f.length());
+            if (path.startsWith(File.separator)) {
+                path = path.substring(1); // for a single module project this will be the empty string
+            }
+            // normalize to Unix style
+            return path.replace(File.separatorChar, '/');
+        } catch (IOException e) {
+            getLog().warn("failed to obtain projects relative location in the Git repository", e);
         }
         return null;
     }

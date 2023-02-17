@@ -827,31 +827,36 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
     /**
      * If the project is on Git, figure out Git SHA1.
      *
-     * @return null if no git repository is found
+     * @param shortHash if {@code true} returns a short (8 character) hash, otherwise the fill object hash. 
+     * @return {@code null} if no git repository is found
      */
-    public String getGitHeadSha1() {
-        // we want to allow the plugin that's not sitting at the root (such as findbugs plugin),
-        // but we don't want to go up too far and pick up unrelated repository.
-        File git = new File(project.getBasedir(), ".git");
-        if (!git.exists()) {
-            git = new File(project.getBasedir(),"../.git");
-            if (!git.exists())
-                return null;
+    public String getGitHeadSha1(boolean shortHash) {
+        String v = getGitRevParseOutput("HEAD");
+        if (v == null) {     // not a git repo
+            return null;
         }
-
+        if (v.length()<8) {
+            return null;    // git repository present, but without commits
+        } 
+        if (shortHash) {
+            return v.substring(0,8);
+        }
+        return v;
+    }
+    
+    protected String getGitRevParseOutput(String revparseArg) {
+        if (!project.getScm().getConnection().startsWith("scm:git")) {
+            return null; // project is not using git.
+        }
         try {
-            Process p = new ProcessBuilder("git", "-C", git.getAbsolutePath(), "rev-parse", "HEAD").redirectErrorStream(true).start();
+            Process p = new ProcessBuilder("git", "rev-parse", revparseArg).directory(project.getBasedir()).redirectErrorStream(true).start();
             p.getOutputStream().close();
             String v = IOUtils.toString(p.getInputStream()).trim();
             if (p.waitFor()!=0)
                 return null;    // git rev-parse failed to run
-
-            if (v.length()<8)
-                return null;    // git repository present, but without commits
-
-            return v.substring(0,8);
+            return v;
         } catch (IOException | InterruptedException e) {
-            LOGGER.log(Level.FINE, "Failed to run git rev-parse HEAD",e);
+            LOGGER.log(Level.FINE, "Failed to run git rev-parse HEAD", e);
             return null;
         }
     }
