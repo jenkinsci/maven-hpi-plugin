@@ -97,6 +97,16 @@
         <version>3.3.4</version>
       </dependency>
       <dependency>
+        <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-archiver</artifactId>
+        <version>4.6.1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-container-default</artifactId>
+        <version>${plexus-containers.version}</version>
+      </dependency>
+      <dependency>
         <groupId>org.eclipse.aether</groupId>
         <artifactId>aether-api</artifactId>
         <version>${aether.version}</version>
@@ -339,8 +349,6 @@
                     <exclude>commons-lang:commons-lang</exclude>
                     <exclude>org.apache.commons:commons-collections4</exclude>
                     <exclude>org.apache.commons:commons-lang3</exclude>
-                    <exclude>org.codehaus.plexus:plexus-archiver</exclude>
-                    <exclude>org.codehaus.plexus:plexus-container-default</exclude>
                     <exclude>org.slf4j:slf4j-api</exclude>
                   </excludes>
                 </requireUpperBoundDeps>
