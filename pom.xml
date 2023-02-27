@@ -54,7 +54,7 @@
     <gitHubRepo>jenkinsci/${project.artifactId}</gitHubRepo>
     <aether.version>1.1.0</aether.version>
     <maven.version>3.9.0</maven.version>
-    <maven-plugin-tools.version>3.7.1</maven-plugin-tools.version> <!-- extra work needed when https://issues.apache.org/jira/browse/MPLUGIN-449 is fixed -->
+    <maven-plugin-tools.version>3.8.1</maven-plugin-tools.version> <!-- extra work needed when https://issues.apache.org/jira/browse/MPLUGIN-449 is fixed -->
     <plexus-containers.version>2.1.1</plexus-containers.version>
     <aether.version>1.1.0</aether.version>
   </properties>
@@ -95,6 +95,16 @@
         <groupId>org.apache.maven.shared</groupId>
         <artifactId>maven-shared-utils</artifactId>
         <version>3.3.4</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-archiver</artifactId>
+        <version>4.6.1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-container-default</artifactId>
+        <version>${plexus-containers.version}</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.aether</groupId>
@@ -339,8 +349,6 @@
                     <exclude>commons-lang:commons-lang</exclude>
                     <exclude>org.apache.commons:commons-collections4</exclude>
                     <exclude>org.apache.commons:commons-lang3</exclude>
-                    <exclude>org.codehaus.plexus:plexus-archiver</exclude>
-                    <exclude>org.codehaus.plexus:plexus-container-default</exclude>
                     <exclude>org.slf4j:slf4j-api</exclude>
                   </excludes>
                 </requireUpperBoundDeps>

@@ -45,8 +45,6 @@ public class TestRuntimeMojo extends AbstractJenkinsMojo {
 
     /**
      * Directory where unpacked patch modules should be cached.
-     *
-     * @see #getInsaneHook
      */
     @Parameter(defaultValue = "${project.build.directory}/patch-modules")
     private File patchModuleDir;
