@@ -42,8 +42,6 @@ import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Abstract class for Mojo implementations, which produce Jenkins-style manifests.
@@ -55,8 +53,6 @@ import java.util.logging.Logger;
  * @see HplMojo
  */
 public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
-
-    private static final Logger LOGGER = Logger.getLogger(AbstractJenkinsManifestMojo.class.getName());
 
     /**
      * Optional - the oldest version of this plugin which the current version is

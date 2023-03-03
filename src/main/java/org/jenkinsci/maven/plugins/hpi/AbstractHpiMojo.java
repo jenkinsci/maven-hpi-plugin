@@ -40,8 +40,6 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import jenkins.YesNoMaybe;
 import net.java.sezpoz.Index;
 import net.java.sezpoz.IndexItem;
@@ -851,7 +849,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
 
             return v.substring(0,8);
         } catch (IOException | InterruptedException e) {
-            LOGGER.log(Level.FINE, "Failed to run git rev-parse HEAD",e);
+            getLog().debug("Failed to run git rev-parse HEAD", e);
             return null;
         }
     }
@@ -885,5 +883,4 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         return true;
     }
 
-    private static final Logger LOGGER = Logger.getLogger(AbstractHpiMojo.class.getName());
 }
