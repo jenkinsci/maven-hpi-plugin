@@ -134,7 +134,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
     public void execute() throws MojoExecutionException {
         Map<String, String> overrides = overrideVersions != null ? parseOverrides(overrideVersions) : Map.of();
         if (!overrides.isEmpty()) {
-            getLog().info(String.format("Applying %d overrides.", overrides.size()));
+            getLog().info(String.format("Applying %d overrides.", Integer.valueOf(overrides.size())));
         }
         if (overrides.containsKey(String.format("%s:%s", project.getGroupId(), project.getArtifactId()))) {
             throw new MojoExecutionException("Cannot override self");
@@ -142,7 +142,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
 
         Map<String, String> bundledPlugins = overrideWar != null ? scanWar(overrideWar, session, project) : Map.of();
         if (!bundledPlugins.isEmpty()) {
-            getLog().info(String.format("Scanned contents of %s with %d bundled plugins", overrideWar, bundledPlugins.size()));
+            getLog().info(String.format("Scanned contents of %s with %d bundled plugins", overrideWar, Integer.valueOf(bundledPlugins.size())));
         }
 
         // Deal with conflicts in user-provided input.
