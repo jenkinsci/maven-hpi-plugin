@@ -112,11 +112,10 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
     protected void setAttributes(Manifest.ExistingSection mainSection) throws MojoExecutionException, ManifestException, IOException {
         File pluginImpl = new File(project.getBuild().getOutputDirectory(), "META-INF/services/hudson.Plugin");
         if(pluginImpl.exists()) {
-            BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(pluginImpl), StandardCharsets.UTF_8));
-            String pluginClassName = in.readLine();
-            in.close();
-
-            mainSection.addAttributeAndCheck(new Manifest.Attribute("Plugin-Class",pluginClassName));
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(pluginImpl), StandardCharsets.UTF_8))) {
+                String pluginClassName = in.readLine();
+                mainSection.addAttributeAndCheck(new Manifest.Attribute("Plugin-Class",pluginClassName));
+            }
         }
 
         mainSection.addAttributeAndCheck(new Manifest.Attribute("Group-Id",project.getGroupId()));

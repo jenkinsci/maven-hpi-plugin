@@ -449,17 +449,12 @@ public class RunMojo extends JettyRunWarMojo {
         Files.writeString(pluginsDir.toPath().resolve(shortName + ".jpi.pinned"), "pinned", StandardCharsets.US_ASCII);
         Files.deleteIfExists(new File(pluginsDir, shortName + ".jpl").toPath()); // in case we used to have a snapshot dependency
     }
+
     private VersionNumber versionOfPlugin(File p) throws IOException {
         if (!p.isFile()) {
             return new VersionNumber("0.0");
         }
-        JarFile j;
-        try {
-            j = new JarFile(p);
-        } catch (IOException x) {
-            throw new IOException("not a valid JarFile: " + p, x);
-        }
-        try {
+        try (JarFile j = new JarFile(p)) {
             String v = j.getManifest().getMainAttributes().getValue("Plugin-Version");
             if (v == null) {
                 throw new IOException("no Plugin-Version in " + p);
@@ -469,8 +464,9 @@ public class RunMojo extends JettyRunWarMojo {
             } catch (IllegalArgumentException x) {
                 throw new IOException("malformed Plugin-Version in " + p + ": " + x, x);
             }
-        } finally {
-            j.close();
+        }
+        catch (IOException x) {
+            throw new IOException("not a valid JarFile: " + p, x);
         }
     }
 
@@ -553,33 +549,25 @@ public class RunMojo extends JettyRunWarMojo {
             getLog().warn("no such file " + extractedPath);
             return false;
         }
-        InputStream is = new FileInputStream(extractedPath);
         String extractedVersion;
-        try {
+        try (InputStream is = new FileInputStream(extractedPath)) {
             extractedVersion = loadVersion(is);
-        } finally {
-            is.close();
         }
         if (extractedVersion == null) {
             getLog().warn("no " + VERSION_PROP + " in " + extractedPath);
             return false;
         }
-        ZipFile zip = new ZipFile(webApp);
         String originalVersion;
-        try {
+        try (ZipFile zip = new ZipFile(webApp)) {
             ZipEntry entry = zip.getEntry(VERSION_PATH);
             if (entry == null) {
                 getLog().warn("no " + VERSION_PATH + " in " + webApp);
                 return false;
             }
-            is = zip.getInputStream(entry);
-            try {
+            
+            try (InputStream is = zip.getInputStream(entry);){
                 originalVersion = loadVersion(is);
-            } finally {
-                is.close();
             }
-        } finally {
-            zip.close();
         }
         if (originalVersion == null) {
             getLog().warn("no " + VERSION_PROP + " in jar:" + webApp.toURI() + "!/" + VERSION_PATH);
