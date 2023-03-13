@@ -39,14 +39,7 @@ public class ValidateMojo extends AbstractJenkinsMojo {
         }
 
         if (new VersionNumber(findJenkinsVersion()).compareTo(new VersionNumber("2.361")) < 0) {
-            if (System.getProperty("overrideWar") != null && System.getProperty("overrideWarAdditions") != null) {
-                /*
-                 * Skip this check when running the BOM test suite. When the BOM drops support for 2.332.x and 2.346.x,
-                 * we can throw the exception unconditionally.
-                 */
-            } else {
-                throw new MojoExecutionException("This version of maven-hpi-plugin requires Jenkins 2.361 or later");
-            }
+            throw new MojoExecutionException("This version of maven-hpi-plugin requires Jenkins 2.361 or later");
         }
 
         MavenProject parent = project.getParent();
