@@ -16,7 +16,6 @@ package org.jenkinsci.maven.plugins.hpi;
  * limitations under the License.
  */
 
-import com.google.common.collect.Sets;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.Extension;
 import java.io.BufferedReader;
@@ -35,6 +34,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
@@ -63,6 +63,7 @@ import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.InterpolationFilterReader;
 import org.codehaus.plexus.util.PropertyUtils;
 import org.codehaus.plexus.util.StringUtils;
+import org.jenkinsci.maven.plugins.hp.util.Utils;
 
 public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
     /**
@@ -509,7 +510,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         // List up IDs of Jenkins plugin dependencies
         Set<String> jenkinsPlugins = new HashSet<>();
         Set<String> excludedArtifacts = new HashSet<>();
-        for (MavenArtifact artifact : Sets.union(artifacts, dependencyArtifacts)) {
+        for (MavenArtifact artifact : Utils.unionOf(artifacts, dependencyArtifacts)) {
             if (artifact.isPluginBestEffort(getLog()))
                 jenkinsPlugins.add(artifact.getId());
             // Exclude dependency if it comes from test or provided trail.
