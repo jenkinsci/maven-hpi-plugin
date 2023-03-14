@@ -18,7 +18,6 @@ package org.jenkinsci.maven.plugins.hpi;
 
 import com.google.common.collect.Sets;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import java.io.BufferedReader;
 import java.io.File;
