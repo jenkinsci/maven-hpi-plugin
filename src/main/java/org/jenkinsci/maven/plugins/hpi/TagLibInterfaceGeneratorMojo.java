@@ -119,75 +119,75 @@ public class TagLibInterfaceGeneratorMojo extends AbstractMojo {
             c.annotate(TagLibraryUri.class).param("value",dirName);
 
             JBinaryFile _gdsl = new JBinaryFile(c.name()+".gdsl");
-            PrintWriter gdsl = new PrintWriter(new BufferedWriter(new OutputStreamWriter(_gdsl.getDataStore(), StandardCharsets.UTF_8)));
-            gdsl.printf("package %s;\n",pkg.parent().name());
-            gdsl.printf("contributor(context(ctype:'%s')) {\n",c.fullName());
+            try (PrintWriter gdsl = new PrintWriter(new BufferedWriter(new OutputStreamWriter(_gdsl.getDataStore(), StandardCharsets.UTF_8)))) {
+                gdsl.printf("package %s;\n",pkg.parent().name());
+                gdsl.printf("contributor(context(ctype:'%s')) {\n",c.fullName());
 
-            File[] tags = dir.listFiles((unused, name) -> name.endsWith(".jelly"));
+                File[] tags = dir.listFiles((unused, name) -> name.endsWith(".jelly"));
 
-            long timestamp = -1;
+                long timestamp = -1;
 
-            for (File tag : tags) {
-                timestamp = Math.max(tag.lastModified(),timestamp);
-                try {
-                    Document dom = saxReader.read(tag);
-                    Element doc = dom.getRootElement().element(QName.get("st:documentation", "jelly:stapler"));
+                for (File tag : tags) {
+                    timestamp = Math.max(tag.lastModified(),timestamp);
+                    try {
+                        Document dom = saxReader.read(tag);
+                        Element doc = dom.getRootElement().element(QName.get("st:documentation", "jelly:stapler"));
 
-                    String baseName = FilenameUtils.getBaseName(tag.getName());
-                    String methodName;
-                    if (!JJavaName.isJavaIdentifier(tag.getName())) {
-                        methodName = baseName.replace('-', '_');
-                        if (ReservedName.NAMES.contains(methodName))
-                            methodName += '_';
-                    } else {
-                        methodName = baseName;
-                    }
-
-                    // add 4 overload variants
-                    for (int i=0; i<4; i++) {
-                        JMethod m = c.method(0, void.class, methodName);
-                        if (!methodName.equals(baseName))
-                            m.annotate(TagFile.class).param("value",baseName);
-                        if (i%2==0)
-                            m.param(Map.class,"args");
-                        if ((i/2)%2==0)
-                            m.param(Closure.class,"body");
-
-                        JDocComment javadoc = m.javadoc();
-                        if (doc!=null)
-                            javadoc.append(doc.getText().replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"));
-                    }
-
-                    // generate Groovy DSL
-                    if (doc!=null) {
-                        gdsl.printf("  method name:'%s', type:void, params:[args:[\n", methodName);
-                        List<Element> atts = doc.elements(QName.get("st:attribute", "jelly:stapler"));
-                        for (Element a : atts) {
-    //                                    parameter(name: 'param1', type: String, doc: 'My doc'),
-                            gdsl.printf("    parameter(name:'%s',type:'%s', doc:\"\"\"\n%s\n\"\"\"),\n",
-                                    a.attributeValue("name"),
-                                    a.attributeValue("type","java.lang.Object"),
-                                    a.getTextTrim().replace("$", "\\$").replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"));
+                        String baseName = FilenameUtils.getBaseName(tag.getName());
+                        String methodName;
+                        if (!JJavaName.isJavaIdentifier(tag.getName())) {
+                            methodName = baseName.replace('-', '_');
+                            if (ReservedName.NAMES.contains(methodName))
+                                methodName += '_';
+                        } else {
+                            methodName = baseName;
                         }
 
-                        // see http://youtrack.jetbrains.com/issue/IDEA-108355 for why
-                        // we add the bogus 'dummy' parameter
-                        gdsl.printf("  ], dummy:void, c:Closure]\n");
+                        // add 4 overload variants
+                        for (int i=0; i<4; i++) {
+                            JMethod m = c.method(0, void.class, methodName);
+                            if (!methodName.equals(baseName))
+                                m.annotate(TagFile.class).param("value",baseName);
+                            if (i%2==0)
+                                m.param(Map.class,"args");
+                            if ((i/2)%2==0)
+                                m.param(Closure.class,"body");
+
+                            JDocComment javadoc = m.javadoc();
+                            if (doc!=null)
+                                javadoc.append(doc.getText().replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"));
+                        }
+
+                        // generate Groovy DSL
+                        if (doc!=null) {
+                            gdsl.printf("  method name:'%s', type:void, params:[args:[\n", methodName);
+                            List<Element> atts = doc.elements(QName.get("st:attribute", "jelly:stapler"));
+                            for (Element a : atts) {
+   //                                    parameter(name: 'param1', type: String, doc: 'My doc'),
+                                gdsl.printf("    parameter(name:'%s',type:'%s', doc:\"\"\"\n%s\n\"\"\"),\n",
+                                        a.attributeValue("name"),
+                                        a.attributeValue("type","java.lang.Object"),
+                                        a.getTextTrim().replace("$", "\\$").replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"));
+                            }
+
+                            // see http://youtrack.jetbrains.com/issue/IDEA-108355 for why
+                            // we add the bogus 'dummy' parameter
+                            gdsl.printf("  ], dummy:void, c:Closure]\n");
+                        }
+                    } catch (DocumentException e) {
+                        throw new IOException("Failed to parse " + tag, e);
                     }
-                } catch (DocumentException e) {
-                    throw new IOException("Failed to parse " + tag, e);
                 }
+
+                gdsl.printf("}\n");
+
+                // up to date check. if the file already exists and is newer, don't regenerate it
+                File dst = new File(outputDirectory, c.fullName().replace('.', '/') + ".java");
+                if (dst.exists() && dst.lastModified()>timestamp)
+                    c.hide();
+                else
+                    pkg.parent().addResourceFile(_gdsl);
             }
-
-            gdsl.printf("}\n");
-            gdsl.close();
-
-            // up to date check. if the file already exists and is newer, don't regenerate it
-            File dst = new File(outputDirectory, c.fullName().replace('.', '/') + ".java");
-            if (dst.exists() && dst.lastModified()>timestamp)
-                c.hide();
-            else
-                pkg.parent().addResourceFile(_gdsl);
         }
     }
 

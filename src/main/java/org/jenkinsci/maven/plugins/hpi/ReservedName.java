@@ -1,6 +1,5 @@
 package org.jenkinsci.maven.plugins.hpi;
 
-import java.util.HashSet;
 import java.util.Set;
 
 /**

@@ -14,6 +14,9 @@ import java.util.function.Predicate;
  * @author Kohsuke Kawaguchi
  */
 public class Artifacts extends ArrayList<Artifact> {
+
+    private static final long serialVersionUID = 1L;
+
     public Artifacts() {
     }
 

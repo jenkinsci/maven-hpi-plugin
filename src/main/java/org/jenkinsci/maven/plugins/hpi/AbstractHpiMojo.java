@@ -16,20 +16,16 @@ package org.jenkinsci.maven.plugins.hpi;
  * limitations under the License.
  */
 
-import com.google.common.collect.Sets;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.Extension;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import java.io.InputStream;
 import java.io.Reader;
 import java.io.Writer;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -40,8 +36,6 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import jenkins.YesNoMaybe;
 import net.java.sezpoz.Index;
 import net.java.sezpoz.IndexItem;
@@ -63,6 +57,7 @@ import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.InterpolationFilterReader;
 import org.codehaus.plexus.util.PropertyUtils;
 import org.codehaus.plexus.util.StringUtils;
+import org.jenkinsci.maven.plugins.hp.util.Utils;
 
 public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
     /**
@@ -509,7 +504,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         // List up IDs of Jenkins plugin dependencies
         Set<String> jenkinsPlugins = new HashSet<>();
         Set<String> excludedArtifacts = new HashSet<>();
-        for (MavenArtifact artifact : Sets.union(artifacts, dependencyArtifacts)) {
+        for (MavenArtifact artifact : Utils.unionOf(artifacts, dependencyArtifacts)) {
             if (artifact.isPluginBestEffort(getLog()))
                 jenkinsPlugins.add(artifact.getId());
             // Exclude dependency if it comes from test or provided trail.
@@ -791,36 +786,18 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
     private static void copyFilteredFile(File from, File to, String encoding, FilterWrapper[] wrappers,
                                          Properties filterProperties)
         throws IOException {
-        // buffer so it isn't reading a byte at a time!
-        Reader fileReader = null;
-        Writer fileWriter = null;
-        try {
-            // fix for MWAR-36, ensures that the parent dir are created first
-            Files.createDirectories(to.toPath().getParent());
+        // fix for MWAR-36, ensures that the parent dir are created first
+        Files.createDirectories(to.toPath().getParent());
 
-            if (encoding == null || encoding.length() < 1) {
-                fileReader = Files.newBufferedReader(from.toPath(), StandardCharsets.UTF_8);
-                fileWriter = Files.newBufferedWriter(to.toPath(), StandardCharsets.UTF_8);
-            } else {
-                FileInputStream instream = new FileInputStream(from);
-
-                FileOutputStream outstream = new FileOutputStream(to);
-
-                fileReader = new BufferedReader(new InputStreamReader(instream, encoding));
-
-                fileWriter = new OutputStreamWriter(outstream, encoding);
-            }
+        Charset cs = (encoding == null || encoding.length() < 1) ? StandardCharsets.UTF_8 : Charset.forName(encoding);
+        try (Reader fileReader = Files.newBufferedReader(from.toPath(), cs);
+             Writer fileWriter = Files.newBufferedWriter(to.toPath(), cs)) {
 
             Reader reader = fileReader;
             for (FilterWrapper wrapper : wrappers) {
                 reader = wrapper.getReader(reader, filterProperties);
             }
-
             IOUtil.copy(reader, fileWriter);
-        }
-        finally {
-            IOUtil.close(fileReader);
-            IOUtil.close(fileWriter);
         }
     }
 
@@ -842,7 +819,10 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         try {
             Process p = new ProcessBuilder("git", "-C", git.getAbsolutePath(), "rev-parse", "HEAD").redirectErrorStream(true).start();
             p.getOutputStream().close();
-            String v = IOUtils.toString(p.getInputStream()).trim();
+            String v;
+            try (InputStream is = p.getInputStream()) {
+                v = IOUtils.toString(is, Charset.defaultCharset()).trim();
+            }
             if (p.waitFor()!=0)
                 return null;    // git rev-parse failed to run
 
@@ -851,7 +831,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
 
             return v.substring(0,8);
         } catch (IOException | InterruptedException e) {
-            LOGGER.log(Level.FINE, "Failed to run git rev-parse HEAD",e);
+            getLog().debug("Failed to run git rev-parse HEAD", e);
             return null;
         }
     }
@@ -869,21 +849,25 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
      * False, if the answer is known to be "No". Otherwise null, if there are some extensions
      * we don't know we can dynamic load. Otherwise, if everything is known to be dynamic loadable, return true.
      */
-    @SuppressFBWarnings(value = "NP_BOOLEAN_RETURN_NULL", justification = "TODO needs triage")
+    @CheckForNull
     protected Boolean isSupportDynamicLoading() throws IOException {
-        URLClassLoader cl = new URLClassLoader(new URL[]{
-                new File(project.getBuild().getOutputDirectory()).toURI().toURL()
-        }, getClass().getClassLoader());
+        try (URLClassLoader cl = new URLClassLoader(new URL[]{
+                    new File(project.getBuild().getOutputDirectory()).toURI().toURL()
+            }, getClass().getClassLoader())) {
 
-        EnumSet<YesNoMaybe> e = EnumSet.noneOf(YesNoMaybe.class);
-        for (IndexItem<Extension,Object> i : Index.load(Extension.class, Object.class, cl)) {
-            e.add(i.annotation().dynamicLoadable());
+            EnumSet<YesNoMaybe> e = EnumSet.noneOf(YesNoMaybe.class);
+            for (IndexItem<Extension,Object> i : Index.load(Extension.class, Object.class, cl)) {
+                e.add(i.annotation().dynamicLoadable());
+            }
+
+            if (e.contains(YesNoMaybe.NO)) {
+                return Boolean.FALSE;
+            }
+            if (e.contains(YesNoMaybe.MAYBE)) {
+                return null;
+            }
+            return Boolean.TRUE;
         }
-
-        if (e.contains(YesNoMaybe.NO))  return false;
-        if (e.contains(YesNoMaybe.MAYBE))   return null;
-        return true;
     }
 
-    private static final Logger LOGGER = Logger.getLogger(AbstractHpiMojo.class.getName());
 }
