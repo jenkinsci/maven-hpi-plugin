@@ -21,19 +21,17 @@ import hudson.Extension;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
-import java.io.Writer;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import jenkins.YesNoMaybe;
@@ -47,19 +45,23 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.shared.filtering.MavenFilteringException;
+import org.apache.maven.shared.filtering.MavenResourcesExecution;
+import org.apache.maven.shared.filtering.MavenResourcesFiltering;
 import org.codehaus.plexus.archiver.ArchiverException;
 import org.codehaus.plexus.archiver.UnArchiver;
 import org.codehaus.plexus.archiver.manager.ArchiverManager;
 import org.codehaus.plexus.archiver.manager.NoSuchArchiverException;
 import org.codehaus.plexus.util.DirectoryScanner;
 import org.codehaus.plexus.util.FileUtils;
-import org.codehaus.plexus.util.IOUtil;
-import org.codehaus.plexus.util.InterpolationFilterReader;
-import org.codehaus.plexus.util.PropertyUtils;
 import org.codehaus.plexus.util.StringUtils;
 import org.jenkinsci.maven.plugins.hp.util.Utils;
 
 public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
+
+    @Component(role = MavenResourcesFiltering.class, hint = "default" )
+    protected MavenResourcesFiltering mavenResourcesFiltering;
+
     /**
      * The directory for the generated WAR.
      */
@@ -351,10 +353,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         try {
             List<Resource> webResources = this.webResources != null ? List.of(this.webResources) : null;
             if (webResources != null && webResources.size() > 0) {
-                Properties filterProperties = getBuildFilterProperties();
-                for (Resource resource : webResources) {
-                    copyResources(resource, webappDirectory, filterProperties);
-                }
+                copyResourcesWithFiltering(webResources, webappDirectory);
             }
 
             copyResources(warSourceDirectory, webappDirectory);
@@ -371,28 +370,9 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         }
         catch (IOException e) {
             throw new MojoExecutionException("Could not explode webapp...", e);
+        } catch (MavenFilteringException e) {
+            throw new MojoExecutionException("Could not copy webResources...", e);
         }
-    }
-
-    private Properties getBuildFilterProperties()
-        throws MojoExecutionException {
-        // System properties
-        Properties filterProperties = new Properties(System.getProperties());
-
-        // Project properties
-        filterProperties.putAll(project.getProperties());
-
-        for (String filter : filters) {
-            try {
-                Properties properties = PropertyUtils.loadProperties(new File(filter));
-
-                filterProperties.putAll(properties);
-            }
-            catch (IOException e) {
-                throw new MojoExecutionException("Error loading property file '" + filter + "'", e);
-            }
-        }
-        return filterProperties;
     }
 
     /**
@@ -403,28 +383,16 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
      * exists, it will be copied to the {@code META-INF} directory and
      * renamed accordingly.
      *
-     * @param resource         the resource to copy
+     * @param resources        the resources to copy
      * @param webappDirectory  the target directory
-     * @throws java.io.IOException if an error occurred while copying webResources
+     * @throws MavenFilteringException if an error occurred while copying webResources
      */
-    public void copyResources(Resource resource, File webappDirectory, Properties filterProperties)
-        throws IOException {
-        if (!resource.getDirectory().equals(webappDirectory.getPath())) {
-            getLog().info("Copy webapp webResources to " + webappDirectory.getAbsolutePath());
-            if (webappDirectory.exists()) {
-                String[] fileNames = getWarFiles(resource);
-                for (String fileName : fileNames) {
-                    if (resource.isFiltering()) {
-                        copyFilteredFile(new File(resource.getDirectory(), fileName),
-                            new File(webappDirectory, fileName), null, getFilterWrappers(),
-                            filterProperties);
-                    } else {
-                        FileUtils.copyFileIfModified(new File(resource.getDirectory(), fileName),
-                            new File(webappDirectory, fileName));
-                    }
-                }
-            }
-        }
+    public void copyResourcesWithFiltering(List<Resource> resources, File webappDirectory) throws MavenFilteringException {
+        MavenResourcesExecution mavenResourcesExecution = 
+                new MavenResourcesExecution(resources, webappDirectory, project, StandardCharsets.UTF_8.name(), filters,
+                                              Collections.emptyList(), session);
+        mavenResourcesExecution.setEscapeString("\\");
+        mavenResourcesFiltering.filterResources( mavenResourcesExecution);
     }
 
     /**
@@ -737,71 +705,6 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
     }
 
     /**
-     * Returns a list of filenames that should be copied
-     * over to the destination directory.
-     *
-     * @param resource the resource to be scanned
-     * @return the array of filenames, relative to the sourceDir
-     */
-    private String[] getWarFiles(Resource resource) {
-        DirectoryScanner scanner = new DirectoryScanner();
-        scanner.setBasedir(resource.getDirectory());
-        if (resource.getIncludes() != null && !resource.getIncludes().isEmpty()) {
-            scanner.setIncludes(resource.getIncludes().toArray(EMPTY_STRING_ARRAY));
-        } else {
-            scanner.setIncludes(DEFAULT_INCLUDES);
-        }
-        if (resource.getExcludes() != null && !resource.getExcludes().isEmpty()) {
-            scanner.setExcludes(resource.getExcludes().toArray(EMPTY_STRING_ARRAY));
-        }
-
-        scanner.addDefaultExcludes();
-
-        scanner.scan();
-
-        return scanner.getIncludedFiles();
-    }
-
-    private FilterWrapper[] getFilterWrappers() {
-        return new FilterWrapper[]{
-            // support ${token}
-            new FilterWrapper() {
-                @Override
-                public Reader getReader(Reader fileReader, Properties filterProperties) {
-                    return new InterpolationFilterReader(fileReader, filterProperties, "${", "}");
-                }
-            },
-            // support @token@
-            new FilterWrapper() {
-                @Override
-                public Reader getReader(Reader fileReader, Properties filterProperties) {
-                    return new InterpolationFilterReader(fileReader, filterProperties, "@", "@");
-                }
-            }};
-    }
-
-    /**
-     * @throws IOException TO DO: Remove this method when Maven moves to plexus-utils version 1.4
-     */
-    private static void copyFilteredFile(File from, File to, String encoding, FilterWrapper[] wrappers,
-                                         Properties filterProperties)
-        throws IOException {
-        // fix for MWAR-36, ensures that the parent dir are created first
-        Files.createDirectories(to.toPath().getParent());
-
-        Charset cs = (encoding == null || encoding.length() < 1) ? StandardCharsets.UTF_8 : Charset.forName(encoding);
-        try (Reader fileReader = Files.newBufferedReader(from.toPath(), cs);
-             Writer fileWriter = Files.newBufferedWriter(to.toPath(), cs)) {
-
-            Reader reader = fileReader;
-            for (FilterWrapper wrapper : wrappers) {
-                reader = wrapper.getReader(reader, filterProperties);
-            }
-            IOUtil.copy(reader, fileWriter);
-        }
-    }
-
-    /**
      * If the project is on Git, figure out Git SHA1.
      *
      * @return null if no git repository is found
@@ -834,13 +737,6 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
             getLog().debug("Failed to run git rev-parse HEAD", e);
             return null;
         }
-    }
-
-    /**
-     * TO DO: Remove this interface when Maven moves to plexus-utils version 1.4
-     */
-    private interface FilterWrapper {
-        Reader getReader(Reader fileReader, Properties filterProperties);
     }
 
     /**

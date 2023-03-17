@@ -17,11 +17,9 @@
  * under the License.
  */
 globalConfigHelp  = new File(basedir, 'target/war-resources-it/help-globalConfig.html').text;
-// code uses plexus not maven so escapes are not supported.
-assert globalConfigHelp.contains("\\\${prop1\\} hello");
-assert globalConfigHelp.contains("\\@prop2\\@ goodbye");
-// code claims to add System properties but this fails
-// assert globalConfigHelp.contains("\\@java.class.version\\@ 55.0");
+assert globalConfigHelp.contains('${prop1} hello');
+assert globalConfigHelp.contains('@prop2@ goodbye');
+assert globalConfigHelp.contains('@java.vendor.url@ https://');
 
 
 return true;
