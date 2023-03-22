@@ -188,6 +188,12 @@ public class TestDependencyMojo extends AbstractHpiMojo {
             Map<String, String> originalResolution = new HashMap<>();
             for (Artifact artifact : shadow.getArtifacts()) {
                 originalResolution.put(toKey(artifact), artifact.getVersion());
+
+                // Do not override other plugins that are part of the same multi-module project.
+                if ("../pom.xml".equals(shadow.getModel().getParent().getRelativePath())
+                        && artifact.getVersion().equals(shadow.getVersion())) {
+                    bundledPlugins.remove(toKey(artifact));
+                }
             }
 
             // First pass: apply the overrides specified by the user.
