@@ -16,6 +16,7 @@ import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver;
 import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException;
+import org.eclipse.aether.DefaultRepositorySystemSession;
 
 import java.io.File;
 import java.io.IOException;
@@ -130,7 +131,28 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
                 ProjectBuildingRequest buildingRequest =
                         new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
                 buildingRequest.setRemoteRepositories(project.getRemoteArtifactRepositories());
-                return resolver.resolveArtifact(buildingRequest, artifact).getArtifact().getFile();
+                File result =
+                        resolver.resolveArtifact(buildingRequest, artifact).getArtifact().getFile();
+                /*
+                 * If the result is a directory rather than a file, we must be in a multi-module
+                 * project where one plugin depends on another plugin in the same multi-module
+                 * project. Try again without the workspace reader to force Maven to look for
+                 * released artifacts rather than in the target/ directory of another module.
+                 */
+                if (result.isDirectory()
+                        && buildingRequest.getRepositorySession() instanceof DefaultRepositorySystemSession) {
+                    DefaultRepositorySystemSession oldRepositorySession =
+                            (DefaultRepositorySystemSession) buildingRequest.getRepositorySession();
+                    DefaultRepositorySystemSession newRepositorySession =
+                            new DefaultRepositorySystemSession(oldRepositorySession);
+                    newRepositorySession.setWorkspaceReader(null);
+                    newRepositorySession.setReadOnly();
+                    buildingRequest.setRepositorySession(newRepositorySession);
+                    result = resolver.resolveArtifact(buildingRequest, artifact)
+                            .getArtifact()
+                            .getFile();
+                }
+                return result;
             } catch (ArtifactResolverException e) {
                 throw new RuntimeException("Failed to resolve "+getId(),e);
             }
