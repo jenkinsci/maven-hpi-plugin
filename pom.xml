@@ -98,7 +98,7 @@
       <dependency>
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-archiver</artifactId>
-        <version>4.6.2</version>
+        <version>4.6.3</version>
       </dependency>
       <dependency>
         <groupId>org.codehaus.plexus</groupId>
@@ -410,7 +410,7 @@
             <!-- TODO remove when https://issues.apache.org/jira/browse/MPLUGIN-449 is fixed -->
             <groupId>org.codehaus.plexus</groupId>
             <artifactId>plexus-archiver</artifactId>
-            <version>4.6.2</version>
+            <version>4.6.3</version>
           </dependency>
         </dependencies>
       </plugin>
