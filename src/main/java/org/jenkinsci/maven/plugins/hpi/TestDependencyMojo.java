@@ -400,7 +400,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                 throw new MojoExecutionException("Failed to resolve " + mavenArtifact.getId(), e);
             }
             if (artifactId == null) {
-                getLog().debug("Skipping " + artifactId + " with classifier " + mavenArtifact.getClassifier());
+                getLog().debug("Skipping null artifactID with classifier " + mavenArtifact.getClassifier());
                 continue;
             }
 
