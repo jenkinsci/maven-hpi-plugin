@@ -1,12 +1,10 @@
 package org.jenkinsci.maven.plugins.hpi;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -64,6 +62,15 @@ import org.apache.maven.shared.dependency.graph.DependencyCollectorBuilder;
 import org.apache.maven.shared.dependency.graph.DependencyCollectorBuilderException;
 import org.apache.maven.shared.dependency.graph.DependencyNode;
 import org.apache.maven.shared.dependency.graph.traversal.DependencyNodeVisitor;
+import org.eclipse.aether.DefaultRepositorySystemSession;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.resolution.ArtifactDescriptorException;
+import org.eclipse.aether.resolution.ArtifactDescriptorRequest;
+import org.eclipse.aether.resolution.ArtifactDescriptorResult;
+import org.eclipse.aether.resolution.ArtifactRequest;
+import org.eclipse.aether.resolution.ArtifactResolutionException;
+import org.eclipse.aether.resolution.ArtifactResult;
 import org.twdata.maven.mojoexecutor.MojoExecutor;
 
 /**
@@ -88,6 +95,8 @@ public class TestDependencyMojo extends AbstractHpiMojo {
     @Component private DependencyCollectorBuilder dependencyCollectorBuilder;
 
     @Component private ProjectDependenciesResolver dependenciesResolver;
+
+    @Component private RepositorySystem repositorySystem;
 
     /**
      * List of dependency version overrides in the form {@code groupId:artifactId:version} to apply
@@ -311,32 +320,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
             }
         }
 
-        File testDir = new File(project.getBuild().getTestOutputDirectory(), "test-dependencies");
-        try {
-            Files.createDirectories(testDir.toPath());
-        } catch (IOException e) {
-            throw new MojoExecutionException("Failed to create directories for '" + testDir + "'", e);
-        }
-
-        try (FileOutputStream fos = new FileOutputStream(new File(testDir, "index")); Writer w = new OutputStreamWriter(fos, StandardCharsets.UTF_8)) {
-            for (MavenArtifact a : effectiveArtifacts) {
-                if (!a.isPluginBestEffort(getLog()))
-                    continue;
-
-                String artifactId = a.getActualArtifactId();
-                if (artifactId == null) {
-                    getLog().debug("Skipping " + artifactId + " with classifier " + a.getClassifier());
-                    continue;
-                }
-
-                getLog().debug("Copying " + artifactId + " as a test dependency");
-                File dst = new File(testDir, artifactId + ".hpi");
-                FileUtils.copyFile(a.getHpi().getFile(),dst);
-                w.write(artifactId + "\n");
-            }
-        } catch (IOException e) {
-            throw new MojoExecutionException("Failed to copy dependency plugins",e);
-        }
+        copyTestDependencies(effectiveArtifacts);
 
         if (!additions.isEmpty() || !deletions.isEmpty() || !updates.isEmpty()) {
             List<String> additionalClasspathElements = new LinkedList<>();
@@ -387,6 +371,105 @@ public class TestDependencyMojo extends AbstractHpiMojo {
             // cf. http://maven.apache.org/surefire/maven-surefire-plugin/test-mojo.html
             appendEntries("maven.test.additionalClasspath", additionalClasspathElements, properties);
             appendEntries("maven.test.dependency.excludes", classpathDependencyExcludes, properties);
+        }
+    }
+
+    private void copyTestDependencies(Set<MavenArtifact> mavenArtifacts) throws MojoExecutionException {
+        File testDir = new File(project.getBuild().getTestOutputDirectory(), "test-dependencies");
+        try {
+            Files.createDirectories(testDir.toPath());
+        } catch (IOException e) {
+            throw new MojoExecutionException("Failed to create directories for '" + testDir + "'", e);
+        }
+
+        ProjectBuildingRequest buildingRequest = new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
+        buildingRequest.setRemoteRepositories(project.getRemoteArtifactRepositories());
+        List<RemoteRepository> remoteRepositories = RepositoryUtils.toRepos(buildingRequest.getRemoteRepositories());
+
+        List<ArtifactRequest> artifactRequests = new ArrayList<>();
+        boolean ignoreWorkspaceRepository = false;
+        for (MavenArtifact mavenArtifact : mavenArtifacts) {
+            if (!mavenArtifact.isPluginBestEffort(getLog())) {
+                continue;
+            }
+
+            String artifactId;
+            try {
+                artifactId = mavenArtifact.getActualArtifactId();
+            } catch (IOException e) {
+                throw new MojoExecutionException("Failed to resolve " + mavenArtifact.getId(), e);
+            }
+            if (artifactId == null) {
+                getLog().debug("Skipping null artifactID with classifier " + mavenArtifact.getClassifier());
+                continue;
+            }
+
+            // Use the descriptor to respect relocations.
+            ArtifactDescriptorRequest descriptorRequest;
+            try {
+                descriptorRequest = new ArtifactDescriptorRequest(RepositoryUtils.toArtifact(mavenArtifact.getHpi().artifact), remoteRepositories, null);
+            } catch (IOException e) {
+                throw new MojoExecutionException("Failed to resolve " + mavenArtifact.getId(), e);
+            }
+            ArtifactDescriptorResult descriptorResult;
+            try {
+                descriptorResult = repositorySystem.readArtifactDescriptor(buildingRequest.getRepositorySession(), descriptorRequest);
+            } catch (ArtifactDescriptorException e) {
+                throw new MojoExecutionException("Failed to read artifact descriptor for " + mavenArtifact.getId(), e);
+            }
+            ArtifactRequest artifactRequest = new ArtifactRequest(descriptorResult.getArtifact(), remoteRepositories, null);
+            artifactRequests.add(artifactRequest);
+        }
+
+        List<ArtifactResult> artifactResults;
+        try {
+            artifactResults = repositorySystem.resolveArtifacts(buildingRequest.getRepositorySession(), artifactRequests);
+        } catch (ArtifactResolutionException e) {
+            throw new MojoExecutionException("Failed to resolve artifacts: " + artifactRequests.stream().map(ArtifactRequest::getArtifact).map(Object::toString).collect(Collectors.joining(", ")), e);
+        }
+
+        /*
+         * If the result is a directory rather than a file, we must be in a multi-module
+         * project where one plugin depends on another plugin in the same multi-module
+         * project. Try again without the workspace reader to force Maven to look for
+         * released artifacts rather than in the target/ directory of another module.
+         */
+        artifactRequests = new ArrayList<>();
+        Map<String, Artifact> artifactMap = new LinkedHashMap<>();
+        for (ArtifactResult artifactResult : artifactResults) {
+            Artifact artifact = RepositoryUtils.toArtifact(artifactResult.getArtifact());
+            artifactMap.put(artifact.getGroupId() + ":" + artifact.getArtifactId(), artifact);
+            if (artifact.getFile().isDirectory()) {
+                ArtifactRequest artifactRequest = new ArtifactRequest(RepositoryUtils.toArtifact(artifact), remoteRepositories, null);
+                artifactRequests.add(artifactRequest);
+            }
+        }
+        if (!artifactRequests.isEmpty() && buildingRequest.getRepositorySession() instanceof DefaultRepositorySystemSession) {
+            DefaultRepositorySystemSession oldRepositorySession = (DefaultRepositorySystemSession) buildingRequest.getRepositorySession();
+            DefaultRepositorySystemSession newRepositorySession = new DefaultRepositorySystemSession(oldRepositorySession);
+            newRepositorySession.setWorkspaceReader(null);
+            newRepositorySession.setReadOnly();
+            try {
+                artifactResults = repositorySystem.resolveArtifacts(newRepositorySession, artifactRequests);
+            } catch (ArtifactResolutionException e) {
+                throw new MojoExecutionException("Failed to resolve artifacts: " + artifactRequests.stream().map(ArtifactRequest::getArtifact).map(Object::toString).collect(Collectors.joining(", ")), e);
+            }
+            for (ArtifactResult artifactResult : artifactResults) {
+                Artifact artifact = RepositoryUtils.toArtifact(artifactResult.getArtifact());
+                artifactMap.put(artifact.getGroupId() + ":" + artifact.getArtifactId(), artifact);
+            }
+        }
+
+        try (BufferedWriter w = Files.newBufferedWriter(testDir.toPath().resolve("index"), StandardCharsets.UTF_8)) {
+            for (Artifact artifact : artifactMap.values()) {
+                getLog().debug("Copying " + artifact.getArtifactId() + " as a test dependency");
+                File dst = new File(testDir, artifact.getArtifactId() + ".hpi");
+                FileUtils.copyFile(artifact.getFile(), dst);
+                w.write(artifact.getArtifactId());
+                w.newLine();
+            }
+        } catch (IOException e) {
+            throw new MojoExecutionException("Failed to copy dependency plugins", e);
         }
     }
 
