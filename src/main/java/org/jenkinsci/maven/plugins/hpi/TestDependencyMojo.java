@@ -454,7 +454,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
 
         try (BufferedWriter w = Files.newBufferedWriter(testDir.toPath().resolve("index"), StandardCharsets.UTF_8)) {
             for (Artifact artifact : artifactMap.values()) {
-                getLog().debug("Copying " + artifact.getArtifactId() + " as a test dependency");
+                getLog().debug("Copying " + artifact.getGroupId() + ":" + artifact.getArtifactId() + ":" + artifact.getVersion() + " as a test dependency");
                 File dst = new File(testDir, artifact.getArtifactId() + ".hpi");
                 FileUtils.copyFile(artifact.getFile(), dst);
                 w.write(artifact.getArtifactId());
