@@ -684,7 +684,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
             dependency.setArtifactId(artifactId);
             dependency.setVersion(version);
             if (dependency.getGroupId().equals(project.getGroupId()) && dependency.getArtifactId().equals(project.getArtifactId())) {
-                throw new MojoExecutionException("Cannot add self as test-scoped dependency");
+                throw new MojoExecutionException("Cannot add self as dependency management entry");
             }
             log.info(String.format("Adding dependency management entry %s:%s", key, version));
             project.getDependencyManagement().getDependencies().add(dependency);
