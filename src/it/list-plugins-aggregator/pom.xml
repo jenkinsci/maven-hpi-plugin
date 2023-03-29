@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.jenkins-ci.plugins</groupId>
+    <artifactId>plugin</artifactId>
+    <version>4.57</version>
+    <relativePath />
+  </parent>
+
+  <groupId>org.jenkins-ci.tools.hpi.its</groupId>
+  <artifactId>list-plugins-parent</artifactId>
+  <version>1.0-SNAPSHOT</version>
+
+  <packaging>pom</packaging>
+  <properties>
+    <jenkins.version>2.361.4</jenkins.version>
+    <hpi-plugin.version>@project.version@</hpi-plugin.version>
+  </properties>
+
+  <modules>
+    <module>a-plugin</module>
+    <module>not-a-plugin</module>
+    <module>first-module</module>
+  </modules>
+</project>
