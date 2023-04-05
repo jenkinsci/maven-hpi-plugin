@@ -349,6 +349,8 @@ public class RunMojo extends JettyRunWarMojo {
         // enable view auto refreshing via stapler
         setSystemPropertyIfEmpty("stapler.jelly.noCache","true");
 
+        setSystemPropertyIfEmpty("hudson.script.noCache","true");
+
         List<Resource> res = getProject().getBuild().getResources();
         if(!res.isEmpty()) {
             // pick up the first one and use it
