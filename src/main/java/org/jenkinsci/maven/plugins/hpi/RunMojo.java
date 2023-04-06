@@ -716,20 +716,29 @@ public class RunMojo extends JettyRunWarMojo {
             throw new MojoExecutionException("Unable to copy dependency plugin",e);
         }
     }
-
+    
     private static DependencyFilter getDependencyFilter(String scope) {
-        switch (scope) {
-            case Artifact.SCOPE_COMPILE:
-                return new ScopeDependencyFilter(Artifact.SCOPE_RUNTIME, Artifact.SCOPE_TEST);
-            case Artifact.SCOPE_RUNTIME:
-                return new ScopeDependencyFilter(
-                        Artifact.SCOPE_SYSTEM, Artifact.SCOPE_PROVIDED, Artifact.SCOPE_TEST);
-            case Artifact.SCOPE_TEST:
-                return null;
-            default:
-                throw new IllegalArgumentException("unexpected scope: " + scope);
+        DependencyFilterProvider obj = new DependencyFilterProvider();
+        DependencyFilter filter = obj.createFilter(scope);
+        if (filter == null && !Artifact.SCOPE_TEST.equals(scope)) {
+            throw new IllegalArgumentException("unexpected scope: " + scope);
         }
+        return filter;
     }
+
+    // private static DependencyFilter getDependencyFilter(String scope) {
+    //     switch (scope) {
+    //         case Artifact.SCOPE_COMPILE:
+    //             return new ScopeDependencyFilter(Artifact.SCOPE_RUNTIME, Artifact.SCOPE_TEST);
+    //         case Artifact.SCOPE_RUNTIME:
+    //             return new ScopeDependencyFilter(
+    //                     Artifact.SCOPE_SYSTEM, Artifact.SCOPE_PROVIDED, Artifact.SCOPE_TEST);
+    //         case Artifact.SCOPE_TEST:
+    //             return null;
+    //         default:
+    //             throw new IllegalArgumentException("unexpected scope: " + scope);
+    //     }
+    // }
 
     public Set<MavenArtifact> getProjectArtifacts() {
         Set<MavenArtifact> r = new HashSet<>();
