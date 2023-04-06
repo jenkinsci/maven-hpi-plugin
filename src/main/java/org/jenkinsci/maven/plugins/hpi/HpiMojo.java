@@ -101,6 +101,18 @@ public class HpiMojo extends AbstractJenkinsManifestMojo {
     /**
      * Generates the webapp according to the {@code mode} attribute.
      */
+    //extract method to do the complex conditional
+    private boolean isValidArtifactForProject(Artifact artifact){
+        return Objects.equals(project.getGroupId(), artifact.getGroupId())
+        && Objects.equals(project.getArtifactId(), artifact.getArtifactId())
+        && project.getArtifact().getVersionRange().equals(artifact.getVersionRange())
+        && Objects.equals("jar", artifact.getType())
+        && (jarClassifier == null || jarClassifier.trim().isEmpty()
+        ? !artifact.hasClassifier()
+        : Objects.equals(jarClassifier, artifact.getClassifier()))
+        && artifact.getFile() != null && artifact.getFile().isFile();
+    }
+
     private void performPackaging()
         throws IOException, ArchiverException, ManifestException, DependencyResolutionRequiredException, MojoExecutionException, MojoFailureException {
 
@@ -113,14 +125,7 @@ public class HpiMojo extends AbstractJenkinsManifestMojo {
                 + (jarClassifier == null || jarClassifier.trim().isEmpty() ? "..." : "with classifier " + jarClassifier + "..."));
         File jarFile = null;
         for (Artifact artifact: project.getAttachedArtifacts()) {
-            if (Objects.equals(project.getGroupId(), artifact.getGroupId())
-                    && Objects.equals(project.getArtifactId(), artifact.getArtifactId())
-                    && project.getArtifact().getVersionRange().equals(artifact.getVersionRange())
-                    && Objects.equals("jar", artifact.getType())
-                    && (jarClassifier == null || jarClassifier.trim().isEmpty()
-                    ? !artifact.hasClassifier()
-                    : Objects.equals(jarClassifier, artifact.getClassifier()))
-                    && artifact.getFile() != null && artifact.getFile().isFile()) {
+            if (isValidArtifactForProject(artifact)) {
                 jarFile = artifact.getFile();
                 getLog().info("Found attached .jar artifact: " + jarFile.getAbsolutePath());
                 break;
