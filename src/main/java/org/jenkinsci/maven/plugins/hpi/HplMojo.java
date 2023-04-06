@@ -111,39 +111,39 @@ public class HplMojo extends AbstractJenkinsManifestMojo {
      * puts into WEB-INF/lib should be the same so that the plugins see consistent
      * environment.
      */
-    private void buildLibraries(List<String> paths) throws IOException {
-        Set<MavenArtifact> artifacts = getProjectArtfacts();
+    // private void buildLibraries(List<String> paths) throws IOException {
+    //     Set<MavenArtifact> artifacts = getProjectArtfacts();
 
-        // List up IDs of Jenkins plugin dependencies
-        Set<String> jenkinsPlugins = new HashSet<>();
-        for (MavenArtifact artifact : artifacts) {
-            if (artifact.isPluginBestEffort(getLog()))
-                jenkinsPlugins.add(artifact.getId());
-        }
+    //     // List up IDs of Jenkins plugin dependencies
+    //     Set<String> jenkinsPlugins = new HashSet<>();
+    //     for (MavenArtifact artifact : artifacts) {
+    //         if (artifact.isPluginBestEffort(getLog()))
+    //             jenkinsPlugins.add(artifact.getId());
+    //     }
 
-        OUTER:
-        for (MavenArtifact artifact : artifacts) {
-            if(jenkinsPlugins.contains(artifact.getId()))
-                continue;   // plugin dependencies
-            if (artifact.getDependencyTrail().size() < 2) {
-                throw new IllegalStateException(
-                        "invalid dependency trail: " + artifact.getDependencyTrail());
-            }
-            if(artifact.getDependencyTrail().size() >= 1 && jenkinsPlugins.contains(artifact.getDependencyTrail().get(1)))
-                continue;   // no need to have transitive dependencies through plugins
+    //     OUTER:
+    //     for (MavenArtifact artifact : artifacts) {
+    //         if(jenkinsPlugins.contains(artifact.getId()))
+    //             continue;   // plugin dependencies
+    //         if (artifact.getDependencyTrail().size() < 2) {
+    //             throw new IllegalStateException(
+    //                     "invalid dependency trail: " + artifact.getDependencyTrail());
+    //         }
+    //         if(artifact.getDependencyTrail().size() >= 1 && jenkinsPlugins.contains(artifact.getDependencyTrail().get(1)))
+    //             continue;   // no need to have transitive dependencies through plugins
 
-            // if the dependency goes through jenkins core, that's not a library
-            for (String trail : artifact.getDependencyTrail()) {
-                if (trail.contains(":hudson-core:") || trail.contains(":jenkins-core:"))
-                    continue OUTER;
-            }
+    //         // if the dependency goes through jenkins core, that's not a library
+    //         for (String trail : artifact.getDependencyTrail()) {
+    //             if (trail.contains(":hudson-core:") || trail.contains(":jenkins-core:"))
+    //                 continue OUTER;
+    //         }
 
-            ScopeArtifactFilter filter = new ScopeArtifactFilter(Artifact.SCOPE_RUNTIME);
-            if (!artifact.isOptional() && filter.include(artifact.artifact)) {
-                paths.add(artifact.getFile().getPath());
-            }
-        }
-    }
+    //         ScopeArtifactFilter filter = new ScopeArtifactFilter(Artifact.SCOPE_RUNTIME);
+    //         if (!artifact.isOptional() && filter.include(artifact.artifact)) {
+    //             paths.add(artifact.getFile().getPath());
+    //         }
+    //     }
+    // }
 
     /**
      * Determine where to produce the .hpl file.

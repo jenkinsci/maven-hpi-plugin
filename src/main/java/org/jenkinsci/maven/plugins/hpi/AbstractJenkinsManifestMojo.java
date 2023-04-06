@@ -20,6 +20,7 @@ import org.apache.maven.archiver.MavenArchiveConfiguration;
 import org.apache.maven.archiver.MavenArchiver;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
+import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.model.Developer;
 import org.apache.maven.model.License;
 import org.apache.maven.model.Scm;
@@ -41,7 +42,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Abstract class for Mojo implementations, which produce Jenkins-style manifests.
@@ -80,6 +83,40 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
     /**
      * Generates a manifest file to be included in the .hpi file
      */
+    public void buildLibraries(List<String> paths) throws IOException {
+        Set<MavenArtifact> artifacts = getProjectArtfacts();
+
+        // List up IDs of Jenkins plugin dependencies
+        Set<String> jenkinsPlugins = new HashSet<>();
+        for (MavenArtifact artifact : artifacts) {
+            if (artifact.isPluginBestEffort(getLog()))
+                jenkinsPlugins.add(artifact.getId());
+        }
+
+        OUTER:
+        for (MavenArtifact artifact : artifacts) {
+            if(jenkinsPlugins.contains(artifact.getId()))
+                continue;   // plugin dependencies
+            if (artifact.getDependencyTrail().size() < 2) {
+                throw new IllegalStateException(
+                        "invalid dependency trail: " + artifact.getDependencyTrail());
+            }
+            if(artifact.getDependencyTrail().size() >= 1 && jenkinsPlugins.contains(artifact.getDependencyTrail().get(1)))
+                continue;   // no need to have transitive dependencies through plugins
+
+            // if the dependency goes through jenkins core, that's not a library
+            for (String trail : artifact.getDependencyTrail()) {
+                if (trail.contains(":hudson-core:") || trail.contains(":jenkins-core:"))
+                    continue OUTER;
+            }
+
+            ScopeArtifactFilter filter = new ScopeArtifactFilter(Artifact.SCOPE_RUNTIME);
+            if (!artifact.isOptional() && filter.include(artifact.artifact)) {
+                paths.add(artifact.getFile().getPath());
+            }
+        }
+    }
+
     protected void generateManifest(MavenArchiveConfiguration archive, File manifestFile) throws MojoExecutionException {
         // create directory if it doesn't exist yet
         if (!Files.isDirectory(manifestFile.toPath().getParent())) {

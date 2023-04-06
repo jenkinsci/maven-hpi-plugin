@@ -121,7 +121,7 @@ public class HpiMojo extends AbstractJenkinsManifestMojo {
         generateManifest(archive, manifestFile);
         Manifest manifest = loadManifest(manifestFile);
 
-        getLog().info("Checking for attached .jar artifact "
+        getLog().info("Checking for attached .jar `artifact "
                 + (jarClassifier == null || jarClassifier.trim().isEmpty() ? "..." : "with classifier " + jarClassifier + "..."));
         File jarFile = null;
         for (Artifact artifact: project.getAttachedArtifacts()) {
