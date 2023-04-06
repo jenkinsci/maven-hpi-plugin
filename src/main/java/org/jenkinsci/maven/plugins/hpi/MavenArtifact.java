@@ -33,6 +33,7 @@ import java.util.jar.JarFile;
  * @author Kohsuke Kawaguchi
  */
 public class MavenArtifact implements Comparable<MavenArtifact> {
+    MavenArtifactHelper mavenHelper = new MavenArtifactHelper();
     public final ArtifactFactory artifactFactory;
     public final ProjectBuilder builder;
     public final Artifact artifact;
@@ -55,14 +56,14 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
         this.project = Objects.requireNonNull(project);
     }
 
-    public MavenProject resolvePom() throws ProjectBuildingException {
-        ProjectBuildingRequest buildingRequest =
-                new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
-        buildingRequest.setProcessPlugins(false); // improve performance
-        buildingRequest.setRemoteRepositories(project.getRemoteArtifactRepositories());
-        buildingRequest.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
-        return builder.build(artifact, buildingRequest).getProject();
-    }
+    // public MavenProject resolvePom() throws ProjectBuildingException {
+    //     ProjectBuildingRequest buildingRequest =
+    //             new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
+    //     buildingRequest.setProcessPlugins(false); // improve performance
+    //     buildingRequest.setRemoteRepositories(project.getRemoteArtifactRepositories());
+    //     buildingRequest.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
+    //     return builder.build(artifact, buildingRequest).getProject();
+    // }
 
     /**
      * Is this a Jenkins plugin?
@@ -244,9 +245,9 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
         }
     }
 
-    public ArtifactVersion getVersionNumber() throws OverConstrainedVersionException {
-        return artifact.getSelectedVersion();
-    }
+    // public ArtifactVersion getVersionNumber() throws OverConstrainedVersionException {
+    //     return artifact.getSelectedVersion();
+    // }
 
     /**
      * Returns true if this artifact has the same groupId and artifactId as the given project.
@@ -287,7 +288,7 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
             }
 
             // when a plugin depends on another plugin, it doesn't specify the type as hpi or jpi, so we need to resolve its POM to see it
-            return resolvePom().getPackaging();
+            return mavenHelper.resolvePom(artifact, session, builder, project).getPackaging();
         } catch (ProjectBuildingException e) {
             throw new IOException("Failed to open artifact " + artifact + " at " + artifact.getFile() + ": " + e, e);
         }
