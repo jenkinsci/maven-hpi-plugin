@@ -43,15 +43,30 @@ public class ValidateMojo extends AbstractJenkinsMojo {
         }
 
         MavenProject parent = project.getParent();
+        //added explaining variables
+        boolean isJenkinsGroup = parent.getGroupId().equals("org.jenkins-ci.plugins");
+        boolean isPluginArtifact = parent.getArtifactId().equals("plugin");
+        boolean propertiesHasJavaLevel = parent.getProperties().containsKey("java.level");
+        boolean projectHasJavaLevel = project.getProperties().containsKey("java.level");
         if (parent != null
-                && parent.getGroupId().equals("org.jenkins-ci.plugins")
-                && parent.getArtifactId().equals("plugin")
-                && !parent.getProperties().containsKey("java.level")
-                && project.getProperties().containsKey("java.level")) {
-            getLog().warn("Ignoring deprecated java.level property."
-                    + " This property should be removed from your plugin's POM."
-                    + " In the future this warning will be changed to an error and will break the build.");
+                && isJenkinsGroup
+                && isPluginArtifact
+                && !propertiesHasJavaLevel
+                && projectHasJavaLevel ) {
+        getLog().warn("Ignoring deprecated java.level property."
+        + " This property should be removed from your plugin's POM."
+        + " In the future this warning will be changed to an error and will break the build.");
         }
+        // if (parent != null
+        // && parent.getGroupId().equals("org.jenkins-ci.plugins")
+        // && parent.getArtifactId().equals("plugin")
+        // && !parent.getProperties().containsKey("java.level")
+        // && project.getProperties().containsKey("java.level")) {
+        // getLog().warn("Ignoring deprecated java.level property."
+        // + " This property should be removed from your plugin's POM."
+        // + " In the future this warning will be changed to an error and will break the
+        // build.");
+        // }
 
         Scm scm = project.getScm();
         if (scm != null) {
@@ -109,8 +124,8 @@ public class ValidateMojo extends AbstractJenkinsMojo {
             String goodValue = goodStart + value.substring(badStart.length());
             getLog().warn(String.format(
                     "<%s>%s</%s> is invalid because %s."
-                        + " Replace it with <%s>%s</%s>."
-                        + " In the future this warning will be changed to an error and will break the build.",
+                            + " Replace it with <%s>%s</%s>."
+                            + " In the future this warning will be changed to an error and will break the build.",
                     tag,
                     deinterpolate(value),
                     tag,
