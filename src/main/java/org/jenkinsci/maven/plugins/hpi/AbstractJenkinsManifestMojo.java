@@ -307,7 +307,7 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
                     return module;
                 }
             } catch (InvalidPathException e) {
-                getLog().warn("Failed to obtain project's relative location in the Git repository", e);
+                getLog().warn("Failed to obtain module name", e);
             }
         }
         return null;
