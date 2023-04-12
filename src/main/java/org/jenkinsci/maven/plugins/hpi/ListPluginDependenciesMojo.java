@@ -33,9 +33,7 @@ public class ListPluginDependenciesMojo extends AbstractHpiMojo {
     
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        try {
-            Writer w = outputFile==null ? new NullWriter() : new OutputStreamWriter(new FileOutputStream(outputFile), StandardCharsets.UTF_8);
-
+        try (Writer w = outputFile==null ? new NullWriter() : new OutputStreamWriter(new FileOutputStream(outputFile), StandardCharsets.UTF_8)) {
             for (MavenArtifact a : getDirectDependencyArtfacts()) {
                 if(!a.isPlugin())
                     continue;
@@ -45,8 +43,6 @@ public class ListPluginDependenciesMojo extends AbstractHpiMojo {
                 w.write('\n');
                 getLog().info(line);
             }
-
-            w.close();
         } catch (IOException e) {
             throw new MojoExecutionException("Failed to list plugin dependencies",e);
         }

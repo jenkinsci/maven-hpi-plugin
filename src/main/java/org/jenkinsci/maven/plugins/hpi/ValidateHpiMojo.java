@@ -1,6 +1,5 @@
 package org.jenkinsci.maven.plugins.hpi;
 
-import com.google.common.collect.Sets;
 import hudson.util.VersionNumber;
 import java.io.File;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -8,7 +7,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.ResolutionScope;
-
+import org.jenkinsci.maven.plugins.hp.util.Utils;
 import java.io.IOException;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
@@ -24,7 +23,7 @@ public class ValidateHpiMojo extends AbstractHpiMojo {
             MavenArtifact maxCoreVersionArtifact = null;
             VersionNumber maxCoreVersion = new VersionNumber("0");
 
-            for (MavenArtifact artifact : Sets.union(getProjectArtfacts(), getDirectDependencyArtfacts())) {
+            for (MavenArtifact artifact : Utils.unionOf(getProjectArtfacts(), getDirectDependencyArtfacts())) {
                 try {
                     if (artifact.isPluginBestEffort(getLog())) {
                         VersionNumber dependencyCoreVersion = getDependencyCoreVersion(artifact);

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.jenkins-ci.plugins</groupId>
+        <artifactId>plugin</artifactId>
+        <version>4.57</version>
+        <relativePath />
+    </parent>
+
+    <groupId>org.jenkins-ci.tools.hpi.its</groupId>
+    <artifactId>war-resources-it</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <packaging>hpi</packaging>
+
+    <name>MyNewPlugin</name>
+    <description>My New Plugin</description>
+    <url>https://github.com/jenkinsci/verify-it-plugin</url>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>https://opensource.org/licenses/MIT</url>
+        </license>
+    </licenses>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.jenkins-ci.tools</groupId>
+                <artifactId>maven-hpi-plugin</artifactId>
+                <configuration>
+                    <webResources>
+                        <resource>
+                            <directory>${project.basedir}/src/main/webResource-filtering</directory>
+                            <filtering>true</filtering>
+                        </resource>
+                    </webResources>
+                </configuration>
+            </plugin>
+        </plugins>
+
+    </build>
+    <developers>
+        <developer>
+            <id>jblogs</id>
+            <name>Jo Bloggs</name>
+            <email>jblogs@example.com</email>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:https://github.com/jenkinsci/verify-it-plugin.git</connection>
+        <developerConnection>scm:git:git@github.com:jenkinsci/verify-it-plugin.git</developerConnection>
+        <tag>HEAD</tag>
+        <url>https://github.com/jenkinsci/verify-it-plugin</url>
+    </scm>
+
+    <properties>
+        <jenkins.version>2.361.4</jenkins.version>
+        <hpi-plugin.version>@project.version@</hpi-plugin.version>
+        <!-- used for filtering -->
+        <prop1>hello</prop1>
+        <prop2>goodbye</prop2>
+
+    </properties>
+</project>

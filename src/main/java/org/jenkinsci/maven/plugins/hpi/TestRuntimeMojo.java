@@ -45,8 +45,6 @@ public class TestRuntimeMojo extends AbstractJenkinsMojo {
 
     /**
      * Directory where unpacked patch modules should be cached.
-     *
-     * @see #getInsaneHook
      */
     @Parameter(defaultValue = "${project.build.directory}/patch-modules")
     private File patchModuleDir;
@@ -133,7 +131,7 @@ public class TestRuntimeMojo extends AbstractJenkinsMojo {
 
         Path insaneHook = getInsaneHook(wrap(jth), patchModuleDir.toPath());
 
-        String argLine = String.format("--patch-module=java.base=%s --add-exports=java.base/org.netbeans.insane.hook=ALL-UNNAMED", insaneHook);
+        String argLine = String.format("--patch-module='java.base=%s' --add-exports=java.base/org.netbeans.insane.hook=ALL-UNNAMED", insaneHook);
         getLog().info("Setting jenkins.insaneHook to " + argLine);
         project.getProperties().setProperty("jenkins.insaneHook", argLine);
     }

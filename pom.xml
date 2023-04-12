@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.94</version>
+    <version>1.97</version>
     <relativePath />
   </parent>
 
@@ -44,7 +44,7 @@
   </distributionManagement>
 
   <properties>
-    <revision>3.39</revision>
+    <revision>3.42</revision>
     <changelist>-SNAPSHOT</changelist>
     <!-- used for escape -->
     <begin>${${$}}{</begin>
@@ -53,11 +53,15 @@
     <openbracket>{</openbracket>
     <gitHubRepo>jenkinsci/${project.artifactId}</gitHubRepo>
     <aether.version>1.1.0</aether.version>
-    <maven.version>3.9.0</maven.version>
-    <maven-plugin-tools.version>3.7.1</maven-plugin-tools.version> <!-- extra work needed when https://issues.apache.org/jira/browse/MPLUGIN-449 is fixed -->
+    <maven.version>3.8.1</maven.version> <!-- if we update this all consumers need to be running at least this version -->
+    <maven-plugin-tools.version>3.8.1</maven-plugin-tools.version> <!-- extra work needed when https://issues.apache.org/jira/browse/MPLUGIN-449 is fixed -->
     <plexus-containers.version>2.1.1</plexus-containers.version>
     <aether.version>1.1.0</aether.version>
   </properties>
+
+  <prerequisites>
+      <maven>${maven.version}</maven>
+  </prerequisites>
 
   <dependencyManagement>
     <dependencies>
@@ -65,11 +69,6 @@
         <groupId>commons-codec</groupId>
         <artifactId>commons-codec</artifactId>
         <version>1.15</version>
-      </dependency>
-      <dependency>
-        <groupId>javax.annotation</groupId>
-        <artifactId>javax.annotation-api</artifactId>
-        <version>1.3.2</version>
       </dependency>
       <dependency>
         <groupId>org.apache.maven</groupId>
@@ -97,6 +96,21 @@
         <version>3.3.4</version>
       </dependency>
       <dependency>
+        <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-archiver</artifactId>
+        <version>4.6.3</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-io</artifactId>
+        <version>3.4.1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-container-default</artifactId>
+        <version>${plexus-containers.version}</version>
+      </dependency>
+      <dependency>
         <groupId>org.eclipse.aether</groupId>
         <artifactId>aether-api</artifactId>
         <version>${aether.version}</version>
@@ -119,7 +133,7 @@
       <dependency>
         <groupId>org.ow2.asm</groupId>
         <artifactId>asm-bom</artifactId>
-        <version>9.4</version>
+        <version>9.5</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -137,11 +151,6 @@
           <artifactId>jsr305</artifactId>
         </exclusion>
       </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-      <version>31.1-jre</version>
     </dependency>
     <dependency>
       <groupId>com.sun.codemodel</groupId>
@@ -178,16 +187,17 @@
           <groupId>asm</groupId>
           <artifactId>asm</artifactId>
         </exclusion>
-        <exclusion>
-          <groupId>org.apache.commons</groupId>
-          <artifactId>commons-lang3</artifactId>
-        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.shared</groupId>
       <artifactId>maven-artifact-transfer</artifactId>
       <version>0.13.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.shared</groupId>
+      <artifactId>maven-filtering</artifactId>
+      <version>3.3.1</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.shared</groupId>
@@ -207,8 +217,7 @@
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-utils</artifactId>
-      <!-- generated help mojo has a dependency on plexus utils -->
-      <version>3.5.0</version>
+      <version>3.5.1</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
@@ -223,7 +232,7 @@
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-groovy</artifactId>
-      <version>1770.v0c3dc82ee103</version>
+      <version>1777.v7c6fe6d54a_0c</version>
       <exclusions>
         <exclusion>
           <groupId>jakarta.annotation</groupId>
@@ -342,8 +351,7 @@
                   <excludes combine.children="append">
                     <exclude>commons-lang:commons-lang</exclude>
                     <exclude>org.apache.commons:commons-collections4</exclude>
-                    <exclude>org.codehaus.plexus:plexus-archiver</exclude>
-                    <exclude>org.codehaus.plexus:plexus-container-default</exclude>
+                    <exclude>org.apache.commons:commons-lang3</exclude>
                     <exclude>org.slf4j:slf4j-api</exclude>
                   </excludes>
                 </requireUpperBoundDeps>
@@ -355,7 +363,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-invoker-plugin</artifactId>
-        <version>3.4.0</version>
+        <version>3.5.1</version>
         <configuration>
           <projectsDirectory>src/it</projectsDirectory>
           <cloneProjectsTo>${project.build.directory}/its</cloneProjectsTo>
@@ -402,7 +410,7 @@
             <!-- TODO remove when https://issues.apache.org/jira/browse/MPLUGIN-449 is fixed -->
             <groupId>org.codehaus.plexus</groupId>
             <artifactId>plexus-archiver</artifactId>
-            <version>4.6.1</version>
+            <version>4.6.3</version>
           </dependency>
         </dependencies>
       </plugin>

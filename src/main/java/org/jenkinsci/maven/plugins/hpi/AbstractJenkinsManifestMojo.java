@@ -42,8 +42,6 @@ import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Abstract class for Mojo implementations, which produce Jenkins-style manifests.
@@ -55,8 +53,6 @@ import java.util.logging.Logger;
  * @see HplMojo
  */
 public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
-
-    private static final Logger LOGGER = Logger.getLogger(AbstractJenkinsManifestMojo.class.getName());
 
     /**
      * Optional - the oldest version of this plugin which the current version is
@@ -116,11 +112,10 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
     protected void setAttributes(Manifest.ExistingSection mainSection) throws MojoExecutionException, ManifestException, IOException {
         File pluginImpl = new File(project.getBuild().getOutputDirectory(), "META-INF/services/hudson.Plugin");
         if(pluginImpl.exists()) {
-            BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(pluginImpl), StandardCharsets.UTF_8));
-            String pluginClassName = in.readLine();
-            in.close();
-
-            mainSection.addAttributeAndCheck(new Manifest.Attribute("Plugin-Class",pluginClassName));
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(pluginImpl), StandardCharsets.UTF_8))) {
+                String pluginClassName = in.readLine();
+                mainSection.addAttributeAndCheck(new Manifest.Attribute("Plugin-Class",pluginClassName));
+            }
         }
 
         mainSection.addAttributeAndCheck(new Manifest.Attribute("Group-Id",project.getGroupId()));
