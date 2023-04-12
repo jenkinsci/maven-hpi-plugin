@@ -15,6 +15,10 @@
  */
 package org.jenkinsci.maven.plugins.hpi;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import org.apache.commons.io.IOUtils;
 import org.apache.maven.archiver.ManifestConfiguration;
 import org.apache.maven.archiver.MavenArchiveConfiguration;
 import org.apache.maven.archiver.MavenArchiver;
@@ -22,7 +26,6 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.model.Developer;
 import org.apache.maven.model.License;
-import org.apache.maven.model.Scm;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.codehaus.plexus.archiver.jar.Manifest;
@@ -37,9 +40,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -120,7 +125,6 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
 
         mainSection.addAttributeAndCheck(new Manifest.Attribute("Group-Id",project.getGroupId()));
         mainSection.addAttributeAndCheck(new Manifest.Attribute("Artifact-Id",project.getArtifactId()));
-
         mainSection.addAttributeAndCheck(new Manifest.Attribute("Short-Name",project.getArtifactId()));
         mainSection.addAttributeAndCheck(new Manifest.Attribute("Long-Name",pluginName));
         String url = project.getUrl();
@@ -165,9 +169,13 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
             v = snapshotPluginVersionOverride;
         }
         if (v.endsWith("-SNAPSHOT") && pluginVersionDescription==null) {
-            String dt = getGitHeadSha1(true);
-            if (dt==null)   // if SHA1 isn't available, fall back to timestamp
+            String dt = gitRevParseHead();
+            if (dt == null) {
+                // if SHA1 isn't available, fall back to timestamp
                 dt = new SimpleDateFormat("MM/dd/yyyy HH:mm").format(new Date());
+            } else {
+                dt = dt.substring(0, 8);
+            }
             pluginVersionDescription = "private-"+dt+"-"+System.getProperty("user.name");
         }
         if (pluginVersionDescription!=null)
@@ -210,11 +218,12 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
         addLicenseAttributesForManifest(mainSection);
         addPropertyAttributeIfNotNull(mainSection, "Plugin-ChangelogUrl", "hpi.pluginChangelogUrl");
         addPropertyAttributeIfNotNull(mainSection, "Plugin-LogoUrl", "hpi.pluginLogoUrl");
+        addAttributeIfNotNull(mainSection, "Plugin-ScmConnection", project.getScm().getConnection());
+        addAttributeIfNotNull(mainSection, "Plugin-ScmTag", project.getScm().getTag());
+        addAttributeIfNotNull(mainSection, "Plugin-ScmUrl", project.getScm().getUrl());
 
-        addAttributeIfNotNull(mainSection, "Plugin-ScmUrl", getScmUrl());
-        addAttributeIfNotNull(mainSection, "Plugin-Scm-Connection", getSCMConnection());
-        addAttributeIfNotNull(mainSection, "Plugin-Scm-Git-Hash", getGitHeadSha1(false));
-        addAttributeIfNotNull(mainSection, "Plugin-Scm-Git-Module-Path", getGitModulePath());
+        addAttributeIfNotNull(mainSection, "Plugin-GitHash", gitRevParseHead());
+        addAttributeIfNotNull(mainSection, "Plugin-ModulePath", getModulePath());
     }
 
     /**
@@ -285,43 +294,80 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
         }
     }
 
-    private String getScmUrl() {
-        Scm scm = project.getScm();
-        if (scm != null) {
-            return scm.getUrl();
+    /**
+     * If the project is on Git, return its hash
+     *
+     * @return {@code null} if no Git repository is found
+     */
+    @CheckForNull
+    private String gitRevParseHead() {
+        String hash = gitRevParse("HEAD");
+        if (hash == null) {
+            return null;
         }
-        return null;
+        if (hash.length() < 8) {
+            // Git repository present, but without commits
+            return null;
+        }
+        return hash;
     }
 
-    private String getSCMConnection() {
-        Scm scm = project.getScm();
-        if (scm != null) {
-            return scm.getConnection();
-        }
-        return null;
-    }
-
-    private String getGitModulePath() {
-        //execute `git rev-parse --show-toplevel` then remove that from project.baseDir and what we have left is the path
-        String topLevel = getGitRevParseOutput("--show-toplevel");
+    @CheckForNull
+    private String getModulePath() {
+        // Execute "git rev-parse --show-toplevel", then remove that from "project.baseDir" and what we have left is the path
+        String topLevel = gitRevParse("--show-toplevel");
         if (topLevel == null) {
             return null;
         }
         try {
-            // rev-parse can return unix slashes on windows - so lets ensure everything is canonical
+            // git rev-parse can return Unix slashes on Windows, so let's ensure everything is canonical
             String f = new File(topLevel).getCanonicalPath();
             String b = project.getBasedir().getCanonicalPath();
-            // no need to be defensive - the project must be in the git directory for git-revparse to return non null
+            // No need to be defensive - the project must be in the Git directory for git-revparse to return non-null
             String path = b.substring(f.length());
             if (path.startsWith(File.separator)) {
-                path = path.substring(1); // for a single module project this will be the empty string
+                // For a single module project this will be the empty string
+                path = path.substring(1);
             }
-            // normalize to Unix style
-            return path.replace(File.separatorChar, '/');
+            // Normalize to Unix style
+            path = path.replace(File.separatorChar, '/');
+            // Normalize empty to null
+            if (!path.isBlank()) {
+                return path;
+            }
         } catch (IOException e) {
-            getLog().warn("failed to obtain projects relative location in the Git repository", e);
+            getLog().warn("Failed to obtain project's relative location in the Git repository", e);
         }
         return null;
+    }
+
+    @CheckForNull
+    @SuppressFBWarnings(value = "COMMAND_INJECTION", justification = "Intended behavior")
+    private String gitRevParse(String... args) {
+        if (!project.getScm().getConnection().startsWith("scm:git")) {
+            // Project is not using Git
+            return null;
+        }
+        List<String> command = new ArrayList<>();
+        command.add("git");
+        command.add("rev-parse");
+        command.addAll(List.of(args));
+        try {
+            Process p = new ProcessBuilder(command).directory(project.getBasedir()).redirectErrorStream(true).start();
+            p.getOutputStream().close();
+            String result;
+            try (InputStream is = p.getInputStream()) {
+                result = IOUtils.toString(is, Charset.defaultCharset()).trim();
+            }
+            if (p.waitFor() != 0) {
+                // git rev-parse failed to run
+                return null;
+            }
+            return result;
+        } catch (IOException | InterruptedException e) {
+            getLog().debug("Failed to run " + String.join(" ", command), e);
+            return null;
+        }
     }
 
     private void addAttributeIfNotNull(Manifest.ExistingSection target, String attributeName, String propertyValue)
