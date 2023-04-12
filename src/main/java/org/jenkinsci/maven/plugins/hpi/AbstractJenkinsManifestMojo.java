@@ -15,6 +15,8 @@
  */
 package org.jenkinsci.maven.plugins.hpi;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+
 import org.apache.maven.archiver.ManifestConfiguration;
 import org.apache.maven.archiver.MavenArchiveConfiguration;
 import org.apache.maven.archiver.MavenArchiver;
@@ -22,9 +24,9 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.model.Developer;
 import org.apache.maven.model.License;
-import org.apache.maven.model.Scm;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.archiver.jar.Manifest;
 import org.codehaus.plexus.archiver.jar.ManifestException;
 
@@ -39,6 +41,8 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -119,6 +123,7 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
         }
 
         mainSection.addAttributeAndCheck(new Manifest.Attribute("Group-Id",project.getGroupId()));
+        mainSection.addAttributeAndCheck(new Manifest.Attribute("Artifact-Id",project.getArtifactId()));
         mainSection.addAttributeAndCheck(new Manifest.Attribute("Short-Name",project.getArtifactId()));
         mainSection.addAttributeAndCheck(new Manifest.Attribute("Long-Name",pluginName));
         String url = project.getUrl();
@@ -164,8 +169,12 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
         }
         if (v.endsWith("-SNAPSHOT") && pluginVersionDescription==null) {
             String dt = getGitHeadSha1();
-            if (dt==null)   // if SHA1 isn't available, fall back to timestamp
+            if (dt == null) {
+                // if SHA1 isn't available, fall back to timestamp
                 dt = new SimpleDateFormat("MM/dd/yyyy HH:mm").format(new Date());
+            } else {
+                dt = dt.substring(0, 8);
+            }
             pluginVersionDescription = "private-"+dt+"-"+System.getProperty("user.name");
         }
         if (pluginVersionDescription!=null)
@@ -208,7 +217,11 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
         addLicenseAttributesForManifest(mainSection);
         addPropertyAttributeIfNotNull(mainSection, "Plugin-ChangelogUrl", "hpi.pluginChangelogUrl");
         addPropertyAttributeIfNotNull(mainSection, "Plugin-LogoUrl", "hpi.pluginLogoUrl");
-        addAttributeIfNotNull(mainSection, "Plugin-ScmUrl", getScmUrl());
+        addAttributeIfNotNull(mainSection, "Plugin-ScmConnection", project.getScm().getConnection());
+        addAttributeIfNotNull(mainSection, "Plugin-ScmTag", project.getScm().getTag());
+        addAttributeIfNotNull(mainSection, "Plugin-ScmUrl", project.getScm().getUrl());
+        addAttributeIfNotNull(mainSection, "Plugin-GitHash", getGitHeadSha1());
+        addAttributeIfNotNull(mainSection, "Plugin-Module", getModule());
     }
 
     /**
@@ -279,10 +292,23 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
         }
     }
 
-    private String getScmUrl() {
-        Scm scm = project.getScm();
-        if (scm != null) {
-            return scm.getUrl();
+    @CheckForNull
+    private String getModule() {
+        MavenProject root = session.getTopLevelProject();
+        if (!project.equals(root)) {
+            try {
+                Path rootPath = root.getBasedir().toPath();
+                Path modulePath = project.getBasedir().toPath();
+                String module = rootPath.relativize(modulePath).toString();
+                // Normalize to Unix style
+                module = module.replace(File.separatorChar, '/');
+                // Normalize empty to null
+                if (!module.isBlank()) {
+                    return module;
+                }
+            } catch (InvalidPathException e) {
+                getLog().warn("Failed to obtain module name", e);
+            }
         }
         return null;
     }
