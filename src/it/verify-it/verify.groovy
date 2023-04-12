@@ -42,6 +42,7 @@ Files.newInputStream(new File(basedir, 'target/verify-it/META-INF/MANIFEST.MF').
   assert manifest.getMainAttributes().getValue('Created-By').startsWith('Maven Archiver')
   assert manifest.getMainAttributes().getValue('Extension-Name') == null // was provided by Maven 2, but core prefers Short-Name
   assert manifest.getMainAttributes().getValue('Group-Id').equals('org.jenkins-ci.tools.hpi.its')
+  assert manifest.getMainAttributes().getValue('Artifact-Id').equals('verify-it')
   assert manifest.getMainAttributes().getValue('Hudson-Version').equals('2.361.4')
   assert manifest.getMainAttributes().getValue('Implementation-Title').equals('MyNewPlugin') // was project.artifactId in previous versions, now project.name
   assert manifest.getMainAttributes().getValue('Implementation-Version').equals('1.0-SNAPSHOT')
@@ -51,7 +52,11 @@ Files.newInputStream(new File(basedir, 'target/verify-it/META-INF/MANIFEST.MF').
   assert manifest.getMainAttributes().getValue('Plugin-Developers').equals('Noam Chomsky:nchomsky:nchomsky@example.com')
   assert manifest.getMainAttributes().getValue('Plugin-License-Name').equals('MIT License')
   assert manifest.getMainAttributes().getValue('Plugin-License-Url').equals('https://opensource.org/licenses/MIT')
+  assert manifest.getMainAttributes().getValue('Plugin-ScmConnection').equals('scm:git:https://github.com/jenkinsci/verify-it-plugin.git')
+  assert manifest.getMainAttributes().getValue('Plugin-ScmTag').equals('HEAD')
   assert manifest.getMainAttributes().getValue('Plugin-ScmUrl').equals('https://github.com/jenkinsci/verify-it-plugin')
+  assert manifest.getMainAttributes().getValue('Plugin-GitHash').length() == 40
+  assert manifest.getMainAttributes().getValue('Plugin-ModulePath').equals('target/its/verify-it')
   assert manifest.getMainAttributes().getValue('Plugin-Version').startsWith('1.0-SNAPSHOT')
   assert manifest.getMainAttributes().getValue('Short-Name').equals('verify-it')
   assert manifest.getMainAttributes().getValue('Specification-Title').equals('MyNewPlugin') // was project.description in previous versions, now project.name
