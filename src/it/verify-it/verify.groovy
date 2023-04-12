@@ -56,7 +56,7 @@ Files.newInputStream(new File(basedir, 'target/verify-it/META-INF/MANIFEST.MF').
   assert manifest.getMainAttributes().getValue('Plugin-ScmTag').equals('HEAD')
   assert manifest.getMainAttributes().getValue('Plugin-ScmUrl').equals('https://github.com/jenkinsci/verify-it-plugin')
   assert manifest.getMainAttributes().getValue('Plugin-GitHash').length() == 40
-  assert manifest.getMainAttributes().getValue('Plugin-ModulePath').equals('target/its/verify-it')
+  assert manifest.getMainAttributes().getValue('Plugin-Module') == null
   assert manifest.getMainAttributes().getValue('Plugin-Version').startsWith('1.0-SNAPSHOT')
   assert manifest.getMainAttributes().getValue('Short-Name').equals('verify-it')
   assert manifest.getMainAttributes().getValue('Specification-Title').equals('MyNewPlugin') // was project.description in previous versions, now project.name

@@ -20,8 +20,10 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.Extension;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -35,6 +37,7 @@ import java.util.TreeSet;
 import jenkins.YesNoMaybe;
 import net.java.sezpoz.Index;
 import net.java.sezpoz.IndexItem;
+import org.apache.commons.io.IOUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.model.Resource;
@@ -699,6 +702,37 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         scanner.scan();
 
         return scanner.getIncludedFiles();
+    }
+
+    /**
+     * If the project is on Git, figure out Git SHA1.
+     *
+     * @return null if no git repository is found
+     */
+    public String getGitHeadSha1() {
+        if (!project.getScm().getConnection().startsWith("scm:git")) {
+            // Project is not using Git
+            return null;
+        }
+
+        try {
+            Process p = new ProcessBuilder("git", "rev-parse", "HEAD").directory(project.getBasedir()).redirectErrorStream(true).start();
+            p.getOutputStream().close();
+            String v;
+            try (InputStream is = p.getInputStream()) {
+                v = IOUtils.toString(is, Charset.defaultCharset()).trim();
+            }
+            if (p.waitFor()!=0)
+                return null;    // git rev-parse failed to run
+
+            if (v.length()<8)
+                return null;    // git repository present, but without commits
+
+            return v;
+        } catch (IOException | InterruptedException e) {
+            getLog().debug("Failed to run git rev-parse HEAD", e);
+            return null;
+        }
     }
 
     /**
