@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.jenkins-ci.tools.hpi.its.git-metadata</groupId>
+    <artifactId>it-parent</artifactId>
+    <version>1.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>multimodule-it-plugin2</artifactId> <!-- intentionally not the same as the containing directory -->
+  <packaging>hpi</packaging>
+
+  <url>https://plugins.jenkins.io/multimodule-it-plugin2/</url>
+
+    <developers>
+        <developer>
+            <id>bob</id>
+            <email>bob@example.com</email>
+            <name>Robert McBobface</name>
+        </developer>
+        <developer>
+            <id>jane</id>
+            <email>jane@example.com</email>
+        </developer>
+    </developers>
+
+  <dependencies>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>plugin1</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+  </dependencies>
+</project>
