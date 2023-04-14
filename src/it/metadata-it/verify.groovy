@@ -68,7 +68,7 @@ try (JarFile j2 = new JarFile(p2)) {
     assert attributes.getValue('Url').equals('https://plugins.jenkins.io/multimodule-it-plugin2/')
     assert attributes.getValue('Plugin-ScmConnection').equals('scm:git:https://github.com/jenkinsci/maven-hpi-plugin.git')
     assert attributes.getValue('Plugin-GitHash').length() == 40
-    assert attributes.getValue('Plugin-Module').equals('plugin2') // invoker copies the file so this is where it is actualy built.
+    assert attributes.getValue('Plugin-Module').equals('plugin2')
 
 }
 
