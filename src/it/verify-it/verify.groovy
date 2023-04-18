@@ -36,6 +36,7 @@ assert content.contains(" holder.format(\"it.msg\");");
 
 assert new File(basedir, 'target/verify-it/META-INF/MANIFEST.MF').exists()
 
+def pattern = /^[a-f0-9]{40}$|^[a-f0-9]{64}$/
 Files.newInputStream(new File(basedir, 'target/verify-it/META-INF/MANIFEST.MF').toPath()).withCloseable { is ->
   Manifest manifest = new Manifest(is)
   assert !manifest.getMainAttributes().getValue('Build-Jdk-Spec').isEmpty()
@@ -55,7 +56,8 @@ Files.newInputStream(new File(basedir, 'target/verify-it/META-INF/MANIFEST.MF').
   assert manifest.getMainAttributes().getValue('Plugin-ScmConnection').equals('scm:git:https://github.com/jenkinsci/verify-it-plugin.git')
   assert manifest.getMainAttributes().getValue('Plugin-ScmTag').equals('HEAD')
   assert manifest.getMainAttributes().getValue('Plugin-ScmUrl').equals('https://github.com/jenkinsci/verify-it-plugin')
-  assert manifest.getMainAttributes().getValue('Plugin-GitHash').length() == 40
+  def matcher = manifest.getMainAttributes().getValue('Plugin-GitHash') =~ pattern
+  assert matcher.matches()
   assert manifest.getMainAttributes().getValue('Plugin-Module') == null
   assert manifest.getMainAttributes().getValue('Plugin-Version').startsWith('1.0-SNAPSHOT')
   assert manifest.getMainAttributes().getValue('Short-Name').equals('verify-it')

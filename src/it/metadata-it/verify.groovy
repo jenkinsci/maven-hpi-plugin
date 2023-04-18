@@ -7,6 +7,7 @@ assert new File(basedir, 'plugin1/target/plugin1.hpi').exists()
 File p1 = new File(basedir, 'plugin1/target/plugin1.hpi')
 
 assert p1.exists()
+def pattern = /^[a-f0-9]{40}$|^[a-f0-9]{64}$/
 try (JarFile j1 = new JarFile(p1)) {
     Manifest mf = j1.getManifest()
     Attributes attributes = mf.getMainAttributes()
@@ -34,7 +35,8 @@ try (JarFile j1 = new JarFile(p1)) {
     assert attributes.getValue('Plugin-Version').startsWith('1.0-SNAPSHOT')
     assert attributes.getValue('Url').equals('https://plugins.jenkins.io/plugin1/')
     assert attributes.getValue('Plugin-ScmConnection').equals('scm:git:https://github.com/jenkinsci/maven-hpi-plugin.git')
-    assert attributes.getValue('Plugin-GitHash').length() == 40
+    def matcher = attributes.getValue('Plugin-GitHash') =~ pattern
+    assert matcher.matches()
     assert attributes.getValue('Plugin-Module').equals('plugin1')
 }
 
@@ -67,7 +69,8 @@ try (JarFile j2 = new JarFile(p2)) {
     assert attributes.getValue('Plugin-Version').startsWith('1.0-SNAPSHOT')
     assert attributes.getValue('Url').equals('https://plugins.jenkins.io/multimodule-it-plugin2/')
     assert attributes.getValue('Plugin-ScmConnection').equals('scm:git:https://github.com/jenkinsci/maven-hpi-plugin.git')
-    assert attributes.getValue('Plugin-GitHash').length() == 40
+    def matcher = attributes.getValue('Plugin-GitHash') =~ pattern
+    assert matcher.matches()
     assert attributes.getValue('Plugin-Module').equals('plugin2')
 
 }
