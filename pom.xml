@@ -24,6 +24,10 @@
     </license>
   </licenses>
 
+  <prerequisites>
+    <maven>${maven.version}</maven>
+  </prerequisites>
+
   <scm>
     <connection>scm:git:https://github.com/${gitHubRepo}.git</connection>
     <developerConnection>scm:git:git@github.com:${gitHubRepo}.git</developerConnection>
@@ -53,18 +57,24 @@
     <openbracket>{</openbracket>
     <gitHubRepo>jenkinsci/${project.artifactId}</gitHubRepo>
     <aether.version>1.1.0</aether.version>
-    <maven.version>3.8.1</maven.version> <!-- if we update this all consumers need to be running at least this version -->
-    <maven-plugin-tools.version>3.8.1</maven-plugin-tools.version> <!-- extra work needed when https://issues.apache.org/jira/browse/MPLUGIN-449 is fixed -->
+    <!-- if we update this all consumers need to be running at least this version -->
+    <maven.version>3.8.1</maven.version>
+    <!-- extra work needed when https://issues.apache.org/jira/browse/MPLUGIN-449 is fixed -->
+    <maven-plugin-tools.version>3.8.1</maven-plugin-tools.version>
     <plexus-containers.version>2.1.1</plexus-containers.version>
     <aether.version>1.1.0</aether.version>
+    <spotless.check.skip>false</spotless.check.skip>
   </properties>
-
-  <prerequisites>
-      <maven>${maven.version}</maven>
-  </prerequisites>
 
   <dependencyManagement>
     <dependencies>
+      <dependency>
+        <groupId>org.ow2.asm</groupId>
+        <artifactId>asm-bom</artifactId>
+        <version>9.5</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
       <dependency>
         <groupId>commons-codec</groupId>
         <artifactId>commons-codec</artifactId>
@@ -102,13 +112,13 @@
       </dependency>
       <dependency>
         <groupId>org.codehaus.plexus</groupId>
-        <artifactId>plexus-io</artifactId>
-        <version>3.4.1</version>
+        <artifactId>plexus-container-default</artifactId>
+        <version>${plexus-containers.version}</version>
       </dependency>
       <dependency>
         <groupId>org.codehaus.plexus</groupId>
-        <artifactId>plexus-container-default</artifactId>
-        <version>${plexus-containers.version}</version>
+        <artifactId>plexus-io</artifactId>
+        <version>3.4.1</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.aether</groupId>
@@ -129,13 +139,6 @@
         <groupId>org.eclipse.aether</groupId>
         <artifactId>aether-util</artifactId>
         <version>${aether.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.ow2.asm</groupId>
-        <artifactId>asm-bom</artifactId>
-        <version>9.5</version>
-        <type>pom</type>
-        <scope>import</scope>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -196,13 +199,13 @@
     </dependency>
     <dependency>
       <groupId>org.apache.maven.shared</groupId>
-      <artifactId>maven-filtering</artifactId>
-      <version>3.3.1</version>
+      <artifactId>maven-dependency-tree</artifactId>
+      <version>3.2.1</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.shared</groupId>
-      <artifactId>maven-dependency-tree</artifactId>
-      <version>3.2.1</version>
+      <artifactId>maven-filtering</artifactId>
+      <version>3.3.1</version>
     </dependency>
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
@@ -391,6 +394,14 @@
           <extractors>java-annotations</extractors>
           <mojoDependencies>org.eclipse.jetty:jetty-maven-plugin</mojoDependencies>
         </configuration>
+        <dependencies>
+          <dependency>
+            <!-- TODO remove when https://issues.apache.org/jira/browse/MPLUGIN-449 is fixed -->
+            <groupId>org.codehaus.plexus</groupId>
+            <artifactId>plexus-archiver</artifactId>
+            <version>4.6.3</version>
+          </dependency>
+        </dependencies>
         <executions>
           <execution>
             <id>help-goal</id>
@@ -405,14 +416,6 @@
             </goals>
           </execution>
         </executions>
-        <dependencies>
-          <dependency>
-            <!-- TODO remove when https://issues.apache.org/jira/browse/MPLUGIN-449 is fixed -->
-            <groupId>org.codehaus.plexus</groupId>
-            <artifactId>plexus-archiver</artifactId>
-            <version>4.6.3</version>
-          </dependency>
-        </dependencies>
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>

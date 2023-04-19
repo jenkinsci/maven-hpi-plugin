@@ -59,7 +59,7 @@ import org.jenkinsci.maven.plugins.hp.util.Utils;
 
 public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
 
-    @Component(role = MavenResourcesFiltering.class, hint = "default" )
+    @Component(role = MavenResourcesFiltering.class, hint = "default")
     protected MavenResourcesFiltering mavenResourcesFiltering;
 
     /**
@@ -78,8 +78,9 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
      * Name of the plugin that Jenkins uses for display purpose.
      * It should be one line text.
      */
-    @Parameter(defaultValue = "${project.name}", readonly = true) // TODO why is this read-only, surely I should be able to override
+    @Parameter(defaultValue = "${project.name}", readonly = true)
     protected String pluginName;
+    // TODO why is this read-only, surely I should be able to override
 
     /**
      * Additional information that accompanies the version number of the plugin.
@@ -239,7 +240,6 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
      */
     ScopeArtifactFilter scopeFilter = new ScopeArtifactFilter("runtime");
 
-
     private static final String[] EMPTY_STRING_ARRAY = {};
 
     public File getClassesDirectory() {
@@ -326,8 +326,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         return StringUtils.split(Objects.toString(dependentWarIncludes), ",");
     }
 
-    public void buildExplodedWebapp(File webappDirectory, File jarFile)
-        throws MojoExecutionException {
+    public void buildExplodedWebapp(File webappDirectory, File jarFile) throws MojoExecutionException {
         getLog().info("Exploding webapp...");
 
         try {
@@ -366,9 +365,8 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
 
             buildWebapp(project, webappDirectory);
 
-            FileUtils.copyFileIfModified(jarFile, new File(getWebappDirectory(),"WEB-INF/lib/"+jarFile.getName()));
-        }
-        catch (IOException e) {
+            FileUtils.copyFileIfModified(jarFile, new File(getWebappDirectory(), "WEB-INF/lib/" + jarFile.getName()));
+        } catch (IOException e) {
             throw new MojoExecutionException("Could not explode webapp...", e);
         } catch (MavenFilteringException e) {
             throw new MojoExecutionException("Could not copy webResources...", e);
@@ -387,12 +385,18 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
      * @param webappDirectory  the target directory
      * @throws MavenFilteringException if an error occurred while copying webResources
      */
-    public void copyResourcesWithFiltering(List<Resource> resources, File webappDirectory) throws MavenFilteringException {
-        MavenResourcesExecution mavenResourcesExecution = 
-                new MavenResourcesExecution(resources, webappDirectory, project, StandardCharsets.UTF_8.name(), filters,
-                                              Collections.emptyList(), session);
+    public void copyResourcesWithFiltering(List<Resource> resources, File webappDirectory)
+            throws MavenFilteringException {
+        MavenResourcesExecution mavenResourcesExecution = new MavenResourcesExecution(
+                resources,
+                webappDirectory,
+                project,
+                StandardCharsets.UTF_8.name(),
+                filters,
+                Collections.emptyList(),
+                session);
         mavenResourcesExecution.setEscapeString("\\");
-        mavenResourcesFiltering.filterResources( mavenResourcesExecution);
+        mavenResourcesFiltering.filterResources(mavenResourcesExecution);
     }
 
     /**
@@ -407,15 +411,14 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
      * @param webappDirectory the target directory
      * @throws java.io.IOException if an error occurred while copying webResources
      */
-    public void copyResources(File sourceDirectory, File webappDirectory)
-        throws IOException {
+    public void copyResources(File sourceDirectory, File webappDirectory) throws IOException {
         if (!sourceDirectory.equals(webappDirectory)) {
             getLog().info("Copy webapp webResources to " + webappDirectory.getAbsolutePath());
             if (warSourceDirectory.exists()) {
                 String[] fileNames = getWarFiles(sourceDirectory);
                 for (String fileName : fileNames) {
-                    FileUtils.copyFileIfModified(new File(sourceDirectory, fileName),
-                        new File(webappDirectory, fileName));
+                    FileUtils.copyFileIfModified(
+                            new File(sourceDirectory, fileName), new File(webappDirectory, fileName));
                 }
             }
         }
@@ -452,8 +455,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
      * @param project         the maven project
      * @throws java.io.IOException if an error occurred while building the webapp
      */
-    public void buildWebapp(MavenProject project, File webappDirectory)
-        throws MojoExecutionException, IOException {
+    public void buildWebapp(MavenProject project, File webappDirectory) throws MojoExecutionException, IOException {
         getLog().info("Assembling webapp " + project.getArtifactId() + " in " + webappDirectory);
 
         File libDirectory = new File(webappDirectory, WEB_INF + "/lib");
@@ -473,8 +475,9 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         Set<String> jenkinsPlugins = new HashSet<>();
         Set<String> excludedArtifacts = new HashSet<>();
         for (MavenArtifact artifact : Utils.unionOf(artifacts, dependencyArtifacts)) {
-            if (artifact.isPluginBestEffort(getLog()))
+            if (artifact.isPluginBestEffort(getLog())) {
                 jenkinsPlugins.add(artifact.getId());
+            }
             // Exclude dependency if it comes from test or provided trail.
             // Most likely a plugin transitive dependency but the trail through (test,provided) dep is shorter
             if (artifact.hasScope("test", "provided")) {
@@ -486,7 +489,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         for (MavenArtifact artifact : artifacts) {
             getLog().debug("Considering artifact trail " + artifact.getDependencyTrail());
             if (jenkinsPlugins.contains(artifact.getId())) {
-                continue;   // plugin dependency need not be WEB-INF/lib
+                continue; // plugin dependency need not be WEB-INF/lib
             }
             if (artifact.getDependencyTrail().size() >= 1) {
                 if (jenkinsPlugins.contains(artifact.getDependencyTrail().get(1))) {
@@ -500,8 +503,9 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
             // because jenkins-core comes in the <provided> scope, I think this is a bug in Maven that it puts such
             // dependencies into the artifact list.
             for (String trail : artifact.getDependencyTrail()) {
-                if (trail.contains(":hudson-core:") || trail.contains(":jenkins-core:"))
+                if (trail.contains(":hudson-core:") || trail.contains(":jenkins-core:")) {
                     continue OUTER;
+                }
             }
 
             String targetFileName = artifact.getDefaultFinalName();
@@ -518,7 +522,8 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
             ScopeArtifactFilter filter = new ScopeArtifactFilter(Artifact.SCOPE_RUNTIME);
             if (!artifact.isOptional() && filter.include(artifact.artifact)) {
                 if (artifact.getDependencyTrail().size() > 2) {
-                    getLog().warn("Bundling transitive dependency " + targetFileName + " (via " + artifact.getDependencyTrail().get(1).replaceAll("[^:]+:([^:]+):.+", "$1") + ")");
+                    getLog().warn("Bundling transitive dependency " + targetFileName + " (via "
+                            + artifact.getDependencyTrail().get(1).replaceAll("[^:]+:([^:]+):.+", "$1") + ")");
                 } else {
                     getLog().info("Bundling direct dependency " + targetFileName);
                 }
@@ -532,8 +537,8 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
                         if ("par".equals(type)) {
                             targetFileName = targetFileName.substring(0, targetFileName.lastIndexOf('.')) + ".jar";
 
-                            getLog().debug(
-                                "Copying " + artifact.getFile() + " to " + new File(libDirectory, targetFileName));
+                            getLog().debug("Copying " + artifact.getFile() + " to "
+                                    + new File(libDirectory, targetFileName));
 
                             FileUtils.copyFileIfModified(artifact.getFile(), new File(libDirectory, targetFileName));
                         } else {
@@ -585,8 +590,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
      * @param artifact War artifact to unpack.
      * @return Directory containing the unpacked war.
      */
-    private File unpackWarToTempDirectory(MavenArtifact artifact)
-        throws MojoExecutionException {
+    private File unpackWarToTempDirectory(MavenArtifact artifact) throws MojoExecutionException {
         String name = artifact.getFile().getName();
         File tempLocation = new File(workDirectory, name.substring(0, name.length() - 4));
 
@@ -606,8 +610,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
             File file = artifact.getFile();
             try {
                 unpack(file, tempLocation);
-            }
-            catch (NoSuchArchiverException e) {
+            } catch (NoSuchArchiverException e) {
                 this.getLog().info("Skip unpacking dependency file with unknown extension: " + file.getPath());
             }
         }
@@ -621,8 +624,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
      * @param file     File to be unpacked.
      * @param location Location where to put the unpacked files.
      */
-    private void unpack(File file, File location)
-        throws MojoExecutionException, NoSuchArchiverException {
+    private void unpack(File file, File location) throws MojoExecutionException, NoSuchArchiverException {
         String archiveExt = FileUtils.getExtension(file.getAbsolutePath()).toLowerCase();
 
         try {
@@ -630,8 +632,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
             unArchiver.setSourceFile(file);
             unArchiver.setDestDirectory(location);
             unArchiver.extract();
-        }
-        catch (ArchiverException e) {
+        } catch (ArchiverException e) {
             throw new MojoExecutionException("Error unpacking file: " + file + "to: " + location, e);
         }
     }
@@ -643,8 +644,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
      * @param srcDir    Directory containing unpacked dependent war contents
      * @param targetDir Directory to overlay srcDir into
      */
-    private void copyDependentWarContents(File srcDir, File targetDir)
-        throws MojoExecutionException {
+    private void copyDependentWarContents(File srcDir, File targetDir) throws MojoExecutionException {
         DirectoryScanner scanner = new DirectoryScanner();
         scanner.setBasedir(srcDir);
         scanner.setExcludes(getDependentWarExcludes());
@@ -675,10 +675,8 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
                 }
                 try {
                     FileUtils.copyFileIfModified(new File(srcDir, file), targetFile);
-                }
-                catch (IOException e) {
-                    throw new MojoExecutionException("Error copying file '" + file + "' to '" + targetFile + "'",
-                        e);
+                } catch (IOException e) {
+                    throw new MojoExecutionException("Error copying file '" + file + "' to '" + targetFile + "'", e);
                 }
             }
         }
@@ -716,17 +714,22 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         }
 
         try {
-            Process p = new ProcessBuilder("git", "rev-parse", "HEAD").directory(project.getBasedir()).redirectErrorStream(true).start();
+            Process p = new ProcessBuilder("git", "rev-parse", "HEAD")
+                    .directory(project.getBasedir())
+                    .redirectErrorStream(true)
+                    .start();
             p.getOutputStream().close();
             String v;
             try (InputStream is = p.getInputStream()) {
                 v = IOUtils.toString(is, Charset.defaultCharset()).trim();
             }
-            if (p.waitFor()!=0)
-                return null;    // git rev-parse failed to run
+            if (p.waitFor() != 0) {
+                return null; // git rev-parse failed to run
+            }
 
-            if (v.length()<8)
-                return null;    // git repository present, but without commits
+            if (v.length() < 8) {
+                return null; // git repository present, but without commits
+            }
 
             return v;
         } catch (IOException | InterruptedException e) {
@@ -743,12 +746,14 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
      */
     @CheckForNull
     protected Boolean isSupportDynamicLoading() throws IOException {
-        try (URLClassLoader cl = new URLClassLoader(new URL[]{
+        try (URLClassLoader cl = new URLClassLoader(
+                new URL[] {
                     new File(project.getBuild().getOutputDirectory()).toURI().toURL()
-            }, getClass().getClassLoader())) {
+                },
+                getClass().getClassLoader())) {
 
             EnumSet<YesNoMaybe> e = EnumSet.noneOf(YesNoMaybe.class);
-            for (IndexItem<Extension,Object> i : Index.load(Extension.class, Object.class, cl)) {
+            for (IndexItem<Extension, Object> i : Index.load(Extension.class, Object.class, cl)) {
                 e.add(i.annotation().dynamicLoadable());
             }
 
@@ -761,5 +766,4 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
             return Boolean.TRUE;
         }
     }
-
 }

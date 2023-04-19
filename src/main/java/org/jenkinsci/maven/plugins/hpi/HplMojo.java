@@ -1,5 +1,14 @@
 package org.jenkinsci.maven.plugins.hpi;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.model.Resource;
@@ -12,22 +21,12 @@ import org.codehaus.plexus.archiver.jar.Manifest;
 import org.codehaus.plexus.archiver.jar.Manifest.Attribute;
 import org.codehaus.plexus.archiver.jar.ManifestException;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 /**
  * Generate .hpl file.
  *
  * @author Kohsuke Kawaguchi
  */
-@Mojo(name="hpl", requiresDependencyResolution = ResolutionScope.RUNTIME)
+@Mojo(name = "hpl", requiresDependencyResolution = ResolutionScope.RUNTIME)
 public class HplMojo extends AbstractJenkinsManifestMojo {
     /**
      * Path to {@code $JENKINS_HOME}. A .hpl file will be generated to this location.
@@ -56,20 +55,22 @@ public class HplMojo extends AbstractJenkinsManifestMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        if(!project.getPackaging().equals("hpi")) {
-            getLog().info("Skipping "+project.getName()+" because it's not <packaging>hpi</packaging>");
+        if (!project.getPackaging().equals("hpi")) {
+            getLog().info("Skipping " + project.getName() + " because it's not <packaging>hpi</packaging>");
             return;
         }
         if (jenkinsHome == null) {
             if (hudsonHome != null) {
-                getLog().warn("Please use the `jenkinsHome` configuration parameter in place of the deprecated `hudsonHome` parameter");
+                getLog().warn(
+                                "Please use the `jenkinsHome` configuration parameter in place of the deprecated `hudsonHome` parameter");
             }
         }
 
         File hplFile = computeHplFile();
-        getLog().info("Generating "+hplFile);
+        getLog().info("Generating " + hplFile);
 
-        try (PrintWriter printWriter = new PrintWriter(Files.newBufferedWriter(hplFile.toPath(), StandardCharsets.UTF_8))) {
+        try (PrintWriter printWriter =
+                new PrintWriter(Files.newBufferedWriter(hplFile.toPath(), StandardCharsets.UTF_8))) {
             Manifest mf = new Manifest();
             Manifest.ExistingSection mainSection = mf.getMainSection();
             setAttributes(mainSection);
@@ -81,9 +82,10 @@ public class HplMojo extends AbstractJenkinsManifestMojo {
             // so that the original (not in the copy) will be picked up first.
             for (Resource r : project.getBuild().getResources()) {
                 File dir = new File(r.getDirectory());
-                if (!dir.isAbsolute())
-                    dir = new File(project.getBasedir(),r.getDirectory());
-                if(dir.exists()) {
+                if (!dir.isAbsolute()) {
+                    dir = new File(project.getBasedir(), r.getDirectory());
+                }
+                if (dir.exists()) {
                     paths.add(dir.getPath());
                 }
             }
@@ -117,25 +119,29 @@ public class HplMojo extends AbstractJenkinsManifestMojo {
         // List up IDs of Jenkins plugin dependencies
         Set<String> jenkinsPlugins = new HashSet<>();
         for (MavenArtifact artifact : artifacts) {
-            if (artifact.isPluginBestEffort(getLog()))
+            if (artifact.isPluginBestEffort(getLog())) {
                 jenkinsPlugins.add(artifact.getId());
+            }
         }
 
         OUTER:
         for (MavenArtifact artifact : artifacts) {
-            if(jenkinsPlugins.contains(artifact.getId()))
-                continue;   // plugin dependencies
-            if (artifact.getDependencyTrail().size() < 2) {
-                throw new IllegalStateException(
-                        "invalid dependency trail: " + artifact.getDependencyTrail());
+            if (jenkinsPlugins.contains(artifact.getId())) {
+                continue; // plugin dependencies
             }
-            if(artifact.getDependencyTrail().size() >= 1 && jenkinsPlugins.contains(artifact.getDependencyTrail().get(1)))
-                continue;   // no need to have transitive dependencies through plugins
+            if (artifact.getDependencyTrail().size() < 2) {
+                throw new IllegalStateException("invalid dependency trail: " + artifact.getDependencyTrail());
+            }
+            if (artifact.getDependencyTrail().size() >= 1
+                    && jenkinsPlugins.contains(artifact.getDependencyTrail().get(1))) {
+                continue; // no need to have transitive dependencies through plugins
+            }
 
             // if the dependency goes through jenkins core, that's not a library
             for (String trail : artifact.getDependencyTrail()) {
-                if (trail.contains(":hudson-core:") || trail.contains(":jenkins-core:"))
+                if (trail.contains(":hudson-core:") || trail.contains(":jenkins-core:")) {
                     continue OUTER;
+                }
             }
 
             ScopeArtifactFilter filter = new ScopeArtifactFilter(Artifact.SCOPE_RUNTIME);
@@ -152,11 +158,10 @@ public class HplMojo extends AbstractJenkinsManifestMojo {
         if (jenkinsHome == null) {
             jenkinsHome = hudsonHome;
         }
-        if(jenkinsHome==null) {
+        if (jenkinsHome == null) {
             throw new MojoExecutionException(
-                "Property jenkinsHome needs to be set to $JENKINS_HOME. Please use 'mvn -DjenkinsHome=...' or " +
-                "put <settings><profiles><profile><properties><property><jenkinsHome>...</...>"
-            );
+                    "Property jenkinsHome needs to be set to $JENKINS_HOME. Please use 'mvn -DjenkinsHome=...' or "
+                            + "put <settings><profiles><profile><properties><property><jenkinsHome>...</...>");
         }
 
         File hplFile = new File(jenkinsHome, "plugins/" + project.getBuild().getFinalName() + ".hpl");

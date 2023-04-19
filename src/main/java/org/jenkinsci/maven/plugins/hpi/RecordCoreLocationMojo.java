@@ -29,8 +29,8 @@ import org.apache.maven.project.MavenProject;
 /**
  * Keeps track of where core was built from, so plugins depending on a snapshot version of core can pick up changes without reload.
  */
-@Mojo(name="record-core-location", defaultPhase=LifecyclePhase.PACKAGE)
-public class RecordCoreLocationMojo extends AbstractMojo  {
+@Mojo(name = "record-core-location", defaultPhase = LifecyclePhase.PACKAGE)
+public class RecordCoreLocationMojo extends AbstractMojo {
 
     @Parameter(defaultValue = "${project}", readonly = true)
     protected MavenProject project;
@@ -48,5 +48,4 @@ public class RecordCoreLocationMojo extends AbstractMojo  {
             }
         }
     }
-
 }

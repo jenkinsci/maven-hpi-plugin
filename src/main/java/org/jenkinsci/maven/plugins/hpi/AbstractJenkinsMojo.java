@@ -70,18 +70,21 @@ public abstract class AbstractJenkinsMojo extends AbstractMojo {
     @Component
     protected MavenProjectHelper projectHelper;
 
-
     protected String findJenkinsVersion() throws MojoExecutionException {
-        for(Dependency a : project.getDependencies()) {
+        for (Dependency a : project.getDependencies()) {
             boolean match;
-            if (jenkinsCoreId!=null)
-                match = (a.getGroupId()+':'+a.getArtifactId()).equals(jenkinsCoreId);
-            else
-                match = (a.getGroupId().equals("org.jenkins-ci.main") || a.getGroupId().equals("org.jvnet.hudson.main"))
-                     && (a.getArtifactId().equals("jenkins-core") || a.getArtifactId().equals("hudson-core"));
+            if (jenkinsCoreId != null) {
+                match = (a.getGroupId() + ':' + a.getArtifactId()).equals(jenkinsCoreId);
+            } else {
+                match = (a.getGroupId().equals("org.jenkins-ci.main")
+                                || a.getGroupId().equals("org.jvnet.hudson.main"))
+                        && (a.getArtifactId().equals("jenkins-core")
+                                || a.getArtifactId().equals("hudson-core"));
+            }
 
             if (match) {
-                if (jenkinsCoreVersionOverride != null && !jenkinsCoreVersionOverride.trim().isEmpty()) {
+                if (jenkinsCoreVersionOverride != null
+                        && !jenkinsCoreVersionOverride.trim().isEmpty()) {
                     VersionNumber v1 = new VersionNumber(a.getVersion());
                     VersionNumber v2 = new VersionNumber(jenkinsCoreVersionOverride);
                     if (v1.compareTo(v2) == -1) {
@@ -94,7 +97,8 @@ public abstract class AbstractJenkinsMojo extends AbstractMojo {
                 return a.getVersion();
             }
         }
-        if (jenkinsCoreVersionOverride != null && !jenkinsCoreVersionOverride.trim().isEmpty()) {
+        if (jenkinsCoreVersionOverride != null
+                && !jenkinsCoreVersionOverride.trim().isEmpty()) {
             return jenkinsCoreVersionOverride;
         }
         throw new MojoExecutionException("Failed to determine Jenkins version this plugin depends on.");
@@ -108,7 +112,8 @@ public abstract class AbstractJenkinsMojo extends AbstractMojo {
             if (entry == null) {
                 throw new MojoExecutionException("Failed to find Jenkins.class in " + jar);
             }
-            try (InputStream is = jarFile.getInputStream(entry); DataInputStream dis = new DataInputStream(is)) {
+            try (InputStream is = jarFile.getInputStream(entry);
+                    DataInputStream dis = new DataInputStream(is)) {
                 int magic = dis.readInt();
                 if (magic != 0xcafebabe) {
                     throw new MojoExecutionException("Jenkins.class is not a valid class file in " + jar);
@@ -146,12 +151,6 @@ public abstract class AbstractJenkinsMojo extends AbstractMojo {
     }
 
     protected MavenArtifact wrap(Artifact a) {
-        return new MavenArtifact(
-                a,
-                artifactResolver,
-                artifactFactory,
-                projectBuilder,
-                session,
-                project);
+        return new MavenArtifact(a, artifactResolver, artifactFactory, projectBuilder, session, project);
     }
 }
