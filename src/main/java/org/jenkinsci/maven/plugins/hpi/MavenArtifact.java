@@ -1,6 +1,11 @@
 package org.jenkinsci.maven.plugins.hpi;
 
 import hudson.util.VersionNumber;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.Objects;
+import java.util.jar.JarFile;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.handler.ArtifactHandler;
@@ -17,12 +22,6 @@ import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver;
 import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException;
 import org.eclipse.aether.DefaultRepositorySystemSession;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-import java.util.Objects;
-import java.util.jar.JarFile;
 
 /**
  * {@link Artifact} is a bare data structure without any behavior and therefore
@@ -56,8 +55,7 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
     }
 
     public MavenProject resolvePom() throws ProjectBuildingException {
-        ProjectBuildingRequest buildingRequest =
-                new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
+        ProjectBuildingRequest buildingRequest = new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
         buildingRequest.setProcessPlugins(false); // improve performance
         buildingRequest.setRemoteRepositories(project.getRemoteArtifactRepositories());
         buildingRequest.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
@@ -126,13 +124,14 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
      * Resolves to the jar file that contains the code of the plugin.
      */
     public File getFile() {
-        if (artifact.getFile()==null)
+        if (artifact.getFile() == null) {
             try {
                 ProjectBuildingRequest buildingRequest =
                         new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
                 buildingRequest.setRemoteRepositories(project.getRemoteArtifactRepositories());
-                File result =
-                        resolver.resolveArtifact(buildingRequest, artifact).getArtifact().getFile();
+                File result = resolver.resolveArtifact(buildingRequest, artifact)
+                        .getArtifact()
+                        .getFile();
                 /*
                  * If the result is a directory rather than a file, we must be in a multi-module
                  * project where one plugin depends on another plugin in the same multi-module
@@ -154,8 +153,9 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
                 }
                 return result;
             } catch (ArtifactResolverException e) {
-                throw new RuntimeException("Failed to resolve "+getId(),e);
+                throw new RuntimeException("Failed to resolve " + getId(), e);
             }
+        }
         return artifact.getFile();
     }
 
@@ -163,18 +163,16 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
      * Returns {@link MavenArtifact} for the hpi variant of this artifact.
      */
     public MavenArtifact getHpi() throws IOException {
-        Artifact a = artifactFactory
-                .createArtifact(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), Artifact.SCOPE_COMPILE, getResolvedType());
-        return new MavenArtifact(
-                a,
-                resolver,
-                artifactFactory,
-                builder,
-                session,
-                project);
+        Artifact a = artifactFactory.createArtifact(
+                artifact.getGroupId(),
+                artifact.getArtifactId(),
+                artifact.getVersion(),
+                Artifact.SCOPE_COMPILE,
+                getResolvedType());
+        return new MavenArtifact(a, resolver, artifactFactory, builder, session, project);
     }
 
-    public List<String/* of IDs*/> getDependencyTrail() {
+    public List<String /* of IDs*/> getDependencyTrail() {
         return artifact.getDependencyTrail();
     }
 
@@ -191,10 +189,12 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
      */
     public boolean hasScope(String... scopes) {
         for (String s : scopes) {
-            if (s==null && artifact.getScope()==null)
+            if (s == null && artifact.getScope() == null) {
                 return true;
-            if (s!=null && s.equals(artifact.getScope()))
+            }
+            if (s != null && s.equals(artifact.getScope())) {
                 return true;
+            }
         }
         return false;
     }
@@ -237,7 +237,11 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
         File file = getFile();
         if (file != null && file.isFile()) {
             try (JarFile jf = new JarFile(file)) {
-                return jf.getManifest().getMainAttributes().getValue("Plugin-Version").replaceFirst(" [(].+[)]$", ""); // e.g. " (private-abcd1234-username)"; Implementation-Version is clean but seems less portable
+                // e.g. " (private-abcd1234-username)"; Implementation-Version is clean but seems less portable
+                return jf.getManifest()
+                        .getMainAttributes()
+                        .getValue("Plugin-Version")
+                        .replaceFirst(" [(].+[)]$", "");
             }
         } else {
             return getVersion();
@@ -277,8 +281,9 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
         try {
             String type = artifact.getType();
 
-            // only resolve the POM if the packaging type is jar, because that's the default if no type has been specified
-            if(!type.equals("jar")) {
+            // only resolve the POM if the packaging type is jar, because that's the default if no type has been
+            // specified
+            if (!type.equals("jar")) {
                 return type;
             }
             // also ignore core-assets, tests, etc.
@@ -286,7 +291,8 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
                 return type;
             }
 
-            // when a plugin depends on another plugin, it doesn't specify the type as hpi or jpi, so we need to resolve its POM to see it
+            // when a plugin depends on another plugin, it doesn't specify the type as hpi or jpi, so we need to resolve
+            // its POM to see it
             return resolvePom().getPackaging();
         } catch (ProjectBuildingException e) {
             throw new IOException("Failed to open artifact " + artifact + " at " + artifact.getFile() + ": " + e, e);

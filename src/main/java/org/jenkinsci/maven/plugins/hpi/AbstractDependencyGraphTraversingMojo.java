@@ -18,8 +18,7 @@ public abstract class AbstractDependencyGraphTraversingMojo extends AbstractJenk
      * Traverses the whole dependency tree rooted at the project.
      */
     protected void traverseProject() throws DependencyGraphBuilderException {
-        ProjectBuildingRequest buildingRequest =
-                new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
+        ProjectBuildingRequest buildingRequest = new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
         buildingRequest.setProject(project);
         buildingRequest.setRemoteRepositories(project.getRemoteArtifactRepositories());
         visit(graphBuilder.buildDependencyGraph(buildingRequest, null));

@@ -1,22 +1,20 @@
 package org.jenkinsci.tools.hpi.its;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import hudson.Launcher;
 import hudson.Extension;
-import hudson.util.FormValidation;
+import hudson.Launcher;
 import hudson.model.AbstractBuild;
-import hudson.model.BuildListener;
 import hudson.model.AbstractProject;
-import hudson.tasks.Builder;
+import hudson.model.BuildListener;
 import hudson.tasks.BuildStepDescriptor;
-import java.lang.RuntimeException;
+import hudson.tasks.Builder;
+import hudson.util.FormValidation;
+import java.io.IOException;
+import javax.servlet.ServletException;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.QueryParameter;
-
-import javax.servlet.ServletException;
-import java.io.IOException;
+import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * Sample {@link Builder}.
@@ -58,10 +56,11 @@ public class HelloWorldBuilder extends Builder {
         // since this is a dummy, we just say 'hello world' and call that a build
 
         // this also shows how you can consult the global configuration of the builder
-        if (getDescriptor().useFrench())
+        if (getDescriptor().useFrench()) {
             listener.getLogger().println("Bonjour, " + name + "!");
-        else
+        } else {
             listener.getLogger().println("Hello, " + name + "!");
+        }
         return true;
     }
 
@@ -99,15 +98,17 @@ public class HelloWorldBuilder extends Builder {
          * @return Indicates the outcome of the validation. This is sent to the browser.
          */
         public FormValidation doCheckName(@QueryParameter String value) throws IOException, ServletException {
-            if (value.length() == 0)
+            if (value.length() == 0) {
                 return FormValidation.error("Please set a name");
-            if (value.length() < 4)
+            }
+            if (value.length() < 4) {
                 return FormValidation.warning("Isn't the name too short?");
+            }
             return FormValidation.ok();
         }
 
         public boolean isApplicable(Class<? extends AbstractProject> aClass) {
-            // indicates that this builder can be used with all kinds of project types 
+            // indicates that this builder can be used with all kinds of project types
             return true;
         }
 
@@ -141,4 +142,3 @@ public class HelloWorldBuilder extends Builder {
         }
     }
 }
-

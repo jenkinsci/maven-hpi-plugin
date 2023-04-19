@@ -1,20 +1,19 @@
 package org.jenkinsci.maven.plugins.hpi;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.ResolutionScope;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 
 /**
  * Generate .hpl file in the test class directory so that test harness can locate the plugin.
  *
  * @author Kohsuke Kawaguchi
  */
-@Mojo(name="test-hpl", requiresDependencyResolution = ResolutionScope.TEST)
+@Mojo(name = "test-hpl", requiresDependencyResolution = ResolutionScope.TEST)
 public class TestHplMojo extends HplMojo {
 
     @Component
@@ -31,7 +30,7 @@ public class TestHplMojo extends HplMojo {
         } catch (IOException e) {
             throw new MojoExecutionException("Failed to create directories for '" + testDir + "'", e);
         }
-        File theHpl = new File(testDir,"the.hpl");
+        File theHpl = new File(testDir, "the.hpl");
         if (project.getArtifact().isSnapshot()) {
             try {
                 pluginWorkspaceMap.write(project.getArtifact().getId(), theHpl);

@@ -82,21 +82,26 @@ import org.twdata.maven.mojoexecutor.MojoExecutor;
  * <p>Additionally, it may adjust the classpath for {@code surefire:test} to run tests against
  * different versions of various dependencies than what was configured in the POM.
  */
-@Mojo(name="resolve-test-dependencies", requiresDependencyResolution = ResolutionScope.TEST)
+@Mojo(name = "resolve-test-dependencies", requiresDependencyResolution = ResolutionScope.TEST)
 @SuppressFBWarnings(value = "REDOS", justification = "trusted code")
 public class TestDependencyMojo extends AbstractHpiMojo {
 
-    private static final Pattern CORE_REGEX = Pattern.compile("WEB-INF/lib/jenkins-core-([0-9.]+(?:-[0-9a-f.]+)*(?:-(?i)([a-z]+)(-)?([0-9a-f.]+)?)?(?:-(?i)([a-z]+)(-)?([0-9a-f_.]+)?)?(?:-SNAPSHOT)?)[.]jar");
+    private static final Pattern CORE_REGEX = Pattern.compile(
+            "WEB-INF/lib/jenkins-core-([0-9.]+(?:-[0-9a-f.]+)*(?:-(?i)([a-z]+)(-)?([0-9a-f.]+)?)?(?:-(?i)([a-z]+)(-)?([0-9a-f_.]+)?)?(?:-SNAPSHOT)?)[.]jar");
     private static final Pattern PLUGIN_REGEX = Pattern.compile("WEB-INF/plugins/([^/.]+)[.][hj]pi");
     private static final Pattern OVERRIDE_REGEX = Pattern.compile("([^:]+:[^:]+):([^:]+)");
 
-    @Component private BuildPluginManager pluginManager;
+    @Component
+    private BuildPluginManager pluginManager;
 
-    @Component private DependencyCollectorBuilder dependencyCollectorBuilder;
+    @Component
+    private DependencyCollectorBuilder dependencyCollectorBuilder;
 
-    @Component private ProjectDependenciesResolver dependenciesResolver;
+    @Component
+    private ProjectDependenciesResolver dependenciesResolver;
 
-    @Component private RepositorySystem repositorySystem;
+    @Component
+    private RepositorySystem repositorySystem;
 
     /**
      * List of dependency version overrides in the form {@code groupId:artifactId:version} to apply
@@ -143,7 +148,9 @@ public class TestDependencyMojo extends AbstractHpiMojo {
 
         Map<String, String> bundledPlugins = overrideWar != null ? scanWar(overrideWar, session, project) : Map.of();
         if (!bundledPlugins.isEmpty()) {
-            getLog().info(String.format("Scanned contents of %s with %d bundled plugins", overrideWar, Integer.valueOf(bundledPlugins.size())));
+            getLog().info(String.format(
+                    "Scanned contents of %s with %d bundled plugins",
+                    overrideWar, Integer.valueOf(bundledPlugins.size())));
         }
 
         // Deal with conflicts in user-provided input.
@@ -201,7 +208,8 @@ public class TestDependencyMojo extends AbstractHpiMojo {
 
                 while (!converged) {
                     if (i++ > 10) {
-                        throw new MojoExecutionException("Failed to iterate to convergence during upper bounds analysis: " + upperBounds);
+                        throw new MojoExecutionException(
+                                "Failed to iterate to convergence during upper bounds analysis: " + upperBounds);
                     }
 
                     /*
@@ -211,7 +219,8 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                      */
                     DependencyNode node;
                     try {
-                        ProjectBuildingRequest buildingRequest = new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
+                        ProjectBuildingRequest buildingRequest =
+                                new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
                         buildingRequest.setProject(shadow);
                         buildingRequest.setRemoteRepositories(shadow.getRemoteArtifactRepositories());
                         ArtifactFilter filter = null; // Evaluate all scopes
@@ -256,7 +265,8 @@ public class TestDependencyMojo extends AbstractHpiMojo {
             Map<String, String> newResolution = new HashMap<>();
             Set<Artifact> self = new HashSet<>();
             for (Artifact artifact : resolved) {
-                if (artifact.getGroupId().equals(project.getGroupId()) && artifact.getArtifactId().equals(project.getArtifactId())) {
+                if (artifact.getGroupId().equals(project.getGroupId())
+                        && artifact.getArtifactId().equals(project.getArtifactId())) {
                     self.add(artifact);
                 } else {
                     newResolution.put(toKey(artifact), artifact.getVersion());
@@ -306,8 +316,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                                 MojoExecutor.artifactId("maven-dependency-plugin")),
                         MojoExecutor.goal("tree"),
                         MojoExecutor.configuration(
-                                MojoExecutor.element(
-                                        MojoExecutor.name("scope"), Artifact.SCOPE_TEST)),
+                                MojoExecutor.element(MojoExecutor.name("scope"), Artifact.SCOPE_TEST)),
                         MojoExecutor.executionEnvironment(shadow, shadowSession, pluginManager));
             }
         }
@@ -358,7 +367,9 @@ public class TestDependencyMojo extends AbstractHpiMojo {
 
             Properties properties = project.getProperties();
             if (getLog().isDebugEnabled()) {
-                getLog().debug(String.format("Replacing POM-defined classpath elements %s with %s", classpathDependencyExcludes, additionalClasspathElements));
+                getLog().debug(String.format(
+                        "Replacing POM-defined classpath elements %s with %s",
+                        classpathDependencyExcludes, additionalClasspathElements));
             }
             // cf. http://maven.apache.org/surefire/maven-surefire-plugin/test-mojo.html
             appendEntries("maven.test.additionalClasspath", additionalClasspathElements, properties);
@@ -399,25 +410,35 @@ public class TestDependencyMojo extends AbstractHpiMojo {
             // Use the descriptor to respect relocations.
             ArtifactDescriptorRequest descriptorRequest;
             try {
-                descriptorRequest = new ArtifactDescriptorRequest(RepositoryUtils.toArtifact(mavenArtifact.getHpi().artifact), remoteRepositories, null);
+                descriptorRequest = new ArtifactDescriptorRequest(
+                        RepositoryUtils.toArtifact(mavenArtifact.getHpi().artifact), remoteRepositories, null);
             } catch (IOException e) {
                 throw new MojoExecutionException("Failed to resolve " + mavenArtifact.getId(), e);
             }
             ArtifactDescriptorResult descriptorResult;
             try {
-                descriptorResult = repositorySystem.readArtifactDescriptor(buildingRequest.getRepositorySession(), descriptorRequest);
+                descriptorResult = repositorySystem.readArtifactDescriptor(
+                        buildingRequest.getRepositorySession(), descriptorRequest);
             } catch (ArtifactDescriptorException e) {
                 throw new MojoExecutionException("Failed to read artifact descriptor for " + mavenArtifact.getId(), e);
             }
-            ArtifactRequest artifactRequest = new ArtifactRequest(descriptorResult.getArtifact(), remoteRepositories, null);
+            ArtifactRequest artifactRequest =
+                    new ArtifactRequest(descriptorResult.getArtifact(), remoteRepositories, null);
             artifactRequests.add(artifactRequest);
         }
 
         List<ArtifactResult> artifactResults;
         try {
-            artifactResults = repositorySystem.resolveArtifacts(buildingRequest.getRepositorySession(), artifactRequests);
+            artifactResults =
+                    repositorySystem.resolveArtifacts(buildingRequest.getRepositorySession(), artifactRequests);
         } catch (ArtifactResolutionException e) {
-            throw new MojoExecutionException("Failed to resolve artifacts: " + artifactRequests.stream().map(ArtifactRequest::getArtifact).map(Object::toString).collect(Collectors.joining(", ")), e);
+            throw new MojoExecutionException(
+                    "Failed to resolve artifacts: "
+                            + artifactRequests.stream()
+                                    .map(ArtifactRequest::getArtifact)
+                                    .map(Object::toString)
+                                    .collect(Collectors.joining(", ")),
+                    e);
         }
 
         /*
@@ -432,19 +453,29 @@ public class TestDependencyMojo extends AbstractHpiMojo {
             Artifact artifact = RepositoryUtils.toArtifact(artifactResult.getArtifact());
             artifactMap.put(artifact.getGroupId() + ":" + artifact.getArtifactId(), artifact);
             if (artifact.getFile().isDirectory()) {
-                ArtifactRequest artifactRequest = new ArtifactRequest(RepositoryUtils.toArtifact(artifact), remoteRepositories, null);
+                ArtifactRequest artifactRequest =
+                        new ArtifactRequest(RepositoryUtils.toArtifact(artifact), remoteRepositories, null);
                 artifactRequests.add(artifactRequest);
             }
         }
-        if (!artifactRequests.isEmpty() && buildingRequest.getRepositorySession() instanceof DefaultRepositorySystemSession) {
-            DefaultRepositorySystemSession oldRepositorySession = (DefaultRepositorySystemSession) buildingRequest.getRepositorySession();
-            DefaultRepositorySystemSession newRepositorySession = new DefaultRepositorySystemSession(oldRepositorySession);
+        if (!artifactRequests.isEmpty()
+                && buildingRequest.getRepositorySession() instanceof DefaultRepositorySystemSession) {
+            DefaultRepositorySystemSession oldRepositorySession =
+                    (DefaultRepositorySystemSession) buildingRequest.getRepositorySession();
+            DefaultRepositorySystemSession newRepositorySession =
+                    new DefaultRepositorySystemSession(oldRepositorySession);
             newRepositorySession.setWorkspaceReader(null);
             newRepositorySession.setReadOnly();
             try {
                 artifactResults = repositorySystem.resolveArtifacts(newRepositorySession, artifactRequests);
             } catch (ArtifactResolutionException e) {
-                throw new MojoExecutionException("Failed to resolve artifacts: " + artifactRequests.stream().map(ArtifactRequest::getArtifact).map(Object::toString).collect(Collectors.joining(", ")), e);
+                throw new MojoExecutionException(
+                        "Failed to resolve artifacts: "
+                                + artifactRequests.stream()
+                                        .map(ArtifactRequest::getArtifact)
+                                        .map(Object::toString)
+                                        .collect(Collectors.joining(", ")),
+                        e);
             }
             for (ArtifactResult artifactResult : artifactResults) {
                 Artifact artifact = RepositoryUtils.toArtifact(artifactResult.getArtifact());
@@ -454,7 +485,8 @@ public class TestDependencyMojo extends AbstractHpiMojo {
 
         try (BufferedWriter w = Files.newBufferedWriter(testDir.toPath().resolve("index"), StandardCharsets.UTF_8)) {
             for (Artifact artifact : artifactMap.values()) {
-                getLog().debug("Copying " + artifact.getGroupId() + ":" + artifact.getArtifactId() + ":" + artifact.getVersion() + " as a test dependency");
+                getLog().debug("Copying " + artifact.getGroupId() + ":" + artifact.getArtifactId() + ":"
+                        + artifact.getVersion() + " as a test dependency");
                 File dst = new File(testDir, artifact.getArtifactId() + ".hpi");
                 FileUtils.copyFile(artifact.getFile(), dst);
                 w.write(artifact.getArtifactId());
@@ -486,7 +518,8 @@ public class TestDependencyMojo extends AbstractHpiMojo {
      * @param war The WAR to scan.
      * @return The bundled plugins in the WAR.
      */
-    private static Map<String, String> scanWar(File war, MavenSession session, MavenProject project) throws MojoExecutionException {
+    private static Map<String, String> scanWar(File war, MavenSession session, MavenProject project)
+            throws MojoExecutionException {
         Map<String, String> overrides = new HashMap<>();
         try (JarFile jf = new JarFile(war)) {
             Enumeration<JarEntry> entries = jf.entries();
@@ -503,7 +536,8 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                 }
                 m = PLUGIN_REGEX.matcher(name);
                 if (m.matches()) {
-                    try (InputStream is = jf.getInputStream(entry); JarInputStream jis = new JarInputStream(is)) {
+                    try (InputStream is = jf.getInputStream(entry);
+                            JarInputStream jis = new JarInputStream(is)) {
                         Manifest manifest = jis.getManifest();
                         String groupId = manifest.getMainAttributes().getValue("Group-Id");
                         if (groupId == null) {
@@ -542,7 +576,8 @@ public class TestDependencyMojo extends AbstractHpiMojo {
             if (jenkinsVersion == null) {
                 throw new MojoExecutionException("jenkins.version must be set when using overrideWar");
             } else if (!jenkinsVersion.equals(coreVersion)) {
-                throw new MojoExecutionException("jenkins.version must match the version specified by overrideWar: " + coreVersion);
+                throw new MojoExecutionException(
+                        "jenkins.version must match the version specified by overrideWar: " + coreVersion);
             }
         } catch (IOException e) {
             throw new MojoExecutionException("Failed to scan " + war, e);
@@ -621,7 +656,8 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                 dependency.setScope(artifact.getScope());
                 dependency.setType(artifact.getType());
                 dependency.setClassifier(artifact.getClassifier());
-                if (dependency.getGroupId().equals(project.getGroupId()) && dependency.getArtifactId().equals(project.getArtifactId())) {
+                if (dependency.getGroupId().equals(project.getGroupId())
+                        && dependency.getArtifactId().equals(project.getArtifactId())) {
                     throw new MojoExecutionException("Cannot add self to dependency management section");
                 }
                 DependencyManagement dm = project.getDependencyManagement();
@@ -629,7 +665,9 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                     log.info(String.format("Adding dependency management entry %s:%s", key, dependency.getVersion()));
                     dm.addDependency(dependency);
                 } else {
-                    throw new MojoExecutionException(String.format("Failed to add dependency management entry %s:%s because the project does not have a dependency management section", key, version));
+                    throw new MojoExecutionException(String.format(
+                            "Failed to add dependency management entry %s:%s because the project does not have a dependency management section",
+                            key, version));
                 }
                 overrideAdditions.add(key);
             }
@@ -650,7 +688,8 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                     dependency.setGroupId(groupArt[0]);
                     dependency.setArtifactId(groupArt[1]);
                     dependency.setVersion(overrides.get(key));
-                    if (dependency.getGroupId().equals(project.getGroupId()) && dependency.getArtifactId().equals(project.getArtifactId())) {
+                    if (dependency.getGroupId().equals(project.getGroupId())
+                            && dependency.getArtifactId().equals(project.getArtifactId())) {
                         throw new MojoExecutionException("Cannot add self to dependency management section");
                     }
                     DependencyManagement dm = project.getDependencyManagement();
@@ -683,7 +722,8 @@ public class TestDependencyMojo extends AbstractHpiMojo {
             dependency.setGroupId(groupId);
             dependency.setArtifactId(artifactId);
             dependency.setVersion(version);
-            if (dependency.getGroupId().equals(project.getGroupId()) && dependency.getArtifactId().equals(project.getArtifactId())) {
+            if (dependency.getGroupId().equals(project.getGroupId())
+                    && dependency.getArtifactId().equals(project.getArtifactId())) {
                 throw new MojoExecutionException("Cannot add self as dependency management entry");
             }
             log.info(String.format("Adding dependency management entry %s:%s", key, version));
@@ -692,7 +732,8 @@ public class TestDependencyMojo extends AbstractHpiMojo {
 
         log.debug("adjusted dependencies: " + project.getDependencies());
         if (project.getDependencyManagement() != null) {
-            log.debug("adjusted dependency management: " + project.getDependencyManagement().getDependencies());
+            log.debug("adjusted dependency management: "
+                    + project.getDependencyManagement().getDependencies());
         }
 
         /*
@@ -704,12 +745,15 @@ public class TestDependencyMojo extends AbstractHpiMojo {
         project.setArtifacts(null);
     }
 
-    private static boolean updateDependency(Dependency dependency, Map<String, String> overrides, String type, Log log) {
+    private static boolean updateDependency(
+            Dependency dependency, Map<String, String> overrides, String type, Log log) {
         String key = toKey(dependency);
         String overrideVersion = overrides.get(key);
         if (overrideVersion != null) {
             String classifier = dependency.getClassifier();
-            log.info(String.format("Updating %s %s%s from %s to %s", type, key, classifier != null ? ":" + classifier : "", dependency.getVersion(), overrideVersion));
+            log.info(String.format(
+                    "Updating %s %s%s from %s to %s",
+                    type, key, classifier != null ? ":" + classifier : "", dependency.getVersion(), overrideVersion));
             dependency.setVersion(overrideVersion);
             return true;
         }
@@ -724,11 +768,13 @@ public class TestDependencyMojo extends AbstractHpiMojo {
      */
     private Set<Artifact> resolveDependencies(MavenProject project) throws MojoExecutionException {
         try {
-            DependencyResolutionRequest request = new DefaultDependencyResolutionRequest(project, session.getRepositorySession());
+            DependencyResolutionRequest request =
+                    new DefaultDependencyResolutionRequest(project, session.getRepositorySession());
             DependencyResolutionResult result = dependenciesResolver.resolve(request);
 
             Set<Artifact> artifacts = new LinkedHashSet<>();
-            if (result.getDependencyGraph() != null && !result.getDependencyGraph().getChildren().isEmpty()) {
+            if (result.getDependencyGraph() != null
+                    && !result.getDependencyGraph().getChildren().isEmpty()) {
                 RepositoryUtils.toArtifacts(
                         artifacts,
                         result.getDependencyGraph().getChildren(),
@@ -746,6 +792,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
 
         private Map<String, List<DependencyNodeHopCountPair>> keyToPairsMap = new LinkedHashMap<>();
 
+        @Override
         public boolean visit(DependencyNode node) {
             DependencyNodeHopCountPair pair = new DependencyNodeHopCountPair(node);
             String key = pair.constructKey();
@@ -755,6 +802,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
             return true;
         }
 
+        @Override
         public boolean endVisit(DependencyNode node) {
             return true;
         }
@@ -779,12 +827,21 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                     if (resolvedVersion.compareTo(version) < 0) {
                         Artifact artifact = resolvedPair.node.getArtifact();
                         String key = toKey(artifact);
-                        if (!key.equals(self) && (!r.containsKey(key) || new ComparableVersion(version.toString()).compareTo(new ComparableVersion(r.get(key))) > 1)) {
+                        if (!key.equals(self)
+                                && (!r.containsKey(key)
+                                        || new ComparableVersion(version.toString())
+                                                        .compareTo(new ComparableVersion(r.get(key)))
+                                                > 1)) {
                             if (upperBoundsExcludes.contains(key)) {
-                                getLog().info( "Ignoring requireUpperBoundDeps in " + key);
+                                getLog().info("Ignoring requireUpperBoundDeps in " + key);
                             } else {
-                                getLog().info(buildErrorMessage(pairs.stream().map(DependencyNodeHopCountPair::getNode).collect(Collectors.toList())).trim());
-                                getLog().info(String.format("for %s, upper bounds forces an upgrade from %s to %s", key, resolvedVersion, version));
+                                getLog().info(buildErrorMessage(pairs.stream()
+                                                .map(DependencyNodeHopCountPair::getNode)
+                                                .collect(Collectors.toList()))
+                                        .trim());
+                                getLog().info(String.format(
+                                        "for %s, upper bounds forces an upgrade from %s to %s",
+                                        key, resolvedVersion, version));
                                 r.put(key, version.toString());
                             }
                         }
@@ -845,9 +902,11 @@ public class TestDependencyMojo extends AbstractHpiMojo {
             return hopCount;
         }
 
+        @Override
         @SuppressFBWarnings(
                 value = "EQ_COMPARETO_USE_OBJECT_EQUALS",
-                justification = "Silly check; it is perfectly reasonable to implement Comparable by writing a compareTo without an equals.")
+                justification =
+                        "Silly check; it is perfectly reasonable to implement Comparable by writing a compareTo without an equals.")
         public int compareTo(DependencyNodeHopCountPair other) {
             return Integer.compare(hopCount, other.getHopCount());
         }
@@ -855,11 +914,10 @@ public class TestDependencyMojo extends AbstractHpiMojo {
 
     private static String buildErrorMessage(List<DependencyNode> conflict) {
         StringBuilder errorMessage = new StringBuilder();
-        errorMessage.append(
-                "Require upper bound dependencies error for "
-                        + getFullArtifactName(conflict.get(0), false)
-                        + " paths to dependency are:"
-                        + System.lineSeparator());
+        errorMessage.append("Require upper bound dependencies error for "
+                + getFullArtifactName(conflict.get(0), false)
+                + " paths to dependency are:"
+                + System.lineSeparator());
         if (conflict.size() > 0) {
             errorMessage.append(buildTreeString(conflict.get(0)));
         }

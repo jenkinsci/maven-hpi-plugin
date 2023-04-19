@@ -42,7 +42,7 @@ import org.codehaus.plexus.archiver.jar.ManifestException;
  * @author <a href="evenisse@apache.org">Emmanuel Venisse</a>
  * @version $Id: HpiMojo.java 33552 2010-08-03 23:28:55Z olamy $
  */
-@Mojo(name="hpi", defaultPhase = LifecyclePhase.PACKAGE, requiresDependencyResolution = ResolutionScope.RUNTIME)
+@Mojo(name = "hpi", defaultPhase = LifecyclePhase.PACKAGE, requiresDependencyResolution = ResolutionScope.RUNTIME)
 public class HpiMojo extends AbstractJenkinsManifestMojo {
 
     /**
@@ -102,7 +102,8 @@ public class HpiMojo extends AbstractJenkinsManifestMojo {
      * Generates the webapp according to the {@code mode} attribute.
      */
     private void performPackaging()
-        throws IOException, ArchiverException, ManifestException, DependencyResolutionRequiredException, MojoExecutionException, MojoFailureException {
+            throws IOException, ArchiverException, ManifestException, DependencyResolutionRequiredException,
+                    MojoExecutionException, MojoFailureException {
 
         // generate a manifest
         File manifestFile = new File(getWebappDirectory(), "META-INF/MANIFEST.MF");
@@ -110,17 +111,20 @@ public class HpiMojo extends AbstractJenkinsManifestMojo {
         Manifest manifest = loadManifest(manifestFile);
 
         getLog().info("Checking for attached .jar artifact "
-                + (jarClassifier == null || jarClassifier.trim().isEmpty() ? "..." : "with classifier " + jarClassifier + "..."));
+                + (jarClassifier == null || jarClassifier.trim().isEmpty()
+                        ? "..."
+                        : "with classifier " + jarClassifier + "..."));
         File jarFile = null;
-        for (Artifact artifact: project.getAttachedArtifacts()) {
+        for (Artifact artifact : project.getAttachedArtifacts()) {
             if (Objects.equals(project.getGroupId(), artifact.getGroupId())
                     && Objects.equals(project.getArtifactId(), artifact.getArtifactId())
                     && project.getArtifact().getVersionRange().equals(artifact.getVersionRange())
                     && Objects.equals("jar", artifact.getType())
                     && (jarClassifier == null || jarClassifier.trim().isEmpty()
-                    ? !artifact.hasClassifier()
-                    : Objects.equals(jarClassifier, artifact.getClassifier()))
-                    && artifact.getFile() != null && artifact.getFile().isFile()) {
+                            ? !artifact.hasClassifier()
+                            : Objects.equals(jarClassifier, artifact.getClassifier()))
+                    && artifact.getFile() != null
+                    && artifact.getFile().isFile()) {
                 jarFile = artifact.getFile();
                 getLog().info("Found attached .jar artifact: " + jarFile.getAbsolutePath());
                 break;
@@ -136,11 +140,12 @@ public class HpiMojo extends AbstractJenkinsManifestMojo {
             jarArchiver.addConfiguredManifest(manifest);
             File indexJelly = new File(getClassesDirectory(), "index.jelly");
             if (!indexJelly.isFile()) {
-                throw new MojoFailureException("Missing " + indexJelly + ". Delete any <description> from pom.xml and create src/main/resources/index.jelly:\n" +
-                    "<?jelly escape-by-default='true'?>\n" +
-                    "<div>\n" +
-                    "    The description here…\n" +
-                    "</div>");
+                throw new MojoFailureException("Missing " + indexJelly
+                        + ". Delete any <description> from pom.xml and create src/main/resources/index.jelly:\n"
+                        + "<?jelly escape-by-default='true'?>\n"
+                        + "<div>\n"
+                        + "    The description here…\n"
+                        + "</div>");
             }
             jarArchiver.addDirectory(getClassesDirectory());
             archiver.createArchive(session, project, archive);
@@ -155,7 +160,7 @@ public class HpiMojo extends AbstractJenkinsManifestMojo {
         projectHelper.attachArtifact(project, "jar", null, jarFile);
 
         // generate war file
-        buildExplodedWebapp(getWebappDirectory(),jarFile);
+        buildExplodedWebapp(getWebappDirectory(), jarFile);
 
         File hpiFile = getOutputFile(".hpi");
         getLog().info("Generating hpi " + hpiFile.getAbsolutePath());
@@ -171,7 +176,5 @@ public class HpiMojo extends AbstractJenkinsManifestMojo {
         // create archive
         archiver.createArchive(session, project, archive);
         project.getArtifact().setFile(hpiFile);
-
     }
-
 }

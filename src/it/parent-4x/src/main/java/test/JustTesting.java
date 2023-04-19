@@ -15,10 +15,13 @@ public class JustTesting {
         if (Main.isUnitTest) {
             return;
         }
-        Timer.get().schedule(() -> {
-            Jenkins.getInstance().doSafeExit(null);
-            return null;
-        }, 15, TimeUnit.SECONDS);
+        Timer.get()
+                .schedule(
+                        () -> {
+                            Jenkins.getInstance().doSafeExit(null);
+                            return null;
+                        },
+                        15,
+                        TimeUnit.SECONDS);
     }
-
 }

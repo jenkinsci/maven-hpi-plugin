@@ -24,18 +24,18 @@ public class JettyAndServletApiOnlyClassLoader extends ClassLoader {
 
     @Override
     public Enumeration<URL> getResources(String name) throws IOException {
-      if (name.equals("jndi.properties")) {
-        return jettyClassLoader.getResources(name);
-      }
-      return Collections.emptyEnumeration();
+        if (name.equals("jndi.properties")) {
+            return jettyClassLoader.getResources(name);
+        }
+        return Collections.emptyEnumeration();
     }
 
     @Override
     protected Class<?> findClass(String name) throws ClassNotFoundException {
-        if (name.startsWith("javax.")
-            || name.startsWith("org.eclipse.jetty."))
+        if (name.startsWith("javax.") || name.startsWith("org.eclipse.jetty.")) {
             return jettyClassLoader.loadClass(name);
-        else
+        } else {
             throw new ClassNotFoundException(name);
+        }
     }
 }

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -9,22 +8,22 @@
     <version>1.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>multimodule-it-plugin2</artifactId> <!-- intentionally not the same as the containing directory -->
+  <!-- intentionally not the same as the containing directory -->
+  <artifactId>multimodule-it-plugin2</artifactId>
   <packaging>hpi</packaging>
-
   <url>https://plugins.jenkins.io/multimodule-it-plugin2/</url>
 
-    <developers>
-        <developer>
-            <id>bob</id>
-            <email>bob@example.com</email>
-            <name>Robert McBobface</name>
-        </developer>
-        <developer>
-            <id>jane</id>
-            <email>jane@example.com</email>
-        </developer>
-    </developers>
+  <developers>
+    <developer>
+      <id>bob</id>
+      <name>Robert McBobface</name>
+      <email>bob@example.com</email>
+    </developer>
+    <developer>
+      <id>jane</id>
+      <email>jane@example.com</email>
+    </developer>
+  </developers>
 
   <dependencies>
     <dependency>

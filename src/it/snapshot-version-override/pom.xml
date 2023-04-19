@@ -1,34 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>4.57</version>
+    <version>4.61</version>
     <relativePath />
   </parent>
 
   <groupId>org.jenkins-ci.tools.hpi.its</groupId>
   <artifactId>snapshot-version-override</artifactId>
   <version>1.x-SNAPSHOT</version>
-
   <packaging>hpi</packaging>
-
   <name>MyNewPlugin</name>
-
-  <properties>
-    <jenkins.version>2.361.4</jenkins.version>
-    <hpi-plugin.version>@project.version@</hpi-plugin.version>
-  </properties>
 
   <scm>
     <connection>scm:git:https://github.com/jenkinsci/maven-hpi-plugin.git</connection>
     <developerConnection>scm:git:git@github.com:jenkinsci/maven-hpi-plugin.git</developerConnection>
-    <url>https://github.com/jenkinsci/maven-hpi-plugin</url>
     <tag>HEAD</tag>
+    <url>https://github.com/jenkinsci/maven-hpi-plugin</url>
   </scm>
+
+  <properties>
+    <jenkins.version>2.361.4</jenkins.version>
+    <hpi-plugin.version>@project.version@</hpi-plugin.version>
+    <spotless.check.skip>false</spotless.check.skip>
+  </properties>
 
   <build>
     <plugins>
@@ -36,6 +34,10 @@
         <groupId>com.github.stephenc.continuous</groupId>
         <artifactId>git-timestamp-maven-plugin</artifactId>
         <version>1.1</version>
+        <configuration>
+          <versionProperty>actual-version</versionProperty>
+          <versionFile>target/version.txt</versionFile>
+        </configuration>
         <executions>
           <execution>
             <goals>
@@ -43,10 +45,6 @@
             </goals>
           </execution>
         </executions>
-        <configuration>
-          <versionProperty>actual-version</versionProperty>
-          <versionFile>target/version.txt</versionFile>
-        </configuration>
       </plugin>
       <plugin>
         <groupId>@project.groupId@</groupId>
@@ -57,5 +55,4 @@
       </plugin>
     </plugins>
   </build>
-
 </project>

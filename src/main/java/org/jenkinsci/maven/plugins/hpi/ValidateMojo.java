@@ -57,24 +57,14 @@ public class ValidateMojo extends AbstractJenkinsMojo {
         if (scm != null) {
             String connection = scm.getConnection();
             if (connection != null) {
-                check(
-                        "connection",
-                        connection,
-                        SCM_GIT_GIT_URL_BAD,
-                        SCM_GIT_HTTPS_URL_GOOD,
-                        GIT_URLS_ARE_DEPRECATED);
+                check("connection", connection, SCM_GIT_GIT_URL_BAD, SCM_GIT_HTTPS_URL_GOOD, GIT_URLS_ARE_DEPRECATED);
                 check(
                         "connection",
                         connection,
                         SCM_GIT_SSH_URL_BAD,
                         SCM_GIT_HTTPS_URL_GOOD,
                         SSH_URLS_DO_NOT_WORK_WELL_WITH_PCT);
-                check(
-                        "connection",
-                        connection,
-                        SCM_GIT_HTTP_URL_BAD,
-                        SCM_GIT_HTTPS_URL_GOOD,
-                        HTTP_URLS_ARE_INSECURE);
+                check("connection", connection, SCM_GIT_HTTP_URL_BAD, SCM_GIT_HTTPS_URL_GOOD, HTTP_URLS_ARE_INSECURE);
             }
             String developerConnection = scm.getDeveloperConnection();
             if (developerConnection != null) {
@@ -109,15 +99,9 @@ public class ValidateMojo extends AbstractJenkinsMojo {
             String goodValue = goodStart + value.substring(badStart.length());
             getLog().warn(String.format(
                     "<%s>%s</%s> is invalid because %s."
-                        + " Replace it with <%s>%s</%s>."
-                        + " In the future this warning will be changed to an error and will break the build.",
-                    tag,
-                    deinterpolate(value),
-                    tag,
-                    reason,
-                    tag,
-                    deinterpolate(goodValue),
-                    tag));
+                            + " Replace it with <%s>%s</%s>."
+                            + " In the future this warning will be changed to an error and will break the build.",
+                    tag, deinterpolate(value), tag, reason, tag, deinterpolate(goodValue), tag));
         }
     }
 

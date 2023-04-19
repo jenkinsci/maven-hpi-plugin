@@ -40,7 +40,10 @@ import org.codehaus.plexus.archiver.jar.ManifestException;
  *
  * @since 1.115
  */
-@Mojo(name="jar", defaultPhase = LifecyclePhase.PREPARE_PACKAGE, requiresDependencyResolution = ResolutionScope.RUNTIME)
+@Mojo(
+        name = "jar",
+        defaultPhase = LifecyclePhase.PREPARE_PACKAGE,
+        requiresDependencyResolution = ResolutionScope.RUNTIME)
 public class JarMojo extends AbstractJenkinsManifestMojo {
 
     /**
@@ -93,7 +96,8 @@ public class JarMojo extends AbstractJenkinsManifestMojo {
      * Generates the webapp according to the {@code mode} attribute.
      */
     private void performPackaging()
-        throws IOException, ArchiverException, ManifestException, DependencyResolutionRequiredException, MojoExecutionException {
+            throws IOException, ArchiverException, ManifestException, DependencyResolutionRequiredException,
+                    MojoExecutionException {
 
         // generate a manifest
         File manifestFile = new File(getWebappDirectory(), "META-INF/MANIFEST.MF");
@@ -110,5 +114,4 @@ public class JarMojo extends AbstractJenkinsManifestMojo {
         archiver.createArchive(session, project, archive);
         projectHelper.attachArtifact(project, "jar", jarClassifier, jarFile);
     }
-
 }

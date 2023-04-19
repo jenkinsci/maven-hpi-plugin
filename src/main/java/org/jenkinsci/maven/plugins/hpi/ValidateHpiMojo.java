@@ -2,43 +2,48 @@ package org.jenkinsci.maven.plugins.hpi;
 
 import hudson.util.VersionNumber;
 import java.io.File;
+import java.io.IOException;
+import java.util.jar.Attributes;
+import java.util.jar.JarFile;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.jenkinsci.maven.plugins.hp.util.Utils;
-import java.io.IOException;
-import java.util.jar.Attributes;
-import java.util.jar.JarFile;
 
 /**
  * Validates dependencies depend on older or equal core than the current plugin.
  */
-@Mojo(name = "validate-hpi", defaultPhase = LifecyclePhase.VALIDATE, requiresDependencyResolution = ResolutionScope.TEST)
+@Mojo(
+        name = "validate-hpi",
+        defaultPhase = LifecyclePhase.VALIDATE,
+        requiresDependencyResolution = ResolutionScope.TEST)
 public class ValidateHpiMojo extends AbstractHpiMojo {
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-            VersionNumber coreVersion = new VersionNumber(findJenkinsVersion());
-            MavenArtifact maxCoreVersionArtifact = null;
-            VersionNumber maxCoreVersion = new VersionNumber("0");
+        VersionNumber coreVersion = new VersionNumber(findJenkinsVersion());
+        MavenArtifact maxCoreVersionArtifact = null;
+        VersionNumber maxCoreVersion = new VersionNumber("0");
 
-            for (MavenArtifact artifact : Utils.unionOf(getProjectArtfacts(), getDirectDependencyArtfacts())) {
-                try {
-                    if (artifact.isPluginBestEffort(getLog())) {
-                        VersionNumber dependencyCoreVersion = getDependencyCoreVersion(artifact);
-                        if (dependencyCoreVersion.compareTo(maxCoreVersion) > 0) {
-                            maxCoreVersionArtifact = artifact;
-                            maxCoreVersion = dependencyCoreVersion;
-                        }
+        for (MavenArtifact artifact : Utils.unionOf(getProjectArtfacts(), getDirectDependencyArtfacts())) {
+            try {
+                if (artifact.isPluginBestEffort(getLog())) {
+                    VersionNumber dependencyCoreVersion = getDependencyCoreVersion(artifact);
+                    if (dependencyCoreVersion.compareTo(maxCoreVersion) > 0) {
+                        maxCoreVersionArtifact = artifact;
+                        maxCoreVersion = dependencyCoreVersion;
                     }
-                } catch (IOException e) {
-                    throw new MojoExecutionException("Unable to retrieve manifest, artifactId: " + artifact.getArtifactId(), e);
                 }
+            } catch (IOException e) {
+                throw new MojoExecutionException(
+                        "Unable to retrieve manifest, artifactId: " + artifact.getArtifactId(), e);
             }
-            if (coreVersion.compareTo(maxCoreVersion) < 0) {
-                throw new MojoExecutionException("Dependency " + maxCoreVersionArtifact + " requires Jenkins " + maxCoreVersion + " or higher.");
-            }
+        }
+        if (coreVersion.compareTo(maxCoreVersion) < 0) {
+            throw new MojoExecutionException(
+                    "Dependency " + maxCoreVersionArtifact + " requires Jenkins " + maxCoreVersion + " or higher.");
+        }
     }
 
     private VersionNumber getDependencyCoreVersion(MavenArtifact artifact) throws IOException, MojoExecutionException {
@@ -60,7 +65,8 @@ public class ValidateHpiMojo extends AbstractHpiMojo {
                 }
             }
         } else {
-            getLog().warn("Skipping jenkins-core validation for " + artifact + " since we rely on sources and don't have a manifest. Use 'package' goal to get validation");
+            getLog().warn("Skipping jenkins-core validation for " + artifact
+                    + " since we rely on sources and don't have a manifest. Use 'package' goal to get validation");
             // Assume the version is the same
             return new VersionNumber(findJenkinsVersion());
         }

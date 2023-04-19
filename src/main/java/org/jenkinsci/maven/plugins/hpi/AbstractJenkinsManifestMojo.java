@@ -16,20 +16,6 @@
 package org.jenkinsci.maven.plugins.hpi;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
-
-import org.apache.maven.archiver.ManifestConfiguration;
-import org.apache.maven.archiver.MavenArchiveConfiguration;
-import org.apache.maven.archiver.MavenArchiver;
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.DependencyResolutionRequiredException;
-import org.apache.maven.model.Developer;
-import org.apache.maven.model.License;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.project.MavenProject;
-import org.codehaus.plexus.archiver.jar.Manifest;
-import org.codehaus.plexus.archiver.jar.ManifestException;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -46,6 +32,18 @@ import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import org.apache.maven.archiver.ManifestConfiguration;
+import org.apache.maven.archiver.MavenArchiveConfiguration;
+import org.apache.maven.archiver.MavenArchiver;
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.DependencyResolutionRequiredException;
+import org.apache.maven.model.Developer;
+import org.apache.maven.model.License;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.archiver.jar.Manifest;
+import org.codehaus.plexus.archiver.jar.ManifestException;
 
 /**
  * Abstract class for Mojo implementations, which produce Jenkins-style manifests.
@@ -84,7 +82,8 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
     /**
      * Generates a manifest file to be included in the .hpi file
      */
-    protected void generateManifest(MavenArchiveConfiguration archive, File manifestFile) throws MojoExecutionException {
+    protected void generateManifest(MavenArchiveConfiguration archive, File manifestFile)
+            throws MojoExecutionException {
         // create directory if it doesn't exist yet
         if (!Files.isDirectory(manifestFile.toPath().getParent())) {
             try {
@@ -99,7 +98,8 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
         MavenArchiver ma = new MavenArchiver();
         ma.setOutputFile(manifestFile);
 
-        try (PrintWriter printWriter = new PrintWriter(new OutputStreamWriter(new FileOutputStream(manifestFile), StandardCharsets.UTF_8))) {
+        try (PrintWriter printWriter =
+                new PrintWriter(new OutputStreamWriter(new FileOutputStream(manifestFile), StandardCharsets.UTF_8))) {
             ManifestConfiguration config = archive.getManifest();
             config.setAddDefaultSpecificationEntries(true);
             config.setAddDefaultImplementationEntries(true);
@@ -113,25 +113,30 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
         }
     }
 
-    protected void setAttributes(Manifest.ExistingSection mainSection) throws MojoExecutionException, ManifestException, IOException {
+    protected void setAttributes(Manifest.ExistingSection mainSection)
+            throws MojoExecutionException, ManifestException, IOException {
         File pluginImpl = new File(project.getBuild().getOutputDirectory(), "META-INF/services/hudson.Plugin");
-        if(pluginImpl.exists()) {
-            try (BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(pluginImpl), StandardCharsets.UTF_8))) {
+        if (pluginImpl.exists()) {
+            try (BufferedReader in = new BufferedReader(
+                    new InputStreamReader(new FileInputStream(pluginImpl), StandardCharsets.UTF_8))) {
                 String pluginClassName = in.readLine();
-                mainSection.addAttributeAndCheck(new Manifest.Attribute("Plugin-Class",pluginClassName));
+                mainSection.addAttributeAndCheck(new Manifest.Attribute("Plugin-Class", pluginClassName));
             }
         }
 
-        mainSection.addAttributeAndCheck(new Manifest.Attribute("Group-Id",project.getGroupId()));
-        mainSection.addAttributeAndCheck(new Manifest.Attribute("Artifact-Id",project.getArtifactId()));
-        mainSection.addAttributeAndCheck(new Manifest.Attribute("Short-Name",project.getArtifactId()));
-        mainSection.addAttributeAndCheck(new Manifest.Attribute("Long-Name",pluginName));
+        mainSection.addAttributeAndCheck(new Manifest.Attribute("Group-Id", project.getGroupId()));
+        mainSection.addAttributeAndCheck(new Manifest.Attribute("Artifact-Id", project.getArtifactId()));
+        mainSection.addAttributeAndCheck(new Manifest.Attribute("Short-Name", project.getArtifactId()));
+        mainSection.addAttributeAndCheck(new Manifest.Attribute("Long-Name", pluginName));
         String url = project.getUrl();
-        if(url!=null)
+        if (url != null) {
             mainSection.addAttributeAndCheck(new Manifest.Attribute("Url", url));
+        }
 
-        if (compatibleSinceVersion!=null)
-            mainSection.addAttributeAndCheck(new Manifest.Attribute("Compatible-Since-Version", compatibleSinceVersion));
+        if (compatibleSinceVersion != null) {
+            mainSection.addAttributeAndCheck(
+                    new Manifest.Attribute("Compatible-Since-Version", compatibleSinceVersion));
+        }
 
         if (this.minimumJavaVersion != null && !this.minimumJavaVersion.isEmpty()) {
             getLog().warn("Ignoring deprecated minimumJavaVersion parameter."
@@ -139,11 +144,12 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
                     + " In the future this warning will be changed to an error and will break the build.");
         }
 
-        if (sandboxStatus!=null)
+        if (sandboxStatus != null) {
             mainSection.addAttributeAndCheck(new Manifest.Attribute("Sandbox-Status", sandboxStatus));
+        }
 
         String v = project.getVersion();
-        if (v.endsWith("-SNAPSHOT") && snapshotPluginVersionOverride!=null) {
+        if (v.endsWith("-SNAPSHOT") && snapshotPluginVersionOverride != null) {
             String nonSnapshotVersion = v.substring(0, v.length() - "-SNAPSHOT".length());
             if (!snapshotPluginVersionOverride.startsWith(nonSnapshotVersion)) {
                 String message = "The snapshotPluginVersionOverride of " + snapshotPluginVersionOverride
@@ -167,7 +173,7 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
                     + " in place of " + v);
             v = snapshotPluginVersionOverride;
         }
-        if (v.endsWith("-SNAPSHOT") && pluginVersionDescription==null) {
+        if (v.endsWith("-SNAPSHOT") && pluginVersionDescription == null) {
             String dt = getGitHeadSha1();
             if (dt == null) {
                 // if SHA1 isn't available, fall back to timestamp
@@ -175,49 +181,57 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
             } else {
                 dt = dt.substring(0, 8);
             }
-            pluginVersionDescription = "private-"+dt+"-"+System.getProperty("user.name");
+            pluginVersionDescription = "private-" + dt + "-" + System.getProperty("user.name");
         }
-        if (pluginVersionDescription!=null)
+        if (pluginVersionDescription != null) {
             v += " (" + pluginVersionDescription + ")";
+        }
 
         if (!project.getPackaging().equals("jenkins-module")) {
             // Earlier maven-hpi-plugin used to look for this attribute to determine if a jar file is a Jenkins plugin.
             // While that's fixed, people out there might be still using it, so as a precaution when building a module
             // don't put this information in there.
-            // The "Implementation-Version" baked by Maven should serve the same purpose if someone needs to know the version.
-            mainSection.addAttributeAndCheck(new Manifest.Attribute("Plugin-Version",v));
+            // The "Implementation-Version" baked by Maven should serve the same purpose if someone needs to know the
+            // version.
+            mainSection.addAttributeAndCheck(new Manifest.Attribute("Plugin-Version", v));
         }
 
         String jv = findJenkinsVersion();
-        mainSection.addAttributeAndCheck(new Manifest.Attribute("Hudson-Version",jv));
-        mainSection.addAttributeAndCheck(new Manifest.Attribute("Jenkins-Version",jv));
+        mainSection.addAttributeAndCheck(new Manifest.Attribute("Hudson-Version", jv));
+        mainSection.addAttributeAndCheck(new Manifest.Attribute("Jenkins-Version", jv));
 
-        if(maskClasses!=null)
-            mainSection.addAttributeAndCheck(new Manifest.Attribute("Mask-Classes",maskClasses));
+        if (maskClasses != null) {
+            mainSection.addAttributeAndCheck(new Manifest.Attribute("Mask-Classes", maskClasses));
+        }
 
-        if (globalMaskClasses!=null)
-            mainSection.addAttributeAndCheck(new Manifest.Attribute("Global-Mask-Classes",globalMaskClasses));
+        if (globalMaskClasses != null) {
+            mainSection.addAttributeAndCheck(new Manifest.Attribute("Global-Mask-Classes", globalMaskClasses));
+        }
 
-        if(pluginFirstClassLoader)
-            mainSection.addAttributeAndCheck( new Manifest.Attribute( "PluginFirstClassLoader", "true" ) );
+        if (pluginFirstClassLoader) {
+            mainSection.addAttributeAndCheck(new Manifest.Attribute("PluginFirstClassLoader", "true"));
+        }
 
         String dep = findDependencyPlugins();
-        if(dep.length()>0)
-            mainSection.addAttributeAndCheck(new Manifest.Attribute("Plugin-Dependencies",dep));
+        if (dep.length() > 0) {
+            mainSection.addAttributeAndCheck(new Manifest.Attribute("Plugin-Dependencies", dep));
+        }
 
         if (project.getDevelopers() != null) {
-            mainSection.addAttributeAndCheck(new Manifest.Attribute("Plugin-Developers",getDevelopersForManifest()));
+            mainSection.addAttributeAndCheck(new Manifest.Attribute("Plugin-Developers", getDevelopersForManifest()));
         }
 
         Boolean b = isSupportDynamicLoading();
-        if (b!=null)
-            mainSection.addAttributeAndCheck(new Manifest.Attribute("Support-Dynamic-Loading",b.toString()));
+        if (b != null) {
+            mainSection.addAttributeAndCheck(new Manifest.Attribute("Support-Dynamic-Loading", b.toString()));
+        }
 
         // Extra info attributes
         addLicenseAttributesForManifest(mainSection);
         addPropertyAttributeIfNotNull(mainSection, "Plugin-ChangelogUrl", "hpi.pluginChangelogUrl");
         addPropertyAttributeIfNotNull(mainSection, "Plugin-LogoUrl", "hpi.pluginLogoUrl");
-        addAttributeIfNotNull(mainSection, "Plugin-ScmConnection", project.getScm().getConnection());
+        addAttributeIfNotNull(
+                mainSection, "Plugin-ScmConnection", project.getScm().getConnection());
         addAttributeIfNotNull(mainSection, "Plugin-ScmTag", project.getScm().getTag());
         addAttributeIfNotNull(mainSection, "Plugin-ScmUrl", project.getScm().getUrl());
         String gitHash = getGitHeadSha1();
@@ -233,9 +247,10 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
     private String findDependencyPlugins() throws IOException, MojoExecutionException {
         StringBuilder buf = new StringBuilder();
         for (MavenArtifact a : getDirectDependencyArtfacts()) {
-            if(a.isPlugin() && scopeFilter.include(a.artifact) && !a.hasSameGAAs(project)) {
-                if(buf.length()>0)
+            if (a.isPlugin() && scopeFilter.include(a.artifact) && !a.hasSameGAAs(project)) {
+                if (buf.length() > 0) {
                     buf.append(',');
+                }
                 buf.append(a.getActualArtifactId());
                 buf.append(':');
                 buf.append(a.getActualVersion());
@@ -246,11 +261,14 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
         }
 
         // check any "provided" scope plugin dependencies that are probably not what the user intended.
-        // see http://jenkins-ci.361315.n4.nabble.com/Classloading-problem-when-referencing-classes-from-another-plugin-during-the-initialization-phase-of-td394967.html
-        for (Artifact a : project.getDependencyArtifacts())
-            if ("provided".equals(a.getScope()) && wrap(a).isPlugin())
-                throw new MojoExecutionException(a.getId()+" is marked as 'provided' scope dependency, but it should be the 'compile' scope.");
-
+        // see
+        // http://jenkins-ci.361315.n4.nabble.com/Classloading-problem-when-referencing-classes-from-another-plugin-during-the-initialization-phase-of-td394967.html
+        for (Artifact a : project.getDependencyArtifacts()) {
+            if ("provided".equals(a.getScope()) && wrap(a).isPlugin()) {
+                throw new MojoExecutionException(
+                        a.getId() + " is marked as 'provided' scope dependency, but it should be the 'compile' scope.");
+            }
+        }
 
         return buf.toString();
     }
@@ -288,9 +306,9 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
             String licenseSuffix = licenseCounter == 1 ? "" : ("-" + licenseCounter);
             addAttributeIfNotNull(target, "Plugin-License-Name" + licenseSuffix, lic.getName());
             addAttributeIfNotNull(target, "Plugin-License-Url" + licenseSuffix, lic.getUrl());
-            //TODO(oleg_nenashev): Can be enabled later if needed
-            //addAttributeIfNotNull(target, "Plugin-License-Distribution" + licenseSuffix, lic.getDistribution());
-            //addAttributeIfNotNull(target, "Plugin-License-Comments" + licenseSuffix, lic.getComments());
+            // TODO(oleg_nenashev): Can be enabled later if needed
+            // addAttributeIfNotNull(target, "Plugin-License-Distribution" + licenseSuffix, lic.getDistribution());
+            // addAttributeIfNotNull(target, "Plugin-License-Comments" + licenseSuffix, lic.getComments());
             licenseCounter++;
         }
     }
@@ -323,8 +341,8 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
         }
     }
 
-    private void addPropertyAttributeIfNotNull(Manifest.ExistingSection target, String attributeName, String propertyName)
-            throws ManifestException {
+    private void addPropertyAttributeIfNotNull(
+            Manifest.ExistingSection target, String attributeName, String propertyName) throws ManifestException {
         String propertyValue = project.getProperties().getProperty(propertyName);
         if (propertyValue != null) {
             target.addAttributeAndCheck(new Manifest.Attribute(attributeName, propertyValue));

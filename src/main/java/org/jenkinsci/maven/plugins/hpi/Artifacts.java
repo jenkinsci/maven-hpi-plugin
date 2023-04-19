@@ -1,24 +1,22 @@
 package org.jenkinsci.maven.plugins.hpi;
 
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.project.MavenProject;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.project.MavenProject;
 
 /**
  * Collection filter operations on a set of {@link Artifact}s.
- * 
+ *
  * @author Kohsuke Kawaguchi
  */
 public class Artifacts extends ArrayList<Artifact> {
 
     private static final long serialVersionUID = 1L;
 
-    public Artifacts() {
-    }
+    public Artifacts() {}
 
     public Artifacts(Collection<? extends Artifact> c) {
         super(c);
@@ -26,7 +24,7 @@ public class Artifacts extends ArrayList<Artifact> {
 
     /**
      * Return the {@link Artifact}s representing dependencies of the given project.
-     * 
+     *
      * A thin-wrapper of p.getArtifacts()
      */
     public static Artifacts of(MavenProject p) {
@@ -46,7 +44,7 @@ public class Artifacts extends ArrayList<Artifact> {
         removeIf(filter);
         return this;
     }
-    
+
     public Artifacts scopeIs(String... scopes) {
         final List<String> s = List.of(scopes);
         return retainAll(a -> s.contains(a.getScope()));
