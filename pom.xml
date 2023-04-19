@@ -232,7 +232,7 @@
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-groovy</artifactId>
-      <version>1777.v7c6fe6d54a_0c</version>
+      <version>1781.v62372c33644e</version>
       <exclusions>
         <exclusion>
           <groupId>jakarta.annotation</groupId>
