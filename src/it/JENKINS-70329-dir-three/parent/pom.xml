@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.jenkins-ci.plugins</groupId>
+    <artifactId>plugin</artifactId>
+    <version>4.53</version>
+    <relativePath />
+  </parent>
+
+  <groupId>org.jenkins-ci.tools.hpi.its</groupId>
+  <artifactId>duplicate-bundle-it</artifactId>
+  <version>1.0-SNAPSHOT</version>
+
+  <packaging>pom</packaging>
+
+  <properties>
+    <jenkins.version>2.361.4</jenkins.version>
+  </properties>
+
+  <modules>
+    <module>../sub-module1</module>
+    <module>../sub-module2</module>
+    <module>../sub-module3</module>
+    <module>../sub-module4</module>
+    <module>../sub-module5</module>
+    <module>../sub-module6</module>
+    <module>../sub-module7</module>
+    <module>../sub-module8</module>
+    <module>../sub-module9</module>
+    <module>../sub-module10</module>
+  </modules>
+</project>

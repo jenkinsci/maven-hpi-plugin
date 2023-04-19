@@ -17,6 +17,8 @@ package org.jenkinsci.maven.plugins.hpi;
 import hudson.util.VersionNumber;
 import io.jenkins.lib.support_log_formatter.SupportLogFormatter;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.file.PathUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
@@ -266,7 +268,6 @@ public class RunMojo extends JettyRunWarMojo {
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         getProject().setArtifacts(resolveDependencies(dependencyResolution));
-
         File basedir = getProject().getBasedir();
 
         if (webApp == null || webApp.getContextPath() == null) {
@@ -361,6 +362,8 @@ public class RunMojo extends JettyRunWarMojo {
 
         // copy other dependency Jenkins plugins
         try {
+            File rootBasedir = getRootBasedir();
+
             for( MavenArtifact a : getProjectArtifacts() ) {
                 if(!a.isPluginBestEffort(getLog())) {
                     continue;
@@ -381,13 +384,13 @@ public class RunMojo extends JettyRunWarMojo {
                 if (hpi.getFile().isDirectory())
                     throw new UnsupportedOperationException(hpi.getFile()+" is a directory and not packaged yet. this isn't supported");
 
-                File upstreamHpl = pluginWorkspaceMap.read(hpi.getId());
+                File upstreamHpl = pluginWorkspaceMap.read(hpi.getId(), rootBasedir.getAbsolutePath());
                 String actualArtifactId = a.getActualArtifactId();
                 if (actualArtifactId == null) {
                     throw new MojoExecutionException("Failed to load actual artifactId from " + a + " ~ " + a.getFile());
                 }
                 if (upstreamHpl != null) {
-                    copyHpl(upstreamHpl, pluginsDir, actualArtifactId);
+                    copyHpl(upstreamHpl, pluginsDir, actualArtifactId, rootBasedir);
                 } else {
                     copyPlugin(hpi.getFile(), pluginsDir, actualArtifactId);
                 }
@@ -416,6 +419,20 @@ public class RunMojo extends JettyRunWarMojo {
         }
 
         super.execute();
+    }
+
+    private File getRootBasedir() {
+        if (session.getTopLevelProject() != null) {
+            // find the greatest common path
+            String commonPrefix = StringUtils.getCommonPrefix(
+                    new String[] { session.getTopLevelProject().getBasedir().getAbsolutePath(),
+                                   getProject().getBasedir().getAbsolutePath() });
+            if (!StringUtils.isBlank(commonPrefix)) {
+                return new File(commonPrefix);
+            }
+        }
+        // fallback to current project base dir
+        return getProject().getBasedir();
     }
 
     private boolean hasSameGavAsProject(Artifact a) {
@@ -470,9 +487,13 @@ public class RunMojo extends JettyRunWarMojo {
         }
     }
 
-    private void copyHpl(File src, File pluginsDir, String shortName) throws IOException {
+    private void copyHpl(File src, File pluginsDir, String shortName, File rootBasedir) throws IOException {
         File dst = new File(pluginsDir, shortName + ".jpl");
-        getLog().info("Copying snapshot dependency Jenkins plugin " + src);
+        if (src.getAbsolutePath().contains(rootBasedir.getAbsolutePath())) {
+            getLog().info("Copying snapshot dependency Jenkins plugin " + src);
+        } else {
+            getLog().warn("Copying snapshot dependency Jenkins plugin " + src + " from outside the current root base dir " + rootBasedir);
+        }
         FileUtils.copyFile(src, dst);
         Files.writeString(pluginsDir.toPath().resolve(shortName + ".jpi.pinned"), "pinned", StandardCharsets.US_ASCII);
     }
@@ -640,7 +661,7 @@ public class RunMojo extends JettyRunWarMojo {
                         for (Artifact a : Artifacts.of(getProject()).scopeIsNot("provided","test").typeIsNot("pom")) {
                             super.addURL(a.getFile().toURI().toURL());
                         }
-                        
+
                         exclusionPattern = Pattern.compile("[/\\\\]\\Q"+getProject().getArtifactId()+"\\E-[0-9]([^/\\\\]+)\\.jar$");
                     } else {
                         exclusionPattern = Pattern.compile("this should never match");

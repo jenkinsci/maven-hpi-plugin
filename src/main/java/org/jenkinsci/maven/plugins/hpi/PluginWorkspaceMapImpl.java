@@ -46,16 +46,26 @@ public class PluginWorkspaceMapImpl implements PluginWorkspaceMap {
     @Override
     @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "TODO needs triage")
     public /*@CheckForNull*/ File read(String id) throws IOException {
+        return read(id, null);
+    }
+
+    @Override
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "TODO needs triage")
+    public File read(String id, String workspace) throws IOException {
+        File matching = null;
         for (Map.Entry<Object,Object> entry : loadMap().entrySet()) {
             if (entry.getValue().equals(id)) {
                 String path = (String) entry.getKey();
                 File f = new File(path);
                 if (f.exists()) {
-                    return f;
+                    matching = f;
+                    if (workspace == null || path.startsWith(workspace)) {
+                         break;
+                    }
                 }
             }
         }
-        return null;
+        return matching;
     }
 
     @Override
