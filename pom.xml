@@ -59,8 +59,7 @@
     <aether.version>1.1.0</aether.version>
     <!-- if we update this all consumers need to be running at least this version -->
     <maven.version>3.8.1</maven.version>
-    <!-- extra work needed when https://issues.apache.org/jira/browse/MPLUGIN-449 is fixed -->
-    <maven-plugin-tools.version>3.8.1</maven-plugin-tools.version>
+    <maven-plugin-tools.version>3.8.2</maven-plugin-tools.version>
     <plexus-containers.version>2.1.1</plexus-containers.version>
     <aether.version>1.1.0</aether.version>
     <spotless.check.skip>false</spotless.check.skip>
@@ -394,14 +393,6 @@
           <extractors>java-annotations</extractors>
           <mojoDependencies>org.eclipse.jetty:jetty-maven-plugin</mojoDependencies>
         </configuration>
-        <dependencies>
-          <dependency>
-            <!-- TODO remove when https://issues.apache.org/jira/browse/MPLUGIN-449 is fixed -->
-            <groupId>org.codehaus.plexus</groupId>
-            <artifactId>plexus-archiver</artifactId>
-            <version>4.6.3</version>
-          </dependency>
-        </dependencies>
         <executions>
           <execution>
             <id>help-goal</id>
