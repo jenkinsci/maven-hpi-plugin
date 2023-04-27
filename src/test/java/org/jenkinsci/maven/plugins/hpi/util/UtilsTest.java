@@ -5,7 +5,6 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 
 import java.util.Collections;
 import java.util.Set;
-import org.jenkinsci.maven.plugins.hp.util.Utils;
 import org.junit.Test;
 
 public class UtilsTest {

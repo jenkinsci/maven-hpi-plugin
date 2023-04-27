@@ -1,4 +1,4 @@
-package org.jenkinsci.maven.plugins.hp.util;
+package org.jenkinsci.maven.plugins.hpi.util;
 
 import java.util.Collections;
 import java.util.HashSet;
