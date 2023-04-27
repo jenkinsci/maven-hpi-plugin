@@ -55,7 +55,7 @@ import org.codehaus.plexus.archiver.manager.NoSuchArchiverException;
 import org.codehaus.plexus.util.DirectoryScanner;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.StringUtils;
-import org.jenkinsci.maven.plugins.hp.util.Utils;
+import org.jenkinsci.maven.plugins.hpi.util.Utils;
 
 public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
 

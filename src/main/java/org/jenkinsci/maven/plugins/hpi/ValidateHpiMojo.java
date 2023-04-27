@@ -10,7 +10,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.ResolutionScope;
-import org.jenkinsci.maven.plugins.hp.util.Utils;
+import org.jenkinsci.maven.plugins.hpi.util.Utils;
 
 /**
  * Validates dependencies depend on older or equal core than the current plugin.
