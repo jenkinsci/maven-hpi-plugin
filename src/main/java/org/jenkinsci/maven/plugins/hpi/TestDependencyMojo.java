@@ -390,7 +390,6 @@ public class TestDependencyMojo extends AbstractHpiMojo {
         List<RemoteRepository> remoteRepositories = RepositoryUtils.toRepos(buildingRequest.getRemoteRepositories());
 
         List<ArtifactRequest> artifactRequests = new ArrayList<>();
-        boolean ignoreWorkspaceRepository = false;
         for (MavenArtifact mavenArtifact : mavenArtifacts) {
             if (!mavenArtifact.isPluginBestEffort(getLog())) {
                 continue;

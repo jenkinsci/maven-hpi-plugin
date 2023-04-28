@@ -167,8 +167,6 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
 
     private static final String META_INF = "META-INF";
 
-    private static final String[] DEFAULT_INCLUDES = {"**/**"};
-
     /**
      * The comma separated list of tokens to include in the WAR.
      */
