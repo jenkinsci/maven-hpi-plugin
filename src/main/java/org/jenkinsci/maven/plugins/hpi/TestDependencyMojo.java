@@ -146,7 +146,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
             throw new MojoExecutionException("Cannot override self");
         }
 
-        Map<String, String> bundledPlugins = overrideWar != null ? scanWar(overrideWar, session, project) : Map.of();
+        Map<String, String> bundledPlugins = overrideWar != null ? scanWar(overrideWar) : Map.of();
         if (!bundledPlugins.isEmpty()) {
             getLog().info(String.format(
                     "Scanned contents of %s with %d bundled plugins",
@@ -517,8 +517,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
      * @param war The WAR to scan.
      * @return The bundled plugins in the WAR.
      */
-    private static Map<String, String> scanWar(File war, MavenSession session, MavenProject project)
-            throws MojoExecutionException {
+    private Map<String, String> scanWar(File war) throws MojoExecutionException {
         Map<String, String> overrides = new HashMap<>();
         try (JarFile jf = new JarFile(war)) {
             Enumeration<JarEntry> entries = jf.entries();
@@ -549,6 +548,12 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                         String version = manifest.getMainAttributes().getValue("Plugin-Version");
                         if (version == null) {
                             throw new IllegalArgumentException("Failed to determine version for " + name);
+                        }
+                        // handle any extra info in snapshots e.g. " (private-abcd1234-username)"
+                        version = version.replaceFirst(" [(].+[)]$", "");
+                        if (version.endsWith("-SNAPSHOT")) {
+                            getLog().warn("War contains a SNAPSHOT of " + groupId + ":" + artifactId
+                                    + " build will not be fully repeatable");
                         }
                         String key = String.format("%s:%s", groupId, artifactId);
                         String self = String.format("%s:%s", project.getGroupId(), project.getArtifactId());
