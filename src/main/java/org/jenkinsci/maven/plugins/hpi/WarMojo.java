@@ -79,7 +79,7 @@ public class WarMojo extends RunMojo {
                 Optional.ofNullable(getProject()).map(MavenProject::getArtifact).map(a -> {
                     projectArtifacts.add(wrap(a)); // side effect
                     getLog().debug("This plugin " + a + "to be added to custom war");
-                    return projectArtifacts; // have to return someting from multiline lambda inside map()
+                    return projectArtifacts; // have to return something from multiline lambda inside map()
                 });
             }
             for (MavenArtifact a : projectArtifacts) {
@@ -102,7 +102,7 @@ public class WarMojo extends RunMojo {
 
                 z = new ZipFileSet();
                 z.setFile(hpi.getFile());
-                z.setFullpath("/WEB-INF/plugins/" + hpi.getArtifactId() + ".hpi");
+                z.setFullpath("WEB-INF/plugins/" + hpi.getArtifactId() + ".hpi");
                 rezip.addZipfileset(z);
             }
 
