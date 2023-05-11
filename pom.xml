@@ -372,7 +372,7 @@
           <localRepositoryPath>${basedir}/target/local-repo</localRepositoryPath>
           <settingsFile>src/it/settings.xml</settingsFile>
           <pomIncludes>
-            <pomInclude>*/pom.xml</pomInclude>
+            <pomInclude>*</pomInclude>
           </pomIncludes>
           <postBuildHookScript>verify</postBuildHookScript>
           <filterProperties>
