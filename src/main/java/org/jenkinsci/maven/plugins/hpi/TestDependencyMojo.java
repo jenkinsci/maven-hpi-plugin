@@ -552,8 +552,8 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                         // handle any extra info in snapshots e.g. " (private-abcd1234-username)"
                         version = version.replaceFirst(" [(].+[)]$", "");
                         if (version.endsWith("-SNAPSHOT")) {
-                            getLog().warn("War contains a SNAPSHOT of " + groupId + ":" + artifactId
-                                    + " build will not be fully repeatable");
+                            getLog().warn("WAR contains a SNAPSHOT of " + groupId + ":" + artifactId
+                                    + "; build will not be fully repeatable");
                         }
                         String key = String.format("%s:%s", groupId, artifactId);
                         String self = String.format("%s:%s", project.getGroupId(), project.getArtifactId());

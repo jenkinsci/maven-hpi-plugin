@@ -102,12 +102,12 @@
       <dependency>
         <groupId>org.apache.maven.shared</groupId>
         <artifactId>maven-shared-utils</artifactId>
-        <version>3.3.4</version>
+        <version>3.4.1</version>
       </dependency>
       <dependency>
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-archiver</artifactId>
-        <version>4.6.3</version>
+        <version>4.7.1</version>
       </dependency>
       <dependency>
         <groupId>org.codehaus.plexus</groupId>
@@ -234,7 +234,7 @@
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-groovy</artifactId>
-      <version>1781.v62372c33644e</version>
+      <version>1784.v56a_94d9727f2</version>
       <exclusions>
         <exclusion>
           <groupId>jakarta.annotation</groupId>
