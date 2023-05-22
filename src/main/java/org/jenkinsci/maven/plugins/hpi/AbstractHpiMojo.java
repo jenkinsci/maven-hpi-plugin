@@ -78,9 +78,8 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
      * Name of the plugin that Jenkins uses for display purpose.
      * It should be one line text.
      */
-    @Parameter(defaultValue = "${project.name}", readonly = true)
+    @Parameter(defaultValue = "${project.name}")
     protected String pluginName;
-    // TODO why is this read-only, surely I should be able to override
 
     /**
      * Additional information that accompanies the version number of the plugin.
