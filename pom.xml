@@ -60,7 +60,6 @@
     <!-- if we update this all consumers need to be running at least this version -->
     <maven.version>3.8.1</maven.version>
     <maven-plugin-tools.version>3.9.0</maven-plugin-tools.version>
-    <plexus-containers.version>2.1.1</plexus-containers.version>
     <aether.version>1.1.0</aether.version>
     <spotless.check.skip>false</spotless.check.skip>
   </properties>
@@ -108,6 +107,11 @@
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-archiver</artifactId>
         <version>4.7.1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-component-annotations</artifactId>
+        <version>2.1.1</version>
       </dependency>
       <dependency>
         <groupId>org.codehaus.plexus</groupId>
@@ -160,6 +164,11 @@
       <version>1.2</version>
     </dependency>
     <dependency>
+      <groupId>javax.inject</groupId>
+      <artifactId>javax.inject</artifactId>
+      <version>1</version>
+    </dependency>
+    <dependency>
       <groupId>net.java.sezpoz</groupId>
       <artifactId>sezpoz</artifactId>
       <version>1.13</version>
@@ -188,11 +197,6 @@
       <groupId>org.apache.maven.shared</groupId>
       <artifactId>maven-filtering</artifactId>
       <version>3.3.1</version>
-    </dependency>
-    <dependency>
-      <groupId>org.codehaus.plexus</groupId>
-      <artifactId>plexus-component-annotations</artifactId>
-      <version>${plexus-containers.version}</version>
     </dependency>
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
@@ -404,13 +408,14 @@
         </configuration>
       </plugin>
       <plugin>
-        <groupId>org.codehaus.plexus</groupId>
-        <artifactId>plexus-component-metadata</artifactId>
-        <version>${plexus-containers.version}</version>
+        <groupId>org.eclipse.sisu</groupId>
+        <artifactId>sisu-maven-plugin</artifactId>
+        <version>0.3.5</version>
         <executions>
           <execution>
+            <id>generate-index</id>
             <goals>
-              <goal>generate-metadata</goal>
+              <goal>main-index</goal>
             </goals>
           </execution>
         </executions>
