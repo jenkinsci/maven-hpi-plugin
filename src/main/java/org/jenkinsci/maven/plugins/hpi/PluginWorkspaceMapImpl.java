@@ -9,7 +9,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
 import java.util.Properties;
-import org.codehaus.plexus.component.annotations.Component;
+import javax.inject.Named;
+import javax.inject.Singleton;
 
 /**
  * Default and currently the only implementation of {@link PluginWorkspaceMap}
@@ -17,7 +18,8 @@ import org.codehaus.plexus.component.annotations.Component;
  * @author Jesse Glick
  * @author Kohsuke Kawaguchi
  */
-@Component(role = PluginWorkspaceMap.class)
+@Named
+@Singleton
 public class PluginWorkspaceMapImpl implements PluginWorkspaceMap {
     private final File mapFile;
 
