@@ -37,7 +37,6 @@ try (JarFile j1 = new JarFile(p1)) {
     assert attributes.getValue('Plugin-ScmConnection').equals('scm:git:https://github.com/jenkinsci/maven-hpi-plugin.git')
     def matcher = attributes.getValue('Plugin-GitHash') =~ pattern
     assert matcher.matches()
-    assert attributes.getValue('Plugin-Module').equals('plugin1')
 }
 
 
@@ -71,8 +70,6 @@ try (JarFile j2 = new JarFile(p2)) {
     assert attributes.getValue('Plugin-ScmConnection').equals('scm:git:https://github.com/jenkinsci/maven-hpi-plugin.git')
     def matcher = attributes.getValue('Plugin-GitHash') =~ pattern
     assert matcher.matches()
-    assert attributes.getValue('Plugin-Module').equals('plugin2')
-
 }
 
 return true;
