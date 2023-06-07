@@ -408,6 +408,11 @@
         <artifactId>maven-plugin-plugin</artifactId>
         <version>${maven-plugin-tools.version}</version>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-plugin-report-plugin</artifactId>
+        <version>${maven-plugin-tools.version}</version>
+      </plugin>
     </plugins>
   </reporting>
 
