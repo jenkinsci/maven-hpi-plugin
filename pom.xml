@@ -34,18 +34,6 @@
     <tag>${scmTag}</tag>
     <url>https://github.com/${gitHubRepo}</url>
   </scm>
-  <distributionManagement>
-    <site>
-      <!-- if this deployment fails, it's probably you are missing the entry to set the username in ~/.m2/settings.xml
-               <server>
-                 <id>github.com</id>
-                 <username>git</username>
-               </server>
-      -->
-      <id>github.com</id>
-      <url>gitsite:git@github.com/${gitHubRepo}.git</url>
-    </site>
-  </distributionManagement>
 
   <properties>
     <revision>3.47</revision>
@@ -319,21 +307,6 @@
   </pluginRepositories>
 
   <build>
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-site-plugin</artifactId>
-          <dependencies>
-            <dependency>
-              <groupId>com.github.stephenc.wagon</groupId>
-              <artifactId>wagon-gitsite</artifactId>
-              <version>0.5</version>
-            </dependency>
-          </dependencies>
-        </plugin>
-      </plugins>
-    </pluginManagement>
     <plugins>
       <plugin>
         <artifactId>maven-enforcer-plugin</artifactId>
@@ -426,13 +399,6 @@
         </executions>
       </plugin>
     </plugins>
-    <extensions>
-      <extension>
-        <groupId>org.apache.maven.wagon</groupId>
-        <artifactId>wagon-ssh</artifactId>
-        <version>3.5.3</version>
-      </extension>
-    </extensions>
   </build>
 
   <reporting>
