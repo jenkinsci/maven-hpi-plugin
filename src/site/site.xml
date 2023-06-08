@@ -25,6 +25,11 @@
       <item name="Jenkins" href="https://jenkins.io/" />
     </breadcrumbs>
 
+    <menu name="Overview">
+      <item name="Introduction" href="index.html"/>
+      <item name="Goals" href="plugin-info.html"/>
+    </menu>
+
     <!-- Menus that every project will inherit -->
     <menu ref="reports" inherit="bottom" />
 
