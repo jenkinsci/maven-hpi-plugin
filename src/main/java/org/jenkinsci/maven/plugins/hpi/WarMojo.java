@@ -12,11 +12,8 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
-import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
-import org.apache.maven.project.ProjectBuildingRequest;
-import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Zip;
 import org.apache.tools.ant.types.ZipFileSet;
@@ -90,10 +87,7 @@ public class WarMojo extends RunMojo {
                 // find corresponding .hpi file
                 Artifact hpi =
                         artifactFactory.createArtifact(a.getGroupId(), a.getArtifactId(), a.getVersion(), null, "hpi");
-                ProjectBuildingRequest buildingRequest =
-                        new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
-                buildingRequest.setRemoteRepositories(project.getRemoteArtifactRepositories());
-                hpi = artifactResolver.resolveArtifact(buildingRequest, hpi).getArtifact();
+                hpi = MavenArtifact.resolveArtifact(hpi, project, session, repositorySystem);
 
                 if (hpi.getFile().isDirectory()) {
                     throw new UnsupportedOperationException(
@@ -110,7 +104,7 @@ public class WarMojo extends RunMojo {
             getLog().info("Generated " + outputFile);
 
             projectHelper.attachArtifact(getProject(), "war", outputFile);
-        } catch (IOException | ArtifactResolverException e) {
+        } catch (IOException e) {
             throw new MojoExecutionException("Failed to package war", e);
         }
     }

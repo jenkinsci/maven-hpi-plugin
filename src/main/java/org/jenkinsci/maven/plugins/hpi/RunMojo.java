@@ -61,16 +61,13 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.DefaultDependencyResolutionRequest;
-import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.DependencyResolutionException;
 import org.apache.maven.project.DependencyResolutionRequest;
 import org.apache.maven.project.DependencyResolutionResult;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
-import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.project.ProjectDependenciesResolver;
-import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver;
-import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException;
+import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.graph.DependencyFilter;
 import org.eclipse.aether.util.filter.ScopeDependencyFilter;
 import org.eclipse.jetty.http.HttpCompliance;
@@ -147,7 +144,7 @@ public class RunMojo extends JettyRunWarMojo {
     protected File warSourceDirectory;
 
     @Component
-    protected ArtifactResolver artifactResolver;
+    protected RepositorySystem repositorySystem;
 
     @Component
     protected ArtifactFactory artifactFactory;
@@ -317,17 +314,8 @@ public class RunMojo extends JettyRunWarMojo {
                 .artifactIdIsNot("remoting"); // remoting moved to its own release cycle
 
         if (webAppFile == null) {
-            Artifact jenkinsWarArtifact = getJenkinsWarArtifact();
-            try {
-                ProjectBuildingRequest buildingRequest =
-                        new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
-                buildingRequest.setRemoteRepositories(project.getRemoteArtifactRepositories());
-                jenkinsWarArtifact = artifactResolver
-                        .resolveArtifact(buildingRequest, jenkinsWarArtifact)
-                        .getArtifact();
-            } catch (ArtifactResolverException x) {
-                throw new MojoExecutionException("Could not resolve " + jenkinsWarArtifact + ": " + x, x);
-            }
+            Artifact jenkinsWarArtifact =
+                    MavenArtifact.resolveArtifact(getJenkinsWarArtifact(), project, session, repositorySystem);
             webAppFile = jenkinsWarArtifact.getFile();
             if (webAppFile == null || !webAppFile.isFile()) {
                 throw new MojoExecutionException("Could not find " + webAppFile + " from " + jenkinsWarArtifact);
@@ -373,10 +361,7 @@ public class RunMojo extends JettyRunWarMojo {
                 // find corresponding .hpi file
                 Artifact hpi =
                         artifactFactory.createArtifact(a.getGroupId(), a.getArtifactId(), a.getVersion(), null, "hpi");
-                ProjectBuildingRequest buildingRequest =
-                        new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
-                buildingRequest.setRemoteRepositories(project.getRemoteArtifactRepositories());
-                hpi = artifactResolver.resolveArtifact(buildingRequest, hpi).getArtifact();
+                hpi = MavenArtifact.resolveArtifact(hpi, project, session, repositorySystem);
 
                 // check recursive dependency. this is a rare case that happens when we split out some things from the
                 // core into a plugin
@@ -401,7 +386,7 @@ public class RunMojo extends JettyRunWarMojo {
                     copyPlugin(hpi.getFile(), pluginsDir, actualArtifactId);
                 }
             }
-        } catch (IOException | ArtifactResolverException e) {
+        } catch (IOException e) {
             throw new MojoExecutionException("Unable to copy dependency plugin", e);
         }
 
@@ -772,7 +757,7 @@ public class RunMojo extends JettyRunWarMojo {
     }
 
     protected MavenArtifact wrap(Artifact a) {
-        return new MavenArtifact(a, artifactResolver, artifactFactory, projectBuilder, session, project);
+        return new MavenArtifact(a, repositorySystem, artifactFactory, projectBuilder, session, project);
     }
 
     protected Artifact getJenkinsWarArtifact() throws MojoExecutionException {
