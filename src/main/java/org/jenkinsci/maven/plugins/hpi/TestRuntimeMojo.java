@@ -18,10 +18,6 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
-import org.apache.maven.project.DefaultProjectBuildingRequest;
-import org.apache.maven.project.ProjectBuildingRequest;
-import org.apache.maven.shared.transfer.artifact.DefaultArtifactCoordinate;
-import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException;
 
 /**
  * Configure Surefire for the desired version of Java.
@@ -73,22 +69,9 @@ public class TestRuntimeMojo extends AbstractJenkinsMojo {
 
     @NonNull
     private Artifact resolveJenkinsWar() throws MojoExecutionException {
-        DefaultArtifactCoordinate artifactCoordinate = new DefaultArtifactCoordinate();
-        artifactCoordinate.setGroupId("org.jenkins-ci.main");
-        artifactCoordinate.setArtifactId("jenkins-war");
-        artifactCoordinate.setVersion(findJenkinsVersion());
-        artifactCoordinate.setExtension("war");
-
-        try {
-            ProjectBuildingRequest buildingRequest =
-                    new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
-            buildingRequest.setRemoteRepositories(project.getRemoteArtifactRepositories());
-            return artifactResolver
-                    .resolveArtifact(buildingRequest, artifactCoordinate)
-                    .getArtifact();
-        } catch (ArtifactResolverException e) {
-            throw new MojoExecutionException("Couldn't download artifact: ", e);
-        }
+        Artifact artifact =
+                artifactFactory.createArtifact("org.jenkins-ci.main", "jenkins-war", findJenkinsVersion(), null, "war");
+        return MavenArtifact.resolveArtifact(artifact, project, session, repositorySystem);
     }
 
     @CheckForNull

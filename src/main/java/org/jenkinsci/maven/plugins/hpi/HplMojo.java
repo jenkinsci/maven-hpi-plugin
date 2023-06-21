@@ -113,7 +113,7 @@ public class HplMojo extends AbstractJenkinsManifestMojo {
      * puts into WEB-INF/lib should be the same so that the plugins see consistent
      * environment.
      */
-    private void buildLibraries(List<String> paths) throws IOException {
+    private void buildLibraries(List<String> paths) throws IOException, MojoExecutionException {
         Set<MavenArtifact> artifacts = getProjectArtfacts();
 
         // List up IDs of Jenkins plugin dependencies

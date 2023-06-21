@@ -16,14 +16,10 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
 import org.apache.maven.project.ProjectBuilder;
-import org.apache.maven.project.ProjectBuildingRequest;
-import org.apache.maven.shared.transfer.artifact.DefaultArtifactCoordinate;
-import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver;
-import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException;
+import org.eclipse.aether.RepositorySystem;
 
 /**
  * Mojos that need to figure out the Jenkins version it's working with.
@@ -62,7 +58,7 @@ public abstract class AbstractJenkinsMojo extends AbstractMojo {
     protected ArtifactFactory artifactFactory;
 
     @Component
-    protected ArtifactResolver artifactResolver;
+    protected RepositorySystem repositorySystem;
 
     @Component
     protected ProjectBuilder projectBuilder;
@@ -127,30 +123,20 @@ public abstract class AbstractJenkinsMojo extends AbstractMojo {
     }
 
     private Artifact resolveJenkinsCore() throws MojoExecutionException {
-        DefaultArtifactCoordinate artifactCoordinate = new DefaultArtifactCoordinate();
+        String groupId, artifactId;
         if (jenkinsCoreId != null) {
             String[] parts = jenkinsCoreId.split(":");
-            artifactCoordinate.setGroupId(parts[0]);
-            artifactCoordinate.setArtifactId(parts[1]);
+            groupId = parts[0];
+            artifactId = parts[1];
         } else {
-            artifactCoordinate.setGroupId("org.jenkins-ci.main");
-            artifactCoordinate.setArtifactId("jenkins-core");
+            groupId = "org.jenkins-ci.main";
+            artifactId = "jenkins-core";
         }
-        artifactCoordinate.setVersion(findJenkinsVersion());
-
-        try {
-            ProjectBuildingRequest buildingRequest =
-                    new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
-            buildingRequest.setRemoteRepositories(project.getRemoteArtifactRepositories());
-            return artifactResolver
-                    .resolveArtifact(buildingRequest, artifactCoordinate)
-                    .getArtifact();
-        } catch (ArtifactResolverException e) {
-            throw new MojoExecutionException("Couldn't download artifact: ", e);
-        }
+        Artifact artifact = artifactFactory.createArtifact(groupId, artifactId, findJenkinsVersion(), null, "jar");
+        return MavenArtifact.resolveArtifact(artifact, project, session, repositorySystem);
     }
 
     protected MavenArtifact wrap(Artifact a) {
-        return new MavenArtifact(a, artifactResolver, artifactFactory, projectBuilder, session, project);
+        return new MavenArtifact(a, repositorySystem, artifactFactory, projectBuilder, session, project);
     }
 }
