@@ -14,12 +14,21 @@
 // ========================================================================
 package org.jenkinsci.maven.plugins.hpi;
 
+import edu.umd.cs.findbugs.annotations.Nullable;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.util.VersionNumber;
 import io.jenkins.lib.support_log_formatter.SupportLogFormatter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InaccessibleObjectException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -42,6 +51,7 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.apache.commons.io.FileUtils;
@@ -84,6 +94,7 @@ import org.eclipse.jetty.util.security.Password;
 import org.eclipse.jetty.webapp.WebAppClassLoader;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.twdata.maven.mojoexecutor.MojoExecutor;
+import sun.misc.Unsafe;
 
 /**
  * Runs Jenkins with the current plugin project.
@@ -101,6 +112,8 @@ import org.twdata.maven.mojoexecutor.MojoExecutor;
 @Mojo(name = "run", requiresDependencyResolution = ResolutionScope.TEST)
 @Execute(phase = LifecyclePhase.COMPILE)
 public class RunMojo extends JettyRunWarMojo {
+    private static final Map<String, String> REQUIRED_PACKAGES_TO_TEST_CLASSES =
+            Map.of("java.lang", "String$CaseInsensitiveComparator", "java.util", "UUID$Holder");
 
     @Parameter(defaultValue = "${session}", required = true, readonly = true)
     protected MavenSession session;
@@ -262,6 +275,7 @@ public class RunMojo extends JettyRunWarMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
+        openInternalPackagesIfRequired();
         getProject().setArtifacts(resolveDependencies(dependencyResolution));
 
         File basedir = getProject().getBasedir();
@@ -410,6 +424,96 @@ public class RunMojo extends JettyRunWarMojo {
         }
 
         super.execute();
+    }
+
+    private void openInternalPackagesIfRequired() {
+        Runtime.Version runtimeVersion = Runtime.version();
+        if (runtimeVersion.feature() < 16) {
+            return;
+        }
+        try {
+            final List<String> unavailableRequiredPackages = unavailableRequiredPackages();
+            if (!unavailableRequiredPackages.isEmpty()) {
+                openPackages(unavailableRequiredPackages);
+                final List<String> failedToOpen = unavailableRequiredPackages();
+                if (!failedToOpen.isEmpty()) {
+                    String warning =
+                            "Some required internal classes are unavailable. Please consider adding the following JVM arguments: ";
+                    warning += failedToOpen.stream()
+                            .map(pkg -> "--add-opens java.base/" + pkg + "=ALL-UNNAMED")
+                            .collect(Collectors.joining(" "));
+                    getLog().warn(warning);
+                }
+            }
+        } catch (Throwable t) {
+            getLog().error("Failed to check for available JDK packages", t);
+        }
+    }
+
+    @SuppressFBWarnings(value = "REC_CATCH_EXCEPTION", justification = "workaround JDK11")
+    private static List<String> unavailableRequiredPackages() {
+        final List<String> packages = new ArrayList<>();
+        for (Map.Entry<String, String> e : REQUIRED_PACKAGES_TO_TEST_CLASSES.entrySet()) {
+            final String key = e.getKey();
+            final String value = e.getValue();
+            try {
+                final Class<?> clazz = Class.forName(key + "." + value);
+                if (clazz.isEnum()) {
+                    clazz.getMethod("values").invoke(null);
+                } else {
+                    Constructor<?> c = clazz.getDeclaredConstructor();
+                    c.setAccessible(true);
+                    c.newInstance();
+                }
+            } catch (InaccessibleObjectException ex) {
+                packages.add(key);
+            } catch (Exception ignore) {
+                // in old versions of JDK some classes could be unavailable
+            }
+        }
+        return packages;
+    }
+
+    private static void openPackages(Collection<String> packagesToOpen) throws Throwable {
+        final Collection<?> modules = allModules();
+        if (modules == null) {
+            return;
+        }
+        final Field unsafeField = Unsafe.class.getDeclaredField("theUnsafe");
+        unsafeField.setAccessible(true);
+        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
+        final Field implLookupField = MethodHandles.Lookup.class.getDeclaredField("IMPL_LOOKUP");
+        final MethodHandles.Lookup lookup = (MethodHandles.Lookup)
+                unsafe.getObject(unsafe.staticFieldBase(implLookupField), unsafe.staticFieldOffset(implLookupField));
+        final MethodHandle modifiers = lookup.findSetter(Method.class, "modifiers", Integer.TYPE);
+        final Method exportMethod = Class.forName("java.lang.Module").getDeclaredMethod("implAddOpens", String.class);
+        modifiers.invokeExact(exportMethod, Modifier.PUBLIC);
+        for (Object module : modules) {
+            final Collection<String> packages = (Collection<String>)
+                    module.getClass().getMethod("getPackages").invoke(module);
+            for (String name : packages) {
+                if (packagesToOpen.contains(name)) {
+                    exportMethod.invoke(module, name);
+                }
+            }
+        }
+    }
+
+    @Nullable
+    @SuppressFBWarnings(value = "REC_CATCH_EXCEPTION", justification = "workaround JDK11")
+    private static Collection<?> allModules() {
+        // calling ModuleLayer.boot().modules() by reflection
+        try {
+            final Object boot =
+                    Class.forName("java.lang.ModuleLayer").getMethod("boot").invoke(null);
+            if (boot == null) {
+                return null;
+            }
+            final Object modules = boot.getClass().getMethod("modules").invoke(boot);
+            return (Collection<?>) modules;
+        } catch (Exception ignore) {
+            return null;
+        }
     }
 
     private boolean hasSameGavAsProject(Artifact a) {
