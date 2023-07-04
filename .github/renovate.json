@@ -4,6 +4,7 @@
     "config:base",
     ":semanticCommitsDisabled"
   ],
+  "enabledManagers": ["regex"],
   "regexManagers": [
     {
       "fileMatch": ["src/site/site.xml"],
