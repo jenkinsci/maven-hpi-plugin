@@ -93,6 +93,7 @@ import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.util.security.Password;
 import org.eclipse.jetty.webapp.WebAppClassLoader;
 import org.eclipse.jetty.webapp.WebAppContext;
+import org.eclipse.jetty.websocket.server.config.JettyWebSocketServletContainerInitializer;
 import org.twdata.maven.mojoexecutor.MojoExecutor;
 import sun.misc.Unsafe;
 
@@ -624,6 +625,7 @@ public class RunMojo extends JettyRunWarMojo {
                 }
             }
         }
+        JettyWebSocketServletContainerInitializer.configure(getWebAppConfig(), null);
         HashLoginService hashLoginService = (new HashLoginService("default"));
         UserStore userStore = new UserStore();
         hashLoginService.setUserStore(userStore);
