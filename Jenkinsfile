@@ -42,6 +42,7 @@ def runTests(Map params = [:]) {
 parallel(
     'windows-11': runTests(platform: 'windows', jdk: 11),
     'linux-11': runTests(platform: 'linux', jdk: 11),
-    'linux-17': runTests(platform: 'linux', jdk: 17)
+    'linux-17': runTests(platform: 'linux', jdk: 17),
+    'linux-21': runTests(platform: 'linux', jdk: 21)
 )
 infra.maybePublishIncrementals()
