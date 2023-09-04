@@ -18,7 +18,7 @@ def runTests(Map params = [:]) {
         }
         stage("Build (${stageIdentifier})") {
           ansiColor('xterm') {
-            def args = ['-Dstyle.color=always', '-Prun-its', '-Dmaven.test.failure.ignore', 'clean', 'install', 'site']
+            def args = ['-Dstyle.color=always', '-Prun-its', '-Dmaven.test.failure.ignore', 'clean', 'verify', 'site']
             if (publishing) {
               args += '-Dset.changelist'
             }
