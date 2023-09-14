@@ -250,9 +250,6 @@
             <pomInclude>*</pomInclude>
           </pomIncludes>
           <postBuildHookScript>verify</postBuildHookScript>
-          <filterProperties>
-            <repository.proxy.url>${repository.proxy.url}</repository.proxy.url>
-          </filterProperties>
           <environmentVariables>
             <!-- block anything set by a CI environment -->
             <JENKINS_HOME />
@@ -282,17 +279,6 @@
             </goals>
           </execution>
         </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>mrm-maven-plugin</artifactId>
-        <version>1.5.0</version>
-        <configuration>
-          <propertyName>repository.proxy.url</propertyName>
-          <repositories>
-            <proxyRepo />
-          </repositories>
-        </configuration>
       </plugin>
       <plugin>
         <groupId>org.eclipse.sisu</groupId>
@@ -338,18 +324,6 @@
                 <goals>
                   <goal>install</goal>
                   <goal>run</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>mrm-maven-plugin</artifactId>
-            <executions>
-              <execution>
-                <goals>
-                  <goal>start</goal>
-                  <goal>stop</goal>
                 </goals>
               </execution>
             </executions>

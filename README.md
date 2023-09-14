@@ -26,7 +26,7 @@ mvn -f ../some-plugin -Dhpi-plugin.version=2.XXX-SNAPSHOT -DskipTests -DjenkinsH
 You can also rerun one test:
 
 ```bash
-mvn -Prun-its mrm:start invoker:run mrm:stop -Dinvoker.test=parent-4x
+mvn -Prun-its invoker:run -Dinvoker.test=parent-4x
 ```
 
 To rerun just the verification script:
