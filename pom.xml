@@ -246,6 +246,7 @@
           <cloneProjectsTo>${project.build.directory}/its</cloneProjectsTo>
           <localRepositoryPath>${basedir}/target/local-repo</localRepositoryPath>
           <settingsFile>src/it/settings.xml</settingsFile>
+          <mergeUserSettings>true</mergeUserSettings>
           <pomIncludes>
             <pomInclude>*</pomInclude>
           </pomIncludes>
