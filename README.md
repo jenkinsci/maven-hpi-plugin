@@ -35,4 +35,4 @@ To rerun just the verification script:
 groovy -e "basedir='$(pwd)/target/its/parent-4x'; evaluate new File('src/it/parent-4x/verify.groovy')"
 ```
 
-Also make sure `project.parent.version` is the latest in every integration test except `src/it/parent-4-40/pom.xml`.
+Also make sure `project.parent.version` is the latest in every integration test.
