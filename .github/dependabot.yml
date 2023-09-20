@@ -7,12 +7,16 @@ updates:
     schedule:
       interval: "weekly"
     ignore:
+      # Maven core artifacts are provided by the running Maven, so do not update
+      # to prevent consuming something unavailable.
+      - dependency-name: "org.apache.maven:*"
+      # https://lists.apache.org/thread/ltd1g1dbv0lqqdw5q941gmrkfyn6m87m
+      - dependency-name: "org.codehaus.plexus:plexus-utils"
+        versions: [">=4.0.0"]
       # [JENKINS-68698] Must remain within Jetty 10.x until the Jakarta EE 9
       # migration is complete
       - dependency-name: "org.eclipse.jetty:jetty-maven-plugin"
         versions: [">=11.0.0"]
-      # maven core artifacts are provided by the running maven, do not update to prevent consuming something unavailable
-      - dependency-name: "org.apache.maven:*"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
