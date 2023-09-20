@@ -19,7 +19,7 @@
 globalConfigHelp  = new File(basedir, 'target/war-resources-it/help-globalConfig.html').text;
 assert globalConfigHelp.contains('${prop1} hello');
 assert globalConfigHelp.contains('@prop2@ goodbye');
-assert globalConfigHelp.contains('@java.vendor.url@ https://');
+assert globalConfigHelp.contains('@java.runtime.name@ OpenJDK');
 
 
 return true;

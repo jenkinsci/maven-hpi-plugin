@@ -36,7 +36,7 @@
   </scm>
 
   <properties>
-    <revision>3.49</revision>
+    <revision>3.50</revision>
     <changelist>-SNAPSHOT</changelist>
     <!-- used for escape -->
     <begin>${${$}}{</begin>
@@ -72,7 +72,7 @@
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
-        <version>2.0.7</version>
+        <version>2.0.9</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -112,7 +112,7 @@
     <dependency>
       <groupId>org.apache.ant</groupId>
       <artifactId>ant</artifactId>
-      <version>1.10.13</version>
+      <version>1.10.14</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
@@ -137,7 +137,13 @@
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-maven-plugin</artifactId>
-      <version>10.0.15</version>
+      <version>10.0.16</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.codehaus.plexus</groupId>
+          <artifactId>plexus-utils</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
@@ -240,6 +246,7 @@
           <cloneProjectsTo>${project.build.directory}/its</cloneProjectsTo>
           <localRepositoryPath>${basedir}/target/local-repo</localRepositoryPath>
           <settingsFile>src/it/settings.xml</settingsFile>
+          <mergeUserSettings>true</mergeUserSettings>
           <pomIncludes>
             <pomInclude>*</pomInclude>
           </pomIncludes>
