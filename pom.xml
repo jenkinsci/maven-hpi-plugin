@@ -46,7 +46,7 @@
     <gitHubRepo>jenkinsci/${project.artifactId}</gitHubRepo>
     <!-- if we update this all consumers need to be running at least this version -->
     <maven.version>3.8.1</maven.version>
-    <maven-plugin-tools.version>3.9.0</maven-plugin-tools.version>
+    <maven-plugin-tools.version>3.10.1</maven-plugin-tools.version>
     <spotless.check.skip>false</spotless.check.skip>
   </properties>
 
