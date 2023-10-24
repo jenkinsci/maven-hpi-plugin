@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
+import org.apache.maven.artifact.ArtifactUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -41,8 +42,14 @@ public class ValidateHpiMojo extends AbstractHpiMojo {
             }
         }
         if (coreVersion.compareTo(maxCoreVersion) < 0) {
-            throw new MojoExecutionException(
-                    "Dependency " + maxCoreVersionArtifact + " requires Jenkins " + maxCoreVersion + " or higher.");
+            String error =
+                    "Dependency " + maxCoreVersionArtifact + " requires Jenkins " + maxCoreVersion + " or higher.";
+            if (ArtifactUtils.isSnapshot(coreVersion.toString())
+                    || ArtifactUtils.isSnapshot(maxCoreVersion.toString())) {
+                getLog().warn(error);
+            } else {
+                throw new MojoExecutionException(error);
+            }
         }
     }
 
