@@ -100,7 +100,7 @@ public class JarMojo extends AbstractJenkinsManifestMojo {
                     MojoExecutionException {
 
         // generate a manifest
-        File manifestFile = new File(getWebappDirectory(), "META-INF/MANIFEST.MF");
+        File manifestFile = new File(webappDirectory, "META-INF/MANIFEST.MF");
         generateManifest(archive, manifestFile);
         Manifest manifest = loadManifest(manifestFile);
 
@@ -110,7 +110,7 @@ public class JarMojo extends AbstractJenkinsManifestMojo {
         archiver.setArchiver(jarArchiver);
         archiver.setOutputFile(jarFile);
         jarArchiver.addConfiguredManifest(manifest);
-        jarArchiver.addDirectory(getClassesDirectory());
+        jarArchiver.addDirectory(classesDirectory);
         archiver.createArchive(session, project, archive);
         projectHelper.attachArtifact(project, "jar", jarClassifier, jarFile);
     }
