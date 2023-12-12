@@ -16,6 +16,7 @@
 package org.jenkinsci.maven.plugins.hpi;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import hudson.Extension;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -25,18 +26,27 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.List;
+import jenkins.YesNoMaybe;
+import net.java.sezpoz.Index;
+import net.java.sezpoz.IndexItem;
+import org.apache.commons.io.IOUtils;
 import org.apache.maven.archiver.ManifestConfiguration;
 import org.apache.maven.archiver.MavenArchiveConfiguration;
 import org.apache.maven.archiver.MavenArchiver;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
+import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.model.Developer;
 import org.apache.maven.model.License;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -69,6 +79,69 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
      */
     @Parameter
     private String sandboxStatus;
+
+    /**
+     * [ws|tab|CR|LF]+ separated list of package prefixes that your plugin doesn't want to see
+     * from the core.
+     *
+     * <p>
+     * Tokens in this list is prefix-matched against the fully-qualified class name, so add
+     * "." to the end of each package name, like "com.foo. com.bar."
+     */
+    @Parameter
+    private String maskClasses;
+
+    /**
+     * Like the {@code maskClasses} parameter, but it applies at the boundary between core and
+     * all the plugins.
+     *
+     * <p>
+     * This mechanism is intended for those plugins that bring JavaEE APIs (such as the database plugin,
+     * which brings in the JPA API.) Other plugins that depend on the database plugin can still see
+     * the JPA API through the container classloader, so to make them all resolve to the JPA API in the
+     * database plugin, the database plugin needs to rely on this mechanism.
+     * @since 1.92
+     */
+    @Parameter
+    private String globalMaskClasses;
+
+    /**
+     * Change the classloader preference such that classes locally bundled in this plugin
+     * will take precedence over those that are defined by the dependency plugins.
+     *
+     * <p>
+     * This is useful if the plugins that you want to depend on exposes conflicting versions
+     * of the libraries you are using, but enabling this switch makes your code
+     * susceptible to classloader constraint violations.
+     *
+     * @since 1.53
+     */
+    @Parameter
+    private boolean pluginFirstClassLoader = false;
+
+    /**
+     * Single directory for extra files to include in the WAR.
+     */
+    @Parameter(defaultValue = "${basedir}/src/main/webapp")
+    protected File warSourceDirectory;
+
+    /**
+     * The directory containing generated classes.
+     */
+    @Parameter(defaultValue = "${project.build.outputDirectory}")
+    protected File classesDirectory;
+
+    /**
+     * The directory where the webapp is built.
+     */
+    @Parameter(defaultValue = "${project.build.directory}/${project.build.finalName}")
+    protected File webappDirectory;
+
+    /**
+     * If true, test scope dependencies count as if they are normal dependencies.
+     * This is only useful during hpi:run, so not exposing it as a configurable parameter.
+     */
+    private ScopeArtifactFilter scopeFilter = new ScopeArtifactFilter("runtime");
 
     /**
      * Specify the minimum version of Java that this plugin requires.
@@ -347,4 +420,70 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
             target.addAttributeAndCheck(new Manifest.Attribute(attributeName, propertyValue));
         }
     }
+
+    /**
+     * If the project is on Git, figure out Git SHA1.
+     *
+     * @return null if no git repository is found
+     */
+    private String getGitHeadSha1() {
+        if (!project.getScm().getConnection().startsWith("scm:git")) {
+            // Project is not using Git
+            return null;
+        }
+
+        try {
+            Process p = new ProcessBuilder("git", "rev-parse", "HEAD")
+                    .directory(project.getBasedir())
+                    .redirectErrorStream(true)
+                    .start();
+            p.getOutputStream().close();
+            String v;
+            try (InputStream is = p.getInputStream()) {
+                v = IOUtils.toString(is, Charset.defaultCharset()).trim();
+            }
+            if (p.waitFor() != 0) {
+                return null; // git rev-parse failed to run
+            }
+
+            if (v.length() < 8) {
+                return null; // git repository present, but without commits
+            }
+
+            return v;
+        } catch (IOException | InterruptedException e) {
+            getLog().debug("Failed to run git rev-parse HEAD", e);
+            return null;
+        }
+    }
+
+    /**
+     * Is the dynamic loading supported?
+     *
+     * False, if the answer is known to be "No". Otherwise null, if there are some extensions
+     * we don't know we can dynamic load. Otherwise, if everything is known to be dynamic loadable, return true.
+     */
+    @CheckForNull
+    private Boolean isSupportDynamicLoading() throws IOException {
+        try (URLClassLoader cl = new URLClassLoader(
+                new URL[] {
+                    new File(project.getBuild().getOutputDirectory()).toURI().toURL()
+                },
+                getClass().getClassLoader())) {
+
+            EnumSet<YesNoMaybe> e = EnumSet.noneOf(YesNoMaybe.class);
+            for (IndexItem<Extension, Object> i : Index.load(Extension.class, Object.class, cl)) {
+                e.add(i.annotation().dynamicLoadable());
+            }
+
+            if (e.contains(YesNoMaybe.NO)) {
+                return Boolean.FALSE;
+            }
+            if (e.contains(YesNoMaybe.MAYBE)) {
+                return null;
+            }
+            return Boolean.TRUE;
+        }
+    }
+
 }
