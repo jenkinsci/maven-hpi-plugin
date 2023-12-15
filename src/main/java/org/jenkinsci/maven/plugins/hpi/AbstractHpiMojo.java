@@ -204,20 +204,6 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
     protected String maskClasses;
 
     /**
-     * Like the {@code maskClasses} parameter, but it applies at the boundary between core and
-     * all the plugins.
-     *
-     * <p>
-     * This mechanism is intended for those plugins that bring JavaEE APIs (such as the database plugin,
-     * which brings in the JPA API.) Other plugins that depend on the database plugin can still see
-     * the JPA API through the container classloader, so to make them all resolve to the JPA API in the
-     * database plugin, the database plugin needs to rely on this mechanism.
-     * @since 1.92
-     */
-    @Parameter
-    protected String globalMaskClasses;
-
-    /**
      * Change the classloader preference such that classes locally bundled in this plugin
      * will take precedence over those that are defined by the dependency plugins.
      *

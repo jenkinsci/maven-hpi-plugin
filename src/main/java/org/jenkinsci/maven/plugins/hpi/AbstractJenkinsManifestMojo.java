@@ -204,10 +204,6 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
             mainSection.addAttributeAndCheck(new Manifest.Attribute("Mask-Classes", maskClasses));
         }
 
-        if (globalMaskClasses != null) {
-            mainSection.addAttributeAndCheck(new Manifest.Attribute("Global-Mask-Classes", globalMaskClasses));
-        }
-
         if (pluginFirstClassLoader) {
             mainSection.addAttributeAndCheck(new Manifest.Attribute("PluginFirstClassLoader", "true"));
         }
