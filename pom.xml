@@ -47,6 +47,10 @@
     <!-- if we update this all consumers need to be running at least this version -->
     <maven.version>3.8.1</maven.version>
     <maven-plugin-tools.version>3.10.2</maven-plugin-tools.version>
+    <!-- TODO: Remove when parent pom is using this version or newer -->
+    <!-- https://github.com/jenkinsci/pom/pull/510 -->
+    <spotbugs-maven-plugin.version>4.8.2.0</spotbugs-maven-plugin.version>
+    <spotbugs.omitVisitors>FindReturnRef,ConstructorThrow</spotbugs.omitVisitors>
     <spotless.check.skip>false</spotless.check.skip>
   </properties>
 
