@@ -2,12 +2,16 @@ package org.jenkinsci.maven.plugins.hpi;
 
 import hudson.util.VersionNumber;
 import io.jenkins.lib.versionnumber.JavaSpecificationVersion;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Properties;
 import org.apache.maven.model.Scm;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.util.FileUtils;
 
 /**
  * Make sure that we are running in the right environment.
@@ -37,6 +41,7 @@ public class ValidateMojo extends AbstractJenkinsMojo {
         if (JavaSpecificationVersion.forCurrentJVM().isOlderThan(javaVersion)) {
             throw new MojoExecutionException("Java " + javaVersion + " or later is necessary to build this plugin.");
         }
+        writeProfileMarker(javaVersion);
 
         if (new VersionNumber(findJenkinsVersion()).compareTo(new VersionNumber("2.361")) < 0) {
             throw new MojoExecutionException("This version of maven-hpi-plugin requires Jenkins 2.361 or later");
@@ -91,6 +96,56 @@ public class ValidateMojo extends AbstractJenkinsMojo {
             if (url != null) {
                 check("url", url, HTTP_GITHUB_COM, HTTPS_GITHUB_COM, HTTP_URLS_ARE_INSECURE);
             }
+        }
+    }
+
+    private void writeProfileMarker(JavaSpecificationVersion javaVersion) throws MojoExecutionException {
+        var path = Path.of(project.getBuild().getDirectory(), "java-level");
+        if (!Files.exists(path)) {
+            try {
+                Files.createDirectories(path);
+            } catch (IOException e) {
+                throw new MojoExecutionException("Failed to create " + path, e);
+            }
+        }
+        var versionPath = path.resolve(Integer.toString(javaVersion.toReleaseVersion()));
+        boolean found = false;
+        try (var walk = Files.walk(path)) {
+            for (var it = walk.iterator(); it.hasNext(); ) {
+                var p = it.next();
+                if (p.equals(path)) {
+                    continue;
+                }
+                if (!p.equals(versionPath)) {
+                    getLog().info("Removing old marker file " + p);
+                    delete(p);
+                } else {
+                    found = true;
+                }
+            }
+        } catch (IOException e) {
+            throw new MojoExecutionException("Failed to walk " + path, e);
+        }
+        if (!found) {
+            try {
+                Files.createFile(versionPath);
+                getLog().info("Created marker file " + versionPath);
+            } catch (IOException e) {
+                throw new MojoExecutionException("Failed to create file " + versionPath, e);
+            }
+        }
+    }
+
+    private static void delete(Path p) throws MojoExecutionException {
+        try {
+            if (Files.isRegularFile(p)) {
+                Files.delete(p);
+            } else if (Files.isDirectory(p)) {
+                // In case someone manually created a subdirectory, delete it recursively
+                FileUtils.deleteDirectory(p.toFile());
+            }
+        } catch (IOException e) {
+            throw new MojoExecutionException("Failed to delete " + p, e);
         }
     }
 
