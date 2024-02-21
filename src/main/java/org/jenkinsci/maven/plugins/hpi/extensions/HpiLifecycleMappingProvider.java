@@ -26,7 +26,6 @@ public final class HpiLifecycleMappingProvider extends AbstractLifecycleMappingP
                 "validate",
                 new LifecyclePhase(
                         "org.jenkins-ci.tools:maven-hpi-plugin:validate,org.jenkins-ci.tools:maven-hpi-plugin:validate-hpi"));
-        bindings.put("initialize", new LifecyclePhase("org.jenkins-ci.tools:maven-hpi-plugin:initialize"));
         bindings.put(
                 "process-resources",
                 new LifecyclePhase("org.apache.maven.plugins:maven-resources-plugin:2.6:resources"));
