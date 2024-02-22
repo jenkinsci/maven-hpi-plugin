@@ -42,6 +42,8 @@ public class ValidateMojo extends AbstractJenkinsMojo {
             throw new MojoExecutionException("Java " + javaVersion + " or later is necessary to build this plugin.");
         }
         writeProfileMarker(javaVersion);
+        setProperty("maven.compiler.release", Integer.toString(javaVersion.toReleaseVersion()));
+        setProperty("maven.compiler.testRelease", Integer.toString(javaVersion.toReleaseVersion()));
 
         if (new VersionNumber(findJenkinsVersion()).compareTo(new VersionNumber("2.361")) < 0) {
             throw new MojoExecutionException("This version of maven-hpi-plugin requires Jenkins 2.361 or later");
@@ -146,6 +148,14 @@ public class ValidateMojo extends AbstractJenkinsMojo {
             }
         } catch (IOException e) {
             throw new MojoExecutionException("Failed to delete " + p, e);
+        }
+    }
+
+    private void setProperty(String key, String value) {
+        String currentValue = project.getProperties().getProperty(key);
+        if (currentValue == null || !currentValue.equals(value)) {
+            getLog().info("Setting " + key + " to " + value);
+            project.getProperties().setProperty(key, value);
         }
     }
 
