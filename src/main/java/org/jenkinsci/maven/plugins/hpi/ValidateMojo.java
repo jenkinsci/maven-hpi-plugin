@@ -42,8 +42,20 @@ public class ValidateMojo extends AbstractJenkinsMojo {
             throw new MojoExecutionException("Java " + javaVersion + " or later is necessary to build this plugin.");
         }
         writeProfileMarker(javaVersion);
-        setProperty("maven.compiler.release", Integer.toString(javaVersion.toReleaseVersion()));
-        setProperty("maven.compiler.testRelease", Integer.toString(javaVersion.toReleaseVersion()));
+        if (!project.getProperties()
+                .getProperty("maven.compiler.release")
+                .equals(Integer.toString(javaVersion.toReleaseVersion()))) {
+            // Apply the profile to the in-memory model.
+            setProperty("maven.compiler.release", Integer.toString(javaVersion.toReleaseVersion()));
+            setProperty("maven.compiler.testRelease", Integer.toString(javaVersion.toReleaseVersion()));
+
+            // Unfortunately, I see no way to update the Enforcer configuration without restarting Maven.
+            // In the meantime, skip this rule in the current invocation to avoid a false positive.
+            if (!project.getProperties().containsKey("enforcer.skipRules")) {
+                getLog().warn("Skipping enforceBytecodeVersion; will run on next invocation.");
+                project.getProperties().setProperty("enforcer.skipRules", "enforceBytecodeVersion");
+            }
+        }
 
         if (new VersionNumber(findJenkinsVersion()).compareTo(new VersionNumber("2.361")) < 0) {
             throw new MojoExecutionException("This version of maven-hpi-plugin requires Jenkins 2.361 or later");
