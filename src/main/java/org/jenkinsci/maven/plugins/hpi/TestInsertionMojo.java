@@ -1,5 +1,6 @@
 package org.jenkinsci.maven.plugins.hpi;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.util.VersionNumber;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -128,7 +129,7 @@ public class TestInsertionMojo extends AbstractJenkinsMojo {
             throw new MojoExecutionException("Failed to create injected test directory", e);
         }
 
-        String packageName = injectedTestPackage.replace('-', '_');
+        String packageName = legalizePackageName(injectedTestPackage);
         File javaFile =
                 new File(f, packageName.replace(".", File.separator) + File.separator + injectedTestName + ".java");
         var parentFile = javaFile.getParentFile();
@@ -176,5 +177,13 @@ public class TestInsertionMojo extends AbstractJenkinsMojo {
             // Ignore, as this is an optimization for performance rather than correctness.
             getLog().warn("Failed to clear last modified time on " + javaFile, e);
         }
+    }
+
+    static String legalizePackageName(@NonNull String input) {
+        String result = input.replace('-', '_');
+        if (!result.isEmpty() && Character.isDigit(result.charAt(0))) {
+            result = "_" + result;
+        }
+        return result;
     }
 }
