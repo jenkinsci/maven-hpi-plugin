@@ -12,7 +12,7 @@ public class TestInsertionMojoTest {
                 "org.jenkinsci.maven.plugins.hpi",
                 TestInsertionMojo.legalizePackageName("org.jenkinsci.maven.plugins.hpi"));
         assertEquals(
-                "_123org.jenkinsci.maven.plugins.hpi",
-                TestInsertionMojo.legalizePackageName("123org.jenkinsci.maven.plugins.hpi"));
+                "_123org.jenkins_ci.maven.plugins.hpi",
+                TestInsertionMojo.legalizePackageName("123org.jenkins-ci.maven.plugins.hpi"));
     }
 }
