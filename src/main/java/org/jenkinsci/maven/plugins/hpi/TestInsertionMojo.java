@@ -40,10 +40,13 @@ public class TestInsertionMojo extends AbstractJenkinsMojo {
 
     /**
      * Package name of the injected test.
-     *
+     * <p>
      * This is used to determine the package name of the generated test.
      * <p>
-     * <code>"-"</code> gets replaced by <code>"_"</code> for compatibility with Java package names.
+     * For compatibility with Java package names,
+     * <ul>
+     * <li><code>"-"</code> gets replaced by <code>"_"</code>
+     * <li>If starting with a digit, a <code>"_"</code> is prepended.
      */
     @Parameter(
             property = "maven-hpi-plugin.injectedTestPackage",
