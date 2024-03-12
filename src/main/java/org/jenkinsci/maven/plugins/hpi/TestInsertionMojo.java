@@ -10,6 +10,7 @@ import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.attribute.FileTime;
+import javax.lang.model.SourceVersion;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
@@ -182,10 +183,15 @@ public class TestInsertionMojo extends AbstractJenkinsMojo {
         }
     }
 
-    static String legalizePackageName(@NonNull String input) {
+    static String legalizePackageName(@NonNull String input) throws MojoFailureException {
         String result = input.replace('-', '_');
         if (!result.isEmpty() && Character.isDigit(result.charAt(0))) {
             result = "_" + result;
+        }
+        if (!SourceVersion.isName(result)) {
+            throw new MojoFailureException(
+                    "Could not convert " + input
+                            + " to a legal java package name. Please override \"injectedTestPackage\" with a valid java package name.");
         }
         return result;
     }
