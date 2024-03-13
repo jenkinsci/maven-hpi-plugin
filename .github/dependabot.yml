@@ -11,6 +11,8 @@ updates:
       # to prevent consuming something unavailable.
       - dependency-name: "org.apache.maven:*"
       # https://lists.apache.org/thread/ltd1g1dbv0lqqdw5q941gmrkfyn6m87m
+      - dependency-name: "org.apache.maven.shared:maven-filtering"
+        versions: [">=3.3.2"]
       - dependency-name: "org.codehaus.plexus:plexus-utils"
         versions: [">=4.0.0"]
       # [JENKINS-68698] Must remain within Jetty 10.x until the Jakarta EE 9
