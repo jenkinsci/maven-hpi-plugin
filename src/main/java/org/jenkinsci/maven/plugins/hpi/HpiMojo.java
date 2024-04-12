@@ -134,9 +134,7 @@ public class HpiMojo extends AbstractJenkinsManifestMojo {
             // create a jar file to be used when other plugins depend on this plugin.
             jarFile = getOutputFile(".jar");
             getLog().info("Generating jar " + jarFile.getAbsolutePath());
-            MavenArchiver archiver = new MavenArchiver();
-            archiver.setArchiver(jarArchiver);
-            archiver.setOutputFile(jarFile);
+            MavenArchiver archiver = newMavenArchiver(jarArchiver, jarFile);
             jarArchiver.addConfiguredManifest(manifest);
             File indexJelly = new File(getClassesDirectory(), "index.jelly");
             if (!indexJelly.isFile()) {
@@ -165,10 +163,7 @@ public class HpiMojo extends AbstractJenkinsManifestMojo {
         File hpiFile = getOutputFile(".hpi");
         getLog().info("Generating hpi " + hpiFile.getAbsolutePath());
 
-        MavenArchiver archiver = new MavenArchiver();
-
-        archiver.setArchiver(hpiArchiver);
-        archiver.setOutputFile(hpiFile);
+        MavenArchiver archiver = newMavenArchiver(hpiArchiver, hpiFile);
 
         hpiArchiver.addConfiguredManifest(manifest);
         hpiArchiver.addDirectory(getWebappDirectory(), getIncludes(), getExcludes());
