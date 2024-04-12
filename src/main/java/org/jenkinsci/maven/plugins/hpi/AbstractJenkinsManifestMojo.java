@@ -42,6 +42,7 @@ import org.apache.maven.model.License;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.archiver.jar.JarArchiver;
 import org.codehaus.plexus.archiver.jar.Manifest;
 import org.codehaus.plexus.archiver.jar.ManifestException;
 
@@ -65,6 +66,16 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
     private String compatibleSinceVersion;
 
     /**
+     * Timestamp for reproducible output archive entries, either formatted as ISO 8601
+     * <code>yyyy-MM-dd'T'HH:mm:ssXXX</code> or as an int representing seconds since the epoch (like
+     * <a href="https://reproducible-builds.org/docs/source-date-epoch/">SOURCE_DATE_EPOCH</a>).
+     *
+     * @since TODO
+     */
+    @Parameter(defaultValue = "${project.build.outputTimestamp}")
+    private String outputTimestamp;
+
+    /**
      * Optional - sandbox status of this plugin.
      */
     @Parameter
@@ -78,6 +89,19 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
     @Deprecated
     @Parameter
     protected String minimumJavaVersion;
+
+    /**
+     * @return an instance of {@link MavenArchiver} preconfigured for reproducible builds
+     *
+     * @since TODO
+     */
+    protected MavenArchiver newMavenArchiver(JarArchiver jarArchiver, File outputFile) {
+        MavenArchiver mavenArchiver = new MavenArchiver();
+        mavenArchiver.setArchiver(jarArchiver);
+        mavenArchiver.setOutputFile(outputFile);
+        mavenArchiver.configureReproducibleBuild(outputTimestamp);
+        return mavenArchiver;
+    }
 
     /**
      * Generates a manifest file to be included in the .hpi file

@@ -106,9 +106,7 @@ public class JarMojo extends AbstractJenkinsManifestMojo {
 
         // create a jar file to be used when other plugins depend on this plugin.
         File jarFile = getOutputFile(".jar");
-        MavenArchiver archiver = new MavenArchiver();
-        archiver.setArchiver(jarArchiver);
-        archiver.setOutputFile(jarFile);
+        MavenArchiver archiver = newMavenArchiver(jarArchiver, jarFile);
         jarArchiver.addConfiguredManifest(manifest);
         jarArchiver.addDirectory(getClassesDirectory());
         archiver.createArchive(session, project, archive);
