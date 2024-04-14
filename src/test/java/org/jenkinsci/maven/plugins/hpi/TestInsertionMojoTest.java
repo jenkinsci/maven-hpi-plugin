@@ -3,7 +3,7 @@ package org.jenkinsci.maven.plugins.hpi;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 
-import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
 import org.junit.Test;
 
 public class TestInsertionMojoTest {
@@ -17,7 +17,7 @@ public class TestInsertionMojoTest {
                 "_123org.jenkins_ci.maven.plugins.hpi",
                 TestInsertionMojo.legalizePackageName("123org.jenkins-ci.maven.plugins.hpi"));
         assertThrows(
-                MojoExecutionException.class,
+                MojoFailureException.class,
                 () -> TestInsertionMojo.legalizePackageName("org.jenkinsci%maven.plugins.hpi"));
     }
 }
