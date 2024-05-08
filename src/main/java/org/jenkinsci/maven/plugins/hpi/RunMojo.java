@@ -89,7 +89,6 @@ import org.eclipse.jetty.security.HashLoginService;
 import org.eclipse.jetty.security.UserStore;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
-import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.util.security.Password;
 import org.eclipse.jetty.webapp.WebAppClassLoader;
 import org.eclipse.jetty.webapp.WebAppContext;
@@ -317,7 +316,7 @@ public class RunMojo extends JettyRunWarMojo {
         // auto-enable stapler trace, unless otherwise configured already.
         setSystemPropertyIfEmpty("stapler.trace", "true");
         // allow Jetty to accept a bigger form so that it can handle update center JSON post
-        setSystemPropertyIfEmpty(ContextHandler.MAX_FORM_CONTENT_SIZE_KEY, "-1");
+        setSystemPropertyIfEmpty("org.eclipse.jetty.server.Request.maxFormContentSize", "-1");
         // general-purpose system property so that we can tell from Jenkins if we are running in the hpi:run mode.
         setSystemPropertyIfEmpty("hudson.hpi.run", "true");
         // expose the current top-directory of the plugin
