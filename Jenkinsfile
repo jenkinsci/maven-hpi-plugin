@@ -9,7 +9,7 @@ def runTests(Map params = [:]) {
     if (params['platform'] == 'windows') {
       agentContainerLabel += '-windows'
     }
-    boolean publishing = params['jdk'] == 11 && params['platform'] == 'linux'
+    boolean publishing = params['jdk'] == 17 && params['platform'] == 'linux'
     node(agentContainerLabel) {
       timeout(time: 1, unit: 'HOURS') {
         def stageIdentifier = params['platform'] + '-' + params['jdk']
