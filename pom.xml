@@ -158,7 +158,7 @@
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-groovy</artifactId>
-      <version>1860.vb_89682cf8d96</version>
+      <version>1863.vd250086e9885</version>
       <exclusions>
         <exclusion>
           <groupId>jakarta.annotation</groupId>
