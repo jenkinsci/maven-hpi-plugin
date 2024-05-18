@@ -61,8 +61,8 @@
         <scope>import</scope>
       </dependency>
       <dependency>
-        <groupId>org.eclipse.jetty.ee8</groupId>
-        <artifactId>jetty-ee8-bom</artifactId>
+        <groupId>org.eclipse.jetty.ee9</groupId>
+        <artifactId>jetty-ee9-bom</artifactId>
         <version>${jetty.version}</version>
         <type>pom</type>
         <scope>import</scope>
@@ -156,11 +156,7 @@
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-server</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty.ee8</groupId>
-      <artifactId>jetty-ee8-maven-plugin</artifactId>
+      <artifactId>jetty-maven</artifactId>
       <version>${jetty.version}</version>
       <exclusions>
         <exclusion>
@@ -170,17 +166,32 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.eclipse.jetty.ee8</groupId>
-      <artifactId>jetty-ee8-servlet</artifactId>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-server</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.eclipse.jetty.ee8</groupId>
-      <artifactId>jetty-ee8-webapp</artifactId>
+      <groupId>org.eclipse.jetty.ee9</groupId>
+      <artifactId>jetty-ee9-maven-plugin</artifactId>
+      <version>${jetty.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.codehaus.plexus</groupId>
+          <artifactId>plexus-utils</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.eclipse.jetty.ee8.websocket</groupId>
-      <artifactId>jetty-ee8-websocket-jetty-server</artifactId>
-      <!-- or jetty-ee8-websocket-javax-server -->
+      <groupId>org.eclipse.jetty.ee9</groupId>
+      <artifactId>jetty-ee9-servlet</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty.ee9</groupId>
+      <artifactId>jetty-ee9-webapp</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty.ee9.websocket</groupId>
+      <artifactId>jetty-ee9-websocket-jetty-server</artifactId>
+      <!-- or jetty-ee9-websocket-javax-server -->
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
@@ -303,7 +314,7 @@
         <configuration>
           <goalPrefix>hpi</goalPrefix>
           <extractors>java-annotations</extractors>
-          <mojoDependencies>org.eclipse.jetty.ee8:jetty-ee8-maven-plugin</mojoDependencies>
+          <mojoDependencies>org.eclipse.jetty.ee9:jetty-ee9-maven-plugin</mojoDependencies>
         </configuration>
         <executions>
           <execution>
