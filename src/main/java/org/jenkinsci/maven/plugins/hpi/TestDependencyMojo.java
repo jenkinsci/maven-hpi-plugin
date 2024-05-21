@@ -63,7 +63,6 @@ import org.apache.maven.shared.dependency.graph.DependencyCollectorBuilderExcept
 import org.apache.maven.shared.dependency.graph.DependencyNode;
 import org.apache.maven.shared.dependency.graph.traversal.DependencyNodeVisitor;
 import org.eclipse.aether.DefaultRepositorySystemSession;
-import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.resolution.ArtifactDescriptorException;
 import org.eclipse.aether.resolution.ArtifactDescriptorRequest;
@@ -99,9 +98,6 @@ public class TestDependencyMojo extends AbstractHpiMojo {
 
     @Component
     private ProjectDependenciesResolver dependenciesResolver;
-
-    @Component
-    private RepositorySystem repositorySystem;
 
     /**
      * List of dependency version overrides in the form {@code groupId:artifactId:version} to apply
