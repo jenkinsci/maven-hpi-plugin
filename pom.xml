@@ -46,6 +46,8 @@
     <gitHubRepo>jenkinsci/${project.artifactId}</gitHubRepo>
     <!-- if we update this all consumers need to be running at least this version -->
     <maven.version>3.8.1</maven.version>
+    <!-- TODO until a critical mass of plugins has migrated to Java 17 -->
+    <maven.compiler.release>11</maven.compiler.release>
     <maven-plugin-tools.version>3.13.1</maven-plugin-tools.version>
     <spotless.check.skip>false</spotless.check.skip>
   </properties>
