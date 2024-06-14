@@ -59,6 +59,7 @@
           <Class name="org.jenkinsci.maven.plugins.hpi.JarMojo"/>
           <Class name="org.jenkinsci.maven.plugins.hpi.RunMojo"/>
           <Class name="org.jenkinsci.maven.plugins.hpi.RunMojo$1"/>
+          <Class name="org.jenkinsci.maven.plugins.hpi.RunMojo$2"/>
           <Class name="org.jenkinsci.maven.plugins.hpi.TagLibInterfaceGeneratorMojo"/>
           <Class name="org.jenkinsci.maven.plugins.hpi.TestDependencyMojo"/>
           <Class name="org.jenkinsci.maven.plugins.hpi.TestHplMojo"/>
