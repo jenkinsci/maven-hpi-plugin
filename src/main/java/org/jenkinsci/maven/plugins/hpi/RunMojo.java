@@ -80,19 +80,19 @@ import org.apache.maven.project.ProjectDependenciesResolver;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.graph.DependencyFilter;
 import org.eclipse.aether.util.filter.ScopeDependencyFilter;
+import org.eclipse.jetty.ee8.maven.plugin.JettyRunWarMojo;
+import org.eclipse.jetty.ee8.maven.plugin.MavenWebAppContext;
+import org.eclipse.jetty.ee8.webapp.WebAppClassLoader;
+import org.eclipse.jetty.ee8.webapp.WebAppContext;
+import org.eclipse.jetty.ee8.websocket.server.config.JettyWebSocketServletContainerInitializer;
 import org.eclipse.jetty.http.HttpCompliance;
 import org.eclipse.jetty.http.UriCompliance;
-import org.eclipse.jetty.maven.plugin.JettyRunWarMojo;
-import org.eclipse.jetty.maven.plugin.MavenServerConnector;
-import org.eclipse.jetty.maven.plugin.MavenWebAppContext;
+import org.eclipse.jetty.maven.MavenServerConnector;
 import org.eclipse.jetty.security.HashLoginService;
 import org.eclipse.jetty.security.UserStore;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.util.security.Password;
-import org.eclipse.jetty.webapp.WebAppClassLoader;
-import org.eclipse.jetty.webapp.WebAppContext;
-import org.eclipse.jetty.websocket.server.config.JettyWebSocketServletContainerInitializer;
 import org.twdata.maven.mojoexecutor.MojoExecutor;
 import sun.misc.Unsafe;
 
@@ -286,7 +286,12 @@ public class RunMojo extends JettyRunWarMojo {
                                 "Please use `webApp/contextPath` configuration parameter in place of the deprecated `contextPath` parameter");
                 if (webApp == null) {
                     try {
-                        webApp = new MavenWebAppContext();
+                        webApp = new MavenWebAppContext() {
+                            @Override
+                            protected ClassLoader configureClassLoader(ClassLoader loader) {
+                                return getWebAppClassLoader(this);
+                            }
+                        };
                     } catch (Exception e) {
                         throw new MojoExecutionException("Failed to initialize webApp configuration", e);
                     }
@@ -726,7 +731,9 @@ public class RunMojo extends JettyRunWarMojo {
                 .getSessionCookieConfig()
                 .setName("JSESSIONID."
                         + UUID.randomUUID().toString().replace("-", "").substring(0, 8));
+    }
 
+    private ClassLoader getWebAppClassLoader(WebAppContext wac) {
         try {
             // for Jenkins modules, swap the component from jenkins.war by target/classes
             // via classloader magic
@@ -782,7 +789,7 @@ public class RunMojo extends JettyRunWarMojo {
                             super.addJars(lib);
                         }
                     };
-            wac.setClassLoader(wacl);
+            return wacl;
         } catch (IOException e) {
             throw new Error(e);
         }
