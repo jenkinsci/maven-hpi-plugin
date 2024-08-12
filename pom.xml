@@ -49,7 +49,7 @@
     <!-- TODO until a critical mass of plugins has migrated to Java 17 -->
     <maven.compiler.release>11</maven.compiler.release>
     <maven-plugin-tools.version>3.13.1</maven-plugin-tools.version>
-    <maven-resolver.version>2.0.0</maven-resolver.version>
+    <maven-resolver.version>2.0.1</maven-resolver.version>
     <spotless.check.skip>false</spotless.check.skip>
   </properties>
 
