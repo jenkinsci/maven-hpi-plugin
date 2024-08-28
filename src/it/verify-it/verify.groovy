@@ -56,7 +56,7 @@ Files.newInputStream(new File(basedir, 'target/verify-it/META-INF/MANIFEST.MF').
   assert manifest.getMainAttributes().getValue('Plugin-ScmConnection').equals('scm:git:https://github.com/jenkinsci/verify-it-plugin.git')
   assert manifest.getMainAttributes().getValue('Plugin-ScmTag').equals('HEAD')
   assert manifest.getMainAttributes().getValue('Plugin-ScmUrl').equals('https://github.com/jenkinsci/verify-it-plugin')
-  def matcher = manifest.getMainAttributes().getValue('Plugin-GitHash') =~ pattern
+  def matcher = manifest.getMainAttributes().getValue('Implementation-Build') =~ pattern
   assert matcher.matches()
   assert manifest.getMainAttributes().getValue('Plugin-Version').startsWith('1.0-SNAPSHOT')
   assert manifest.getMainAttributes().getValue('Short-Name').equals('verify-it')
