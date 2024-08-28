@@ -254,10 +254,7 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
                 mainSection, "Plugin-ScmConnection", project.getScm().getConnection());
         addAttributeIfNotNull(mainSection, "Plugin-ScmTag", project.getScm().getTag());
         addAttributeIfNotNull(mainSection, "Plugin-ScmUrl", project.getScm().getUrl());
-        String gitHash = getGitHeadSha1();
-        // Deprecated: Use "Implementation-Build" for consistency with core and core components
-        addAttributeIfNotNull(mainSection, "Plugin-GitHash", gitHash);
-        addAttributeIfNotNull(mainSection, "Implementation-Build", gitHash);
+        addAttributeIfNotNull(mainSection, "Implementation-Build", getGitHeadSha1());
     }
 
     /**
