@@ -5,6 +5,7 @@ import hudson.init.Initializer;
 import java.util.concurrent.TimeUnit;
 import jenkins.model.Jenkins;
 import jenkins.util.Timer;
+import org.kohsuke.stapler.StaplerRequest2;
 
 public class JustTesting {
 
@@ -18,7 +19,7 @@ public class JustTesting {
         Timer.get()
                 .schedule(
                         () -> {
-                            Jenkins.getInstance().doSafeExit(null);
+                            Jenkins.getInstance().doSafeExit((StaplerRequest2) null);
                             return null;
                         },
                         15,
