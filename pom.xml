@@ -168,7 +168,12 @@
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-utils</artifactId>
-      <version>3.5.1</version>
+      <version>4.0.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-xml</artifactId>
+      <version>3.0.1</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
@@ -177,7 +182,7 @@
       <exclusions>
         <exclusion>
           <groupId>org.codehaus.plexus</groupId>
-          <artifactId>plexus-utils</artifactId>
+          <artifactId>plexus-xml</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -192,7 +197,7 @@
       <exclusions>
         <exclusion>
           <groupId>org.codehaus.plexus</groupId>
-          <artifactId>plexus-utils</artifactId>
+          <artifactId>plexus-xml</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
