@@ -20,8 +20,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.NavigableSet;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.Stack;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.jar.JarEntry;
@@ -34,7 +36,6 @@ import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
@@ -58,11 +59,13 @@ import org.apache.maven.project.DependencyResolutionResult;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.project.ProjectDependenciesResolver;
-import org.apache.maven.shared.dependency.graph.DependencyCollectorBuilder;
-import org.apache.maven.shared.dependency.graph.DependencyCollectorBuilderException;
-import org.apache.maven.shared.dependency.graph.DependencyNode;
-import org.apache.maven.shared.dependency.graph.traversal.DependencyNodeVisitor;
 import org.eclipse.aether.DefaultRepositorySystemSession;
+import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.artifact.ArtifactTypeRegistry;
+import org.eclipse.aether.collection.CollectRequest;
+import org.eclipse.aether.collection.DependencyCollectionException;
+import org.eclipse.aether.graph.DependencyNode;
+import org.eclipse.aether.graph.DependencyVisitor;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.resolution.ArtifactDescriptorException;
 import org.eclipse.aether.resolution.ArtifactDescriptorRequest;
@@ -70,6 +73,7 @@ import org.eclipse.aether.resolution.ArtifactDescriptorResult;
 import org.eclipse.aether.resolution.ArtifactRequest;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.ArtifactResult;
+import org.eclipse.aether.util.graph.manager.DependencyManagerUtils;
 import org.twdata.maven.mojoexecutor.MojoExecutor;
 
 /**
@@ -92,9 +96,6 @@ public class TestDependencyMojo extends AbstractHpiMojo {
 
     @Component
     private BuildPluginManager pluginManager;
-
-    @Component
-    private DependencyCollectorBuilder dependencyCollectorBuilder;
 
     @Component
     private ProjectDependenciesResolver dependenciesResolver;
@@ -131,6 +132,8 @@ public class TestDependencyMojo extends AbstractHpiMojo {
      */
     @Parameter(property = "upperBoundsExcludes")
     private List<String> upperBoundsExcludes;
+
+    private RequireUpperBoundDepsVisitor upperBoundDepsVisitor;
 
     @Override
     public void execute() throws MojoExecutionException {
@@ -215,19 +218,40 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                      */
                     DependencyNode node;
                     try {
-                        ProjectBuildingRequest buildingRequest =
-                                new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
-                        buildingRequest.setProject(shadow);
-                        buildingRequest.setRemoteRepositories(shadow.getRemoteArtifactRepositories());
-                        ArtifactFilter filter = null; // Evaluate all scopes
-                        node = dependencyCollectorBuilder.collectDependencyGraph(buildingRequest, filter);
-                    } catch (DependencyCollectorBuilderException e) {
+                        RepositorySystemSession repositorySystemSession = session.getRepositorySession();
+
+                        ArtifactTypeRegistry artifactTypeRegistry =
+                                session.getRepositorySession().getArtifactTypeRegistry();
+
+                        List<org.eclipse.aether.graph.Dependency> dependencies = shadow.getDependencies().stream()
+                                .filter(d -> !d.isOptional())
+                                .filter(d -> !List.of(Artifact.SCOPE_TEST, Artifact.SCOPE_PROVIDED)
+                                        .contains(d.getScope()))
+                                .map(d -> RepositoryUtils.toDependency(d, artifactTypeRegistry))
+                                .collect(Collectors.toList());
+
+                        List<org.eclipse.aether.graph.Dependency> managedDependencies = Optional.ofNullable(
+                                        shadow.getDependencyManagement())
+                                .map(DependencyManagement::getDependencies)
+                                .map(list -> list.stream()
+                                        .map(d -> RepositoryUtils.toDependency(d, artifactTypeRegistry))
+                                        .collect(Collectors.toList()))
+                                .orElse(null);
+
+                        CollectRequest collectRequest = new CollectRequest(
+                                dependencies, managedDependencies, shadow.getRemoteProjectRepositories());
+                        collectRequest.setRootArtifact(RepositoryUtils.toArtifact(shadow.getArtifact()));
+
+                        node = repositorySystem
+                                .collectDependencies(repositorySystemSession, collectRequest)
+                                .getRoot();
+                    } catch (DependencyCollectionException e) {
                         throw new MojoExecutionException("Failed to analyze dependency tree for useUpperBounds", e);
                     }
-                    RequireUpperBoundDepsVisitor visitor = new RequireUpperBoundDepsVisitor();
-                    node.accept(visitor);
+                    upperBoundDepsVisitor = new RequireUpperBoundDepsVisitor();
+                    node.accept(upperBoundDepsVisitor);
                     String self = String.format("%s:%s", shadow.getGroupId(), shadow.getArtifactId());
-                    upperBounds = visitor.upperBounds(upperBoundsExcludes, self);
+                    upperBounds = upperBoundDepsVisitor.upperBounds(upperBoundsExcludes, self);
 
                     if (upperBounds.isEmpty()) {
                         converged = true;
@@ -787,24 +811,27 @@ public class TestDependencyMojo extends AbstractHpiMojo {
         }
     }
 
-    // Adapted from RequireUpperBoundDeps @ 731ea7a693a0986f2054b6a73a86a31373df59ec.
-    private class RequireUpperBoundDepsVisitor implements DependencyNodeVisitor {
+    // Adapted from RequireUpperBoundDeps @ 78488535e0cfc37e26707c12d944ff8437b94fc4.
+    private class RequireUpperBoundDepsVisitor implements DependencyVisitor, ParentNodeProvider {
 
-        private Map<String, List<DependencyNodeHopCountPair>> keyToPairsMap = new LinkedHashMap<>();
+        private final ParentsVisitor parentsVisitor = new ParentsVisitor();
+
+        private final Map<String, List<DependencyNodeHopCountPair>> keyToPairsMap = new HashMap<>();
 
         @Override
-        public boolean visit(DependencyNode node) {
-            DependencyNodeHopCountPair pair = new DependencyNodeHopCountPair(node);
+        public boolean visitEnter(DependencyNode node) {
+            parentsVisitor.visitEnter(node);
+            DependencyNodeHopCountPair pair = new DependencyNodeHopCountPair(node, this);
             String key = pair.constructKey();
-            List<DependencyNodeHopCountPair> pairs = keyToPairsMap.computeIfAbsent(key, unused -> new ArrayList<>());
-            pairs.add(pair);
-            Collections.sort(pairs);
+
+            keyToPairsMap.computeIfAbsent(key, k1 -> new ArrayList<>()).add(pair);
+            keyToPairsMap.get(key).sort(DependencyNodeHopCountPair::compareTo);
             return true;
         }
 
         @Override
-        public boolean endVisit(DependencyNode node) {
-            return true;
+        public boolean visitLeave(DependencyNode node) {
+            return parentsVisitor.visitLeave(node);
         }
 
         // added for TestDependencyMojo in place of getConflicts/containsConflicts
@@ -812,20 +839,12 @@ public class TestDependencyMojo extends AbstractHpiMojo {
             Map<String, String> r = new HashMap<>();
             for (List<DependencyNodeHopCountPair> pairs : keyToPairsMap.values()) {
                 DependencyNodeHopCountPair resolvedPair = pairs.get(0);
-
-                // search for artifact with lowest hopCount
-                for (DependencyNodeHopCountPair hopPair : pairs.subList(1, pairs.size())) {
-                    if (hopPair.getHopCount() < resolvedPair.getHopCount()) {
-                        resolvedPair = hopPair;
-                    }
-                }
-
                 ArtifactVersion resolvedVersion = resolvedPair.extractArtifactVersion(false);
 
                 for (DependencyNodeHopCountPair pair : pairs) {
                     ArtifactVersion version = pair.extractArtifactVersion(true);
                     if (resolvedVersion.compareTo(version) < 0) {
-                        Artifact artifact = resolvedPair.node.getArtifact();
+                        Artifact artifact = toArtifact(resolvedPair.node);
                         String key = toKey(artifact);
                         if (!key.equals(self)
                                 && (!r.containsKey(key)
@@ -850,30 +869,35 @@ public class TestDependencyMojo extends AbstractHpiMojo {
             }
             return r;
         }
+
+        @Override
+        public DependencyNode getParent(DependencyNode node) {
+            return parentsVisitor.getParent(node);
+        }
     }
 
     private static class DependencyNodeHopCountPair implements Comparable<DependencyNodeHopCountPair> {
-
-        private DependencyNode node;
-
+        private final DependencyNode node;
         private int hopCount;
+        private final ParentNodeProvider parentNodeProvider;
 
-        private DependencyNodeHopCountPair(DependencyNode node) {
+        private DependencyNodeHopCountPair(DependencyNode node, ParentNodeProvider parentNodeProvider) {
+            this.parentNodeProvider = parentNodeProvider;
             this.node = node;
             countHops();
         }
 
         private void countHops() {
             hopCount = 0;
-            DependencyNode parent = node.getParent();
+            DependencyNode parent = parentNodeProvider.getParent(node);
             while (parent != null) {
                 hopCount++;
-                parent = parent.getParent();
+                parent = parentNodeProvider.getParent(parent);
             }
         }
 
         private String constructKey() {
-            Artifact artifact = node.getArtifact();
+            Artifact artifact = toArtifact(node);
             return toKey(artifact);
         }
 
@@ -882,11 +906,11 @@ public class TestDependencyMojo extends AbstractHpiMojo {
         }
 
         private ArtifactVersion extractArtifactVersion(boolean usePremanagedVersion) {
-            if (usePremanagedVersion && node.getPremanagedVersion() != null) {
-                return new DefaultArtifactVersion(node.getPremanagedVersion());
+            if (usePremanagedVersion && DependencyManagerUtils.getPremanagedVersion(node) != null) {
+                return new DefaultArtifactVersion(DependencyManagerUtils.getPremanagedVersion(node));
             }
 
-            Artifact artifact = node.getArtifact();
+            Artifact artifact = toArtifact(node);
             String version = artifact.getBaseVersion();
             if (version != null) {
                 return new DefaultArtifactVersion(version);
@@ -912,35 +936,75 @@ public class TestDependencyMojo extends AbstractHpiMojo {
         }
     }
 
-    private static String buildErrorMessage(List<DependencyNode> conflict) {
+    /**
+     * Provides the information about {@link DependencyNode} parent nodes
+     */
+    private interface ParentNodeProvider {
+        /**
+         * Returns the parent node of the given node
+         * @param node node to get the information for
+         * @return parent node or {@code null} is no information is known
+         */
+        DependencyNode getParent(DependencyNode node);
+    }
+
+    /**
+     * A {@link DependencyVisitor} building a map of parent nodes
+     */
+    private static class ParentsVisitor implements DependencyVisitor, ParentNodeProvider {
+
+        private final Map<DependencyNode, DependencyNode> parents = new HashMap<>();
+        private final Stack<DependencyNode> parentStack = new Stack<>();
+
+        @Override
+        public DependencyNode getParent(DependencyNode node) {
+            return parents.get(node);
+        }
+
+        @Override
+        public boolean visitEnter(DependencyNode node) {
+            parents.put(node, parentStack.isEmpty() ? null : parentStack.peek());
+            parentStack.push(node);
+            return true;
+        }
+
+        @Override
+        public boolean visitLeave(DependencyNode node) {
+            parentStack.pop();
+            return true;
+        }
+    }
+
+    private String buildErrorMessage(List<DependencyNode> conflict) {
         StringBuilder errorMessage = new StringBuilder();
-        errorMessage.append("Require upper bound dependencies error for "
-                + getFullArtifactName(conflict.get(0), false)
-                + " paths to dependency are:"
-                + System.lineSeparator());
+        errorMessage
+                .append("Require upper bound dependencies error for ")
+                .append(getFullArtifactName(conflict.get(0), false))
+                .append(" paths to dependency are:")
+                .append(System.lineSeparator());
         if (conflict.size() > 0) {
             errorMessage.append(buildTreeString(conflict.get(0)));
         }
         for (DependencyNode node : conflict.subList(1, conflict.size())) {
-            errorMessage.append("and" + System.lineSeparator());
+            errorMessage.append("and").append(System.lineSeparator());
             errorMessage.append(buildTreeString(node));
         }
         return errorMessage.toString();
     }
 
-    private static StringBuilder buildTreeString(DependencyNode node) {
+    private StringBuilder buildTreeString(DependencyNode node) {
         List<String> loc = new ArrayList<>();
         DependencyNode currentNode = node;
         while (currentNode != null) {
             StringBuilder line = new StringBuilder(getFullArtifactName(currentNode, false));
 
-            if (currentNode.getPremanagedVersion() != null) {
+            if (DependencyManagerUtils.getPremanagedVersion(currentNode) != null) {
                 line.append(" (managed) <-- ");
                 line.append(getFullArtifactName(currentNode, true));
             }
 
             loc.add(line.toString());
-            currentNode = currentNode.getParent();
+            currentNode = upperBoundDepsVisitor.getParent(currentNode);
         }
         Collections.reverse(loc);
         StringBuilder builder = new StringBuilder();
@@ -953,9 +1017,9 @@ public class TestDependencyMojo extends AbstractHpiMojo {
     }
 
     private static String getFullArtifactName(DependencyNode node, boolean usePremanaged) {
-        Artifact artifact = node.getArtifact();
+        Artifact artifact = toArtifact(node);
 
-        String version = node.getPremanagedVersion();
+        String version = DependencyManagerUtils.getPremanagedVersion(node);
         if (!usePremanaged || version == null) {
             version = artifact.getBaseVersion();
         }
@@ -967,11 +1031,29 @@ public class TestDependencyMojo extends AbstractHpiMojo {
         }
 
         String scope = artifact.getScope();
-        if (scope != null) {
+        if (scope != null && !"compile".equals(scope)) {
             result += " [" + scope + ']';
         }
 
         return result;
+    }
+
+    /**
+     * Converts {@link DependencyNode} to {@link Artifact}; in comparison
+     * to {@link RepositoryUtils#toArtifact(org.eclipse.aether.artifact.Artifact)}, this method
+     * assigns {@link Artifact#getScope()} and {@link Artifact#isOptional()} based on
+     * the dependency information from the node.
+     *
+     * @param node {@link DependencyNode} to convert to {@link Artifact}
+     * @return target artifact
+     */
+    private static Artifact toArtifact(DependencyNode node) {
+        Artifact artifact = RepositoryUtils.toArtifact(node.getArtifact());
+        Optional.ofNullable(node.getDependency()).ifPresent(dependency -> {
+            Optional.ofNullable(dependency.getScope()).ifPresent(artifact::setScope);
+            artifact.setOptional(dependency.isOptional());
+        });
+        return artifact;
     }
 
     private static String toKey(Artifact artifact) {
