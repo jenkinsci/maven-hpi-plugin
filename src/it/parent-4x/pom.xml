@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>4.86</version>
+    <version>5.1</version>
     <relativePath />
   </parent>
   <groupId>org.jenkins-ci.tools.hpi.its</groupId>
@@ -13,22 +13,10 @@
   <packaging>hpi</packaging>
   <properties>
     <jenkins.version>2.479</jenkins.version>
-    <!-- TODO JENKINS-73339 until in parent POM -->
-    <jenkins-test-harness.version>2254.vcff7a_d4969e5</jenkins-test-harness.version>
     <hpi-plugin.version>@project.version@</hpi-plugin.version>
     <no-test-jar>false</no-test-jar>
     <spotless.check.skip>false</spotless.check.skip>
   </properties>
-  <dependencyManagement>
-    <dependencies>
-      <!-- TODO JENKINS-73339 until in parent POM, work around https://github.com/jenkinsci/plugin-pom/issues/936 -->
-      <dependency>
-        <groupId>jakarta.servlet</groupId>
-        <artifactId>jakarta.servlet-api</artifactId>
-        <version>5.0.0</version>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
   <dependencies>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
