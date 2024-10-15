@@ -38,9 +38,12 @@ public final class HpiLifecycleMappingProvider extends AbstractLifecycleMappingP
         bindings.put(
                 "test-compile",
                 new LifecyclePhase(
-                        "org.apache.maven.plugins:maven-compiler-plugin:3.1:testCompile,org.jenkins-ci.tools:maven-hpi-plugin:test-hpl,org.jenkins-ci.tools:maven-hpi-plugin:resolve-test-dependencies"));
+                        "org.apache.maven.plugins:maven-compiler-plugin:3.1:testCompile,org.jenkins-ci.tools:maven-hpi-plugin:test-hpl"));
         bindings.put("process-test-classes", new LifecyclePhase("org.jenkins-ci.tools:maven-hpi-plugin:test-runtime"));
-        bindings.put("test", new LifecyclePhase("org.apache.maven.plugins:maven-surefire-plugin:2.12.4:test"));
+        bindings.put(
+                "test",
+                new LifecyclePhase(
+                        "org.jenkins-ci.tools:maven-hpi-plugin:resolve-test-dependencies,org.apache.maven.plugins:maven-surefire-plugin:2.12.4:test"));
         bindings.put("package", new LifecyclePhase("org.jenkins-ci.tools:maven-hpi-plugin:hpi"));
         bindings.put("install", new LifecyclePhase("org.apache.maven.plugins:maven-install-plugin:2.4:install"));
         bindings.put("deploy", new LifecyclePhase("org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy"));

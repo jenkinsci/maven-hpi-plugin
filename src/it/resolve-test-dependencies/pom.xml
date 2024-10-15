@@ -8,7 +8,7 @@
     <relativePath />
   </parent>
   <groupId>org.jenkins-ci.tools.hpi.its</groupId>
-  <artifactId>process-test-classes-parent</artifactId>
+  <artifactId>resolve-test-dependencies-parent</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <url>https://github.com/jenkinsci/maven-hpi-plugin</url>
@@ -19,8 +19,8 @@
     </license>
   </licenses>
   <modules>
-    <module>process-test-classes-bar</module>
-    <module>process-test-classes-foo</module>
+    <module>resolve-test-dependencies-bar</module>
+    <module>resolve-test-dependencies-foo</module>
   </modules>
   <properties>
     <jenkins.version>2.361.4</jenkins.version>
