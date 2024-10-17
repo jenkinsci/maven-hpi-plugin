@@ -1,10 +1,8 @@
-<?xml version="1.0" encoding="utf-8"?>
-<project xmlns="http://maven.apache.org/DECORATION/1.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/DECORATION/1.1.0 http://maven.apache.org/xsd/decoration-1.1.0.xsd">
-  <bannerLeft>
-    <name>${project.name}</name>
-    <src>images/jenkins_logo.png</src>
-    <href>https://jenkins.io/</href>
+<?xml version="1.0" encoding="UTF-8"?>
+<site xmlns="http://maven.apache.org/SITE/2.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://maven.apache.org/SITE/2.0.0 https://maven.apache.org/xsd/site-2.0.0.xsd">
+  <bannerLeft name="${project.name}" href="https://jenkins.io/">
+    <image src="images/jenkins_logo.png"/>
   </bannerLeft>
 
   <publishDate format="yyyy-MM-dd" position="right" />
@@ -43,4 +41,4 @@
       </gitHub>
     </fluidoSkin>
   </custom>
-</project>
+</site>
