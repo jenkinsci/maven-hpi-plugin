@@ -12,7 +12,7 @@
   <version>1.0-SNAPSHOT</version>
   <packaging>hpi</packaging>
   <properties>
-    <jenkins.version>2.361.4</jenkins.version>
+    <jenkins.version>2.452.4</jenkins.version>
     <hpi-plugin.version>@project.version@</hpi-plugin.version>
     <!-- TODO cannot include `invoker.goals=-DoverrideVersions=…,… test` in invoker.properties since then that is misinterpreted as multiple arguments for invoker.goals -->
     <overrideVersions>org.jenkins-ci.plugins.workflow:workflow-step-api:2.11,org.jenkins-ci.plugins.workflow:workflow-api:2.17,org.jenkins-ci.plugins.workflow:workflow-cps:2.32</overrideVersions>

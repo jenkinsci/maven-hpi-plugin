@@ -14,7 +14,7 @@
   <name>MyNewPlugin</name>
   <description>Deprecated spot for plugin description.</description>
   <properties>
-    <jenkins.version>2.361.4</jenkins.version>
+    <jenkins.version>2.452.4</jenkins.version>
     <hpi-plugin.version>@project.version@</hpi-plugin.version>
     <spotless.check.skip>false</spotless.check.skip>
   </properties>

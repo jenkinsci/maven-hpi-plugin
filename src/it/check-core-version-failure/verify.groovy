@@ -17,6 +17,6 @@
  * under the License.
  */
 
-assert new File(basedir, 'build.log').getText('UTF-8').contains("Dependency org.jenkins-ci.plugins:credentials:jar:1214.v1de940103927 requires Jenkins 2.375 or higher.")
+assert new File(basedir, 'build.log').getText('UTF-8').contains("Dependency org.jenkins-ci.plugins.workflow:workflow-job:jar:1460.v28178c1ef6e6 requires Jenkins 2.479.1 or higher.")
 
 return true;
