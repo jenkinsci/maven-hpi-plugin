@@ -14,7 +14,7 @@
   <packaging>hpi</packaging>
 
   <properties>
-    <jenkins.version>2.361.4</jenkins.version>
+    <jenkins.version>2.452.4</jenkins.version>
     <hpi-plugin.version>@project.version@</hpi-plugin.version>
     <spotless.check.skip>false</spotless.check.skip>
   </properties>
@@ -23,8 +23,8 @@
     <dependencies>
       <dependency>
         <groupId>io.jenkins.tools.bom</groupId>
-        <artifactId>bom-2.361.x</artifactId>
-        <version>1580.v47b_429a_c853a</version>
+        <artifactId>bom-2.452.x</artifactId>
+        <version>3010.vec758b_8e7da_3</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>

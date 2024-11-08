@@ -57,8 +57,8 @@ public class ValidateMojo extends AbstractJenkinsMojo {
             }
         }
 
-        if (new VersionNumber(findJenkinsVersion()).compareTo(new VersionNumber("2.361")) < 0) {
-            throw new MojoExecutionException("This version of maven-hpi-plugin requires Jenkins 2.361 or later");
+        if (new VersionNumber(findJenkinsVersion()).compareTo(new VersionNumber("2.452")) < 0) {
+            throw new MojoExecutionException("This version of maven-hpi-plugin requires Jenkins 2.452 or later");
         }
 
         MavenProject parent = project.getParent();

@@ -13,7 +13,7 @@
   <packaging>hpi</packaging>
   <name>MyNewPlugin</name>
   <properties>
-    <jenkins.version>2.360</jenkins.version>
+    <jenkins.version>2.451</jenkins.version>
     <hpi-plugin.version>@project.version@</hpi-plugin.version>
     <spotless.check.skip>false</spotless.check.skip>
   </properties>

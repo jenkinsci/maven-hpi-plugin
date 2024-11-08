@@ -34,7 +34,7 @@
   </scm>
 
   <properties>
-    <jenkins.version>2.361.4</jenkins.version>
+    <jenkins.version>2.452.4</jenkins.version>
     <hpi-plugin.version>@project.version@</hpi-plugin.version>
     <gitHubRepo>jenkinsci/maven-hpi-plugin</gitHubRepo>
     <spotless.check.skip>false</spotless.check.skip>
