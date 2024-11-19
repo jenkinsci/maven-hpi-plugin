@@ -18,13 +18,15 @@ def runTests(Map params = [:]) {
         }
         stage("Build (${stageIdentifier})") {
           ansiColor('xterm') {
-            def args = ['-Dstyle.color=always', '-Prun-its', '-Dmaven.test.failure.ignore', 'clean', 'install', 'site']
-            if (publishing) {
-              args += '-Dset.changelist'
-            }
-            // Needed for correct computation of JenkinsHome in RunMojo#execute.
-            withEnv(['JENKINS_HOME=', 'HUDSON_HOME=']) {
-              infra.runMaven(args, params['jdk'], null, null, false)
+            infra.withArtifactCachingProxy(true) {
+              def args = ['-Dstyle.color=always', '-Prun-its', '-Dmaven.test.failure.ignore', 'clean', 'install', 'site']
+              if (publishing) {
+                args += '-Dset.changelist'
+              }
+              // Needed for correct computation of JenkinsHome in RunMojo#execute.
+              withEnv(['JENKINS_HOME=', 'HUDSON_HOME=']) {
+                infra.runMaven(args, params['jdk'], null, null, false)
+              }
             }
           }
         }
