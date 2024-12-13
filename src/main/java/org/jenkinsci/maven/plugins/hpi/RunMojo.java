@@ -373,7 +373,7 @@ public class RunMojo extends JettyRunWarMojo {
         // copy other dependency Jenkins plugins
         try {
             for (MavenArtifact a : getProjectArtifacts()) {
-                if (!a.isPluginBestEffort(getLog())) {
+                if (!a.isPlugin(getLog())) {
                     continue;
                 }
 

@@ -36,7 +36,7 @@ public class ListPluginDependenciesMojo extends AbstractHpiMojo {
                 ? new NullWriter()
                 : new OutputStreamWriter(new FileOutputStream(outputFile), StandardCharsets.UTF_8)) {
             for (MavenArtifact a : getDirectDependencyArtfacts()) {
-                if (!a.isPlugin()) {
+                if (!a.isPlugin(getLog())) {
                     continue;
                 }
 

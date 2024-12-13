@@ -68,13 +68,9 @@ public class AssembleDependenciesMojo extends AbstractDependencyGraphTraversingM
             return false; // cut off optional dependencies
         }
 
-        try {
-            if (!a.isPlugin()) {
-                // only traverse chains of direct plugin dependencies, unless it's from the root
-                return g.getParent() == null;
-            }
-        } catch (IOException e) {
-            getLog().warn("Failed to process " + a, e);
+        if (!a.isPlugin(getLog())) {
+            // only traverse chains of direct plugin dependencies, unless it's from the root
+            return g.getParent() == null;
         }
 
         MavenArtifact v = hpis.get(a.getArtifactId());
