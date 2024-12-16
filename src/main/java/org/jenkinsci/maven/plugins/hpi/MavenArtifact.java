@@ -72,7 +72,7 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
 
     /**
      * Is this a Jenkins plugin?
-     * The preferred check is for {@code hpi} or {@jpi} packaging.
+     * The preferred check is for {@code hpi} or {@code jpi} packaging.
      * If the project model cannot be resolved
      * (for example when an indirect dependency has a bogus {@code systemPath} that is only rejected in some environments)
      * then the fallback logic is to look for a JAR manifest with entries typical of plugins.
