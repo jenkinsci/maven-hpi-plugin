@@ -21,6 +21,7 @@ import java.io.PrintWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.io.FilenameUtils;
@@ -118,6 +119,10 @@ public class TagLibInterfaceGeneratorMojo extends AbstractMojo {
     private void walk(File dir, JPackage pkg, String dirName) throws JClassAlreadyExistsException, IOException {
         File[] children = dir.listFiles(File::isDirectory);
         if (children != null) {
+            // Sorting the children to maintain a consistent order
+            // This is important for reproducible builds
+            Arrays.sort(children, (a, b) -> a.getName().compareToIgnoreCase(b.getName()));
+
             for (File child : children) {
                 walk(child, pkg.subPackage(h2j(child.getName())), dirName + '/' + child.getName());
             }
@@ -137,6 +142,10 @@ public class TagLibInterfaceGeneratorMojo extends AbstractMojo {
                 gdsl.printf("contributor(context(ctype:'%s')) {\n", c.fullName());
 
                 File[] tags = dir.listFiles((unused, name) -> name.endsWith(".jelly"));
+
+                // Sorting the tags to maintain a consistent order
+                // This is important for reproducible builds
+                Arrays.sort(tags, (a, b) -> a.getName().compareToIgnoreCase(b.getName()));
 
                 long timestamp = -1;
 
