@@ -411,7 +411,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
 
         List<ArtifactRequest> artifactRequests = new ArrayList<>();
         for (MavenArtifact mavenArtifact : mavenArtifacts) {
-            if (!mavenArtifact.isPluginBestEffort(getLog())) {
+            if (!mavenArtifact.isPlugin(getLog())) {
                 continue;
             }
 

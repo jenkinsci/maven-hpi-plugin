@@ -263,7 +263,7 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
     private String findDependencyPlugins() throws IOException, MojoExecutionException {
         StringBuilder buf = new StringBuilder();
         for (MavenArtifact a : getDirectDependencyArtfacts()) {
-            if (a.isPlugin() && scopeFilter.include(a.artifact) && !a.hasSameGAAs(project)) {
+            if (a.isPlugin(getLog()) && scopeFilter.include(a.artifact) && !a.hasSameGAAs(project)) {
                 if (buf.length() > 0) {
                     buf.append(',');
                 }
@@ -280,7 +280,7 @@ public abstract class AbstractJenkinsManifestMojo extends AbstractHpiMojo {
         // see
         // http://jenkins-ci.361315.n4.nabble.com/Classloading-problem-when-referencing-classes-from-another-plugin-during-the-initialization-phase-of-td394967.html
         for (Artifact a : project.getDependencyArtifacts()) {
-            if ("provided".equals(a.getScope()) && wrap(a).isPlugin()) {
+            if ("provided".equals(a.getScope()) && wrap(a).isPlugin(getLog())) {
                 throw new MojoExecutionException(
                         a.getId() + " is marked as 'provided' scope dependency, but it should be the 'compile' scope.");
             }

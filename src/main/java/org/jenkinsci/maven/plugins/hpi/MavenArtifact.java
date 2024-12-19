@@ -72,27 +72,40 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
 
     /**
      * Is this a Jenkins plugin?
+     * The preferred check is for {@code hpi} or {@code jpi} packaging.
+     * If the project model cannot be resolved
+     * (for example when an indirect dependency has a bogus {@code systemPath} that is only rejected in some environments)
+     * then the fallback logic is to look for a JAR manifest with entries typical of plugins.
      */
-    public boolean isPlugin() throws IOException {
-        String type = getResolvedType();
-        return type.equals("hpi") || type.equals("jpi");
-    }
-
-    /**
-     * Like {@link #isPlugin} but will not throw an exception if the project model cannot be resolved.
-     * Helpful for example when an indirect dependency has a bogus {@code systemPath} that is only rejected in some environments.
-     */
-    public boolean isPluginBestEffort(Log log) {
+    public boolean isPlugin(Log log) {
         try {
-            return isPlugin();
+            String type = getResolvedType();
+            return type.equals("hpi") || type.equals("jpi");
         } catch (IOException x) {
             if (log.isDebugEnabled()) {
                 log.debug(x);
             } else {
-                log.warn(x.getCause().getMessage());
+                log.warn("While inspecting " + artifact + ": " + x.getCause().getMessage());
             }
-            return false;
         }
+        var f = artifact.getFile();
+        if (f.getName().endsWith(".jar") && f.isFile()) {
+            try (var jf = new JarFile(f)) {
+                var mani = jf.getManifest();
+                if (mani != null) {
+                    var attr = mani.getMainAttributes();
+                    return attr.getValue("Jenkins-Version") != null && attr.getValue("Plugin-Version") != null;
+                }
+            } catch (IOException x) {
+                if (log.isDebugEnabled()) {
+                    log.debug(x);
+                } else {
+                    log.warn(
+                            "While inspecting " + artifact + ": " + x.getCause().getMessage());
+                }
+            }
+        }
+        return false;
     }
 
     public String getId() {

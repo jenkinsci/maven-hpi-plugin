@@ -119,7 +119,7 @@ public class HplMojo extends AbstractJenkinsManifestMojo {
         // List up IDs of Jenkins plugin dependencies
         Set<String> jenkinsPlugins = new HashSet<>();
         for (MavenArtifact artifact : artifacts) {
-            if (artifact.isPluginBestEffort(getLog())) {
+            if (artifact.isPlugin(getLog())) {
                 jenkinsPlugins.add(artifact.getId());
             }
         }

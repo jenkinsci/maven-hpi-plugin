@@ -1,7 +1,6 @@
 package org.jenkinsci.maven.plugins.hpi;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -54,58 +53,54 @@ public class WarMojo extends RunMojo {
      */
     @Override
     public void execute() throws MojoExecutionException {
-        try {
-            if (outputFile == null) {
-                outputFile = new File(
-                        getProject().getBasedir(), "target/" + getProject().getArtifactId() + ".war");
-            }
-
-            File war = getJenkinsWarArtifact().getFile();
-
-            Zip rezip = new Zip();
-            rezip.setDestFile(outputFile);
-            rezip.setProject(new Project());
-            ZipFileSet z = new ZipFileSet();
-            z.setSrc(war);
-            rezip.addZipfileset(z);
-
-            getProject().setArtifacts(resolveDependencies(dependencyResolution));
-
-            Set<MavenArtifact> projectArtifacts = new LinkedHashSet<>(getProjectArtifacts());
-            if (getProject().getPackaging().equals("hpi") && addThisPluginToCustomWar) {
-                Optional.ofNullable(getProject()).map(MavenProject::getArtifact).map(a -> {
-                    projectArtifacts.add(wrap(a)); // side effect
-                    getLog().debug("This plugin " + a + "to be added to custom war");
-                    return projectArtifacts; // have to return something from multiline lambda inside map()
-                });
-            }
-            for (MavenArtifact a : projectArtifacts) {
-                if (!a.isPlugin()) {
-                    continue;
-                }
-
-                // find corresponding .hpi file
-                Artifact hpi =
-                        artifactFactory.createArtifact(a.getGroupId(), a.getArtifactId(), a.getVersion(), null, "hpi");
-                hpi = MavenArtifact.resolveArtifact(hpi, project, session, repositorySystem);
-
-                if (hpi.getFile().isDirectory()) {
-                    throw new UnsupportedOperationException(
-                            hpi.getFile() + " is a directory and not packaged yet. this isn't supported");
-                }
-
-                z = new ZipFileSet();
-                z.setFile(hpi.getFile());
-                z.setFullpath("WEB-INF/plugins/" + hpi.getArtifactId() + ".hpi");
-                rezip.addZipfileset(z);
-            }
-
-            rezip.execute();
-            getLog().info("Generated " + outputFile);
-
-            projectHelper.attachArtifact(getProject(), "war", outputFile);
-        } catch (IOException e) {
-            throw new MojoExecutionException("Failed to package war", e);
+        if (outputFile == null) {
+            outputFile =
+                    new File(getProject().getBasedir(), "target/" + getProject().getArtifactId() + ".war");
         }
+
+        File war = getJenkinsWarArtifact().getFile();
+
+        Zip rezip = new Zip();
+        rezip.setDestFile(outputFile);
+        rezip.setProject(new Project());
+        ZipFileSet z = new ZipFileSet();
+        z.setSrc(war);
+        rezip.addZipfileset(z);
+
+        getProject().setArtifacts(resolveDependencies(dependencyResolution));
+
+        Set<MavenArtifact> projectArtifacts = new LinkedHashSet<>(getProjectArtifacts());
+        if (getProject().getPackaging().equals("hpi") && addThisPluginToCustomWar) {
+            Optional.ofNullable(getProject()).map(MavenProject::getArtifact).map(a -> {
+                projectArtifacts.add(wrap(a)); // side effect
+                getLog().debug("This plugin " + a + "to be added to custom war");
+                return projectArtifacts; // have to return something from multiline lambda inside map()
+            });
+        }
+        for (MavenArtifact a : projectArtifacts) {
+            if (!a.isPlugin(getLog())) {
+                continue;
+            }
+
+            // find corresponding .hpi file
+            Artifact hpi =
+                    artifactFactory.createArtifact(a.getGroupId(), a.getArtifactId(), a.getVersion(), null, "hpi");
+            hpi = MavenArtifact.resolveArtifact(hpi, project, session, repositorySystem);
+
+            if (hpi.getFile().isDirectory()) {
+                throw new UnsupportedOperationException(
+                        hpi.getFile() + " is a directory and not packaged yet. this isn't supported");
+            }
+
+            z = new ZipFileSet();
+            z.setFile(hpi.getFile());
+            z.setFullpath("WEB-INF/plugins/" + hpi.getArtifactId() + ".hpi");
+            rezip.addZipfileset(z);
+        }
+
+        rezip.execute();
+        getLog().info("Generated " + outputFile);
+
+        projectHelper.attachArtifact(getProject(), "war", outputFile);
     }
 }

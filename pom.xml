@@ -343,6 +343,9 @@
             <!-- block anything set by a CI environment -->
             <JENKINS_HOME />
           </environmentVariables>
+          <setupIncludes>
+            <setupInclude>somedep-*/pom.xml</setupInclude>
+          </setupIncludes>
         </configuration>
       </plugin>
       <plugin>

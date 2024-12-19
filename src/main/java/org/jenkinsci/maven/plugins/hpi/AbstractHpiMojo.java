@@ -458,7 +458,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         Set<String> jenkinsPlugins = new HashSet<>();
         Set<String> excludedArtifacts = new HashSet<>();
         for (MavenArtifact artifact : Utils.unionOf(artifacts, dependencyArtifacts)) {
-            if (artifact.isPluginBestEffort(getLog())) {
+            if (artifact.isPlugin(getLog())) {
                 jenkinsPlugins.add(artifact.getId());
             }
             // Exclude dependency if it comes from test or provided trail.

@@ -29,7 +29,7 @@ public class ValidateHpiMojo extends AbstractHpiMojo {
 
         for (MavenArtifact artifact : Utils.unionOf(getProjectArtfacts(), getDirectDependencyArtfacts())) {
             try {
-                if (artifact.isPluginBestEffort(getLog())) {
+                if (artifact.isPlugin(getLog())) {
                     VersionNumber dependencyCoreVersion = getDependencyCoreVersion(artifact);
                     if (dependencyCoreVersion.compareTo(maxCoreVersion) > 0) {
                         maxCoreVersionArtifact = artifact;
