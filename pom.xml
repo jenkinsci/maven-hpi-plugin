@@ -233,7 +233,7 @@
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-groovy</artifactId>
-      <version>1928.v9115fe47607f</version>
+      <version>1942.v708e07325402</version>
       <exclusions>
         <exclusion>
           <groupId>jakarta.annotation</groupId>
