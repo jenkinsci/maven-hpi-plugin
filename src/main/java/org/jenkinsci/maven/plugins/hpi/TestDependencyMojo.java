@@ -5,6 +5,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -44,6 +45,7 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.lifecycle.internal.LifecycleDependencyResolver;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
+import org.apache.maven.model.Scm;
 import org.apache.maven.plugin.BuildPluginManager;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
@@ -57,6 +59,7 @@ import org.apache.maven.project.DependencyResolutionException;
 import org.apache.maven.project.DependencyResolutionRequest;
 import org.apache.maven.project.DependencyResolutionResult;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.project.ProjectDependenciesResolver;
 import org.eclipse.aether.DefaultRepositorySystemSession;
@@ -74,6 +77,10 @@ import org.eclipse.aether.resolution.ArtifactRequest;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.ArtifactResult;
 import org.eclipse.aether.util.graph.manager.DependencyManagerUtils;
+import org.kohsuke.github.GHRef;
+import org.kohsuke.github.GHRepository;
+import org.kohsuke.github.GHTagObject;
+import org.kohsuke.github.GitHub;
 import org.twdata.maven.mojoexecutor.MojoExecutor;
 
 /**
@@ -93,6 +100,10 @@ public class TestDependencyMojo extends AbstractHpiMojo {
             "WEB-INF/lib/jenkins-core-([0-9.]+(?:-[0-9a-f.]+)*(?:-(?i)([a-z]+)(-)?([0-9a-f.]+)?)?(?:-(?i)([a-z]+)(-)?([0-9a-f_.]+)?)?(?:-SNAPSHOT)?)[.]jar");
     private static final Pattern PLUGIN_REGEX = Pattern.compile("WEB-INF/plugins/([^/.]+)[.][hj]pi");
     private static final Pattern OVERRIDE_REGEX = Pattern.compile("([^:]+:[^:]+):([^:]+)");
+
+    private static final String PREFIX = "scm:git:https://github.com/";
+    private static final String SUFFIX = ".git";
+    private static final Pattern SHA1_HASH = Pattern.compile("^[a-f0-9]{40}$");
 
     @Component
     private BuildPluginManager pluginManager;
@@ -132,6 +143,12 @@ public class TestDependencyMojo extends AbstractHpiMojo {
      */
     @Parameter(property = "upperBoundsExcludes")
     private List<String> upperBoundsExcludes;
+
+    /**
+     * Path to a file to print commit hashes for Jenkins project dependencies.
+     */
+    @Parameter(property = "commitHashes")
+    private File commitHashes;
 
     private RequireUpperBoundDepsVisitor upperBoundDepsVisitor;
 
@@ -343,6 +360,8 @@ public class TestDependencyMojo extends AbstractHpiMojo {
 
         copyTestDependencies(effectiveArtifacts);
 
+        printCommitHashes(effectiveArtifacts, commitHashes);
+
         if (!additions.isEmpty() || !deletions.isEmpty() || !updates.isEmpty()) {
             List<String> additionalClasspathElements = new LinkedList<>();
             NavigableMap<String, String> includes = new TreeMap<>();
@@ -513,6 +532,91 @@ public class TestDependencyMojo extends AbstractHpiMojo {
             }
         } catch (IOException e) {
             throw new MojoExecutionException("Failed to copy dependency plugins", e);
+        }
+    }
+
+    private void printCommitHashes(Set<MavenArtifact> mavenArtifacts, File commitHashes) throws MojoExecutionException {
+        if (commitHashes == null) {
+            return;
+        }
+        NavigableMap<String, String> nameToTag = new TreeMap<>();
+        GitHub github;
+        try {
+            github = GitHub.connect();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+        for (MavenArtifact mavenArtifact : mavenArtifacts) {
+            Scm scm;
+            try {
+                getLog().info("Resolving POM for " + mavenArtifact.getId());
+                scm = mavenArtifact.resolvePom().getScm();
+            } catch (ProjectBuildingException e) {
+                throw new MojoExecutionException("Failed to resolve POM for artifact " + mavenArtifact, e);
+            }
+            String org = null;
+            String repo = null;
+            String tag = null;
+            if (scm != null) {
+                String gitHubRepo = scm.getConnection();
+                if (gitHubRepo != null && gitHubRepo.startsWith(PREFIX)) {
+                    gitHubRepo = gitHubRepo.substring(gitHubRepo.indexOf(PREFIX) + PREFIX.length());
+                    if (gitHubRepo.endsWith(SUFFIX)) {
+                        gitHubRepo = gitHubRepo.substring(0, gitHubRepo.indexOf(SUFFIX));
+                    }
+                    String[] parts = gitHubRepo.split("/", 2);
+                    if (parts.length == 2) {
+                        org = parts[0];
+                        repo = parts[1];
+                    }
+                }
+                if (scm.getTag() != null && !scm.getTag().equals("HEAD")) {
+                    tag = scm.getTag();
+                }
+            }
+            // TODO add support for incremental PR builds from a fork
+            if ("jenkinsci".equals(org) && repo != null && tag != null) {
+                String name = org + "/" + repo;
+                nameToTag.put(name, tag);
+            }
+        }
+        NavigableMap<String, String> nameToHash = new TreeMap<>();
+        for (Map.Entry<String, String> entry : nameToTag.entrySet()) {
+            String name = entry.getKey();
+            String tag = entry.getValue();
+            String hash;
+            if (SHA1_HASH.matcher(tag).matches()) {
+                hash = tag;
+            } else {
+                hash = tagToHash(name, tag, github);
+            }
+            if (!SHA1_HASH.matcher(hash).matches()) {
+                throw new IllegalStateException("Illegal hash for " + name + ": " + hash);
+            }
+            nameToHash.put(name, hash);
+        }
+        List<String> output = new ArrayList<>();
+        for (Map.Entry<String, String> entry : nameToHash.entrySet()) {
+            getLog().info(String.format("Component %s has hash %s", entry.getKey(), entry.getValue()));
+            output.add("--commit " + entry.getKey() + "=" + entry.getValue());
+        }
+        try (BufferedWriter w = Files.newBufferedWriter(commitHashes.toPath(), StandardCharsets.UTF_8)) {
+            w.write(String.join(" ", output));
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    private String tagToHash(String name, String tag, GitHub github) {
+        getLog().info("Resolving tag for " + name);
+        try {
+            GHRepository repo = github.getRepository(name);
+            GHRef ref = repo.getRef("tags/" + tag);
+            String sha = ref.getObject().getSha();
+            GHTagObject tagObject = repo.getTagObject(sha);
+            return tagObject.getObject().getSha();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
     }
 
