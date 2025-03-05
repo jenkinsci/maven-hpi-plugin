@@ -927,10 +927,6 @@ public class TestDependencyMojo extends AbstractHpiMojo {
         }
 
         @Override
-        @SuppressFBWarnings(
-                value = "EQ_COMPARETO_USE_OBJECT_EQUALS",
-                justification =
-                        "Silly check; it is perfectly reasonable to implement Comparable by writing a compareTo without an equals.")
         public int compareTo(DependencyNodeHopCountPair other) {
             return Integer.compare(hopCount, other.getHopCount());
         }

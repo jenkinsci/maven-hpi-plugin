@@ -33,11 +33,10 @@
       </And>
       <And>
         <Bug pattern="EQ_COMPARETO_USE_OBJECT_EQUALS"/>
-        <Class name="org.jenkinsci.maven.plugins.hpi.MavenArtifact"/>
-      </And>
-      <And>
-        <Bug pattern="NP_LOAD_OF_KNOWN_NULL_VALUE"/>
-        <Class name="org.jenkinsci.maven.plugins.hpi.TestDependencyMojo"/>
+        <Or>
+          <Class name="org.jenkinsci.maven.plugins.hpi.MavenArtifact"/>
+          <Class name="org.jenkinsci.maven.plugins.hpi.TestDependencyMojo$DependencyNodeHopCountPair"/>
+        </Or>
       </And>
       <And>
         <Bug pattern="NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"/>
