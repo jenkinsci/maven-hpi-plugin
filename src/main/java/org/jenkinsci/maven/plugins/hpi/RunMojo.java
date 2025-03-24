@@ -80,11 +80,11 @@ import org.apache.maven.project.ProjectDependenciesResolver;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.graph.DependencyFilter;
 import org.eclipse.aether.util.filter.ScopeDependencyFilter;
-import org.eclipse.jetty.ee9.maven.plugin.JettyRunWarMojo;
-import org.eclipse.jetty.ee9.maven.plugin.MavenWebAppContext;
-import org.eclipse.jetty.ee9.webapp.WebAppClassLoader;
-import org.eclipse.jetty.ee9.webapp.WebAppContext;
-import org.eclipse.jetty.ee9.websocket.server.config.JettyWebSocketServletContainerInitializer;
+import org.eclipse.jetty.ee10.maven.plugin.JettyRunWarMojo;
+import org.eclipse.jetty.ee10.maven.plugin.MavenWebAppContext;
+import org.eclipse.jetty.ee10.webapp.WebAppClassLoader;
+import org.eclipse.jetty.ee10.webapp.WebAppContext;
+import org.eclipse.jetty.ee10.websocket.server.config.JettyWebSocketServletContainerInitializer;
 import org.eclipse.jetty.http.HttpCompliance;
 import org.eclipse.jetty.http.UriCompliance;
 import org.eclipse.jetty.maven.MavenServerConnector;
@@ -287,6 +287,12 @@ public class RunMojo extends JettyRunWarMojo {
                 if (webApp == null) {
                     try {
                         webApp = new MavenWebAppContext() {
+                            @Override
+                            public void preConfigure() throws Exception {
+                                super.preConfigure();
+                                getServletHandler().setDecodeAmbiguousURIs(true);
+                            }
+
                             @Override
                             protected ClassLoader configureClassLoader(ClassLoader loader) {
                                 return getWebAppClassLoader(this);
