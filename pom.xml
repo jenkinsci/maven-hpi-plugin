@@ -191,6 +191,11 @@
       <artifactId>jetty-maven</artifactId>
       <version>${jetty.version}</version>
       <exclusions>
+        <!-- Pulls in conflicting versions of Apache Commons Logging and Apache HttpComponents Client 4 -->
+        <exclusion>
+          <groupId>org.apache.maven.plugin-tools</groupId>
+          <artifactId>maven-plugin-tools-api</artifactId>
+        </exclusion>
         <exclusion>
           <groupId>org.codehaus.plexus</groupId>
           <artifactId>plexus-xml</artifactId>
@@ -206,6 +211,11 @@
       <artifactId>jetty-ee9-maven-plugin</artifactId>
       <version>${jetty.version}</version>
       <exclusions>
+        <!-- Pulls in conflicting versions of Apache Commons Logging and Apache HttpComponents Client 4 -->
+        <exclusion>
+          <groupId>org.apache.maven.plugin-tools</groupId>
+          <artifactId>maven-plugin-tools-api</artifactId>
+        </exclusion>
         <exclusion>
           <groupId>org.codehaus.plexus</groupId>
           <artifactId>plexus-xml</artifactId>
