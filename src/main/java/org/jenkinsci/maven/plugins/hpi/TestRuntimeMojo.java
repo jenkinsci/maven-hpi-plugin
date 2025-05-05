@@ -53,6 +53,7 @@ public class TestRuntimeMojo extends AbstractJenkinsMojo {
         }
         setAddOpensProperty();
         setInsaneHookProperty();
+        setJavaAgentProperty();
     }
 
     private void setAddOpensProperty() throws MojoExecutionException {
@@ -138,5 +139,17 @@ public class TestRuntimeMojo extends AbstractJenkinsMojo {
         } catch (IOException e) {
             throw new MojoExecutionException("Failed to read org-netbeans-insane-hook.jar from " + jar, e);
         }
+    }
+
+    private void setJavaAgentProperty() {
+        Artifact mockito = project.getArtifactMap().get("org.mockito:mockito-core");
+        if (mockito == null) {
+            // Mockito not in use; no need to set Java agent property.
+            return;
+        }
+
+        String javaAgent = String.format("-javaagent:'%s'", mockito.getFile());
+        getLog().info("Setting jenkins.javaAgent to " + javaAgent);
+        project.getProperties().setProperty("jenkins.javaAgent", javaAgent);
     }
 }
