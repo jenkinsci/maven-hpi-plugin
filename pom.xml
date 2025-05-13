@@ -62,8 +62,8 @@
         <scope>import</scope>
       </dependency>
       <dependency>
-        <groupId>org.eclipse.jetty.ee9</groupId>
-        <artifactId>jetty-ee9-bom</artifactId>
+        <groupId>org.eclipse.jetty.ee10</groupId>
+        <artifactId>jetty-ee10-bom</artifactId>
         <version>${jetty.version}</version>
         <type>pom</type>
         <scope>import</scope>
@@ -207,8 +207,8 @@
       <artifactId>jetty-server</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.eclipse.jetty.ee9</groupId>
-      <artifactId>jetty-ee9-maven-plugin</artifactId>
+      <groupId>org.eclipse.jetty.ee10</groupId>
+      <artifactId>jetty-ee10-maven-plugin</artifactId>
       <version>${jetty.version}</version>
       <exclusions>
         <!-- Pulls in conflicting versions of Apache Commons Logging and Apache HttpComponents Client 4 -->
@@ -223,17 +223,17 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.eclipse.jetty.ee9</groupId>
-      <artifactId>jetty-ee9-servlet</artifactId>
+      <groupId>org.eclipse.jetty.ee10</groupId>
+      <artifactId>jetty-ee10-servlet</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.eclipse.jetty.ee9</groupId>
-      <artifactId>jetty-ee9-webapp</artifactId>
+      <groupId>org.eclipse.jetty.ee10</groupId>
+      <artifactId>jetty-ee10-webapp</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.eclipse.jetty.ee9.websocket</groupId>
-      <artifactId>jetty-ee9-websocket-jetty-server</artifactId>
-      <!-- or jetty-ee9-websocket-jakarta-server -->
+      <groupId>org.eclipse.jetty.ee10.websocket</groupId>
+      <artifactId>jetty-ee10-websocket-jetty-server</artifactId>
+      <!-- or jetty-ee10-websocket-jakarta-server -->
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
@@ -365,7 +365,7 @@
         <configuration>
           <goalPrefix>hpi</goalPrefix>
           <extractors>java-annotations</extractors>
-          <mojoDependencies>org.eclipse.jetty.ee9:jetty-ee9-maven-plugin</mojoDependencies>
+          <mojoDependencies>org.eclipse.jetty.ee10:jetty-ee10-maven-plugin</mojoDependencies>
         </configuration>
         <executions>
           <execution>
