@@ -61,7 +61,7 @@ public abstract class AbstractDependencyGraphTraversingMojo extends AbstractJenk
      * Visits a node. Called at most once for any node in the dependency tree.
      *
      * @return true
-     *         if the children should be traversed.
+     *      if the children should be traversed.
      */
     protected abstract boolean accept(DependencyNode g);
 }
