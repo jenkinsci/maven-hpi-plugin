@@ -30,8 +30,8 @@ public abstract class AbstractDependencyGraphTraversingMojo extends AbstractJenk
 
             // Get managed dependencies if any
             if (project.getDependencyManagement() != null) {
-                for (org.apache.maven.model.Dependency dependency : project.getDependencyManagement()
-                        .getDependencies()) {
+                for (org.apache.maven.model.Dependency dependency :
+                        project.getDependencyManagement().getDependencies()) {
                     collectRequest.addManagedDependency(RepositoryUtils.toDependency(dependency, null));
                 }
             }
