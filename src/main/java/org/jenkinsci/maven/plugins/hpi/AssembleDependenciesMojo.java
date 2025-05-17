@@ -50,8 +50,7 @@ public class AssembleDependenciesMojo extends AbstractDependencyGraphTraversingM
      * Scopes to include.
      */
     // skip test scope as that's not meant to be bundled
-    // "provided" indicates the plugin assumes that scope is available, so skip that
-    // as well
+    // "provided" indicates the plugin assumes that scope is available, so skip that as well
     // "system" is not used for plugins
     @Parameter
     private String scopes = "compile,runtime";
