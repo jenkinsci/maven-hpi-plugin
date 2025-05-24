@@ -191,7 +191,8 @@ public class RunMojo extends JettyRunWarMojo {
      */
     @Parameter(property = "wildcardDNS")
     protected String wildcardDNS;
-
+    // private static final Set<String> DEPRECATED_DNS_SERVICES = Set.of("nip.io", "xip.io");
+    private static final Set<String> MODERN_DNS_RECOMMENDATION = Set.of("localtest.me", "readme.localtest.me");
     /**
      * If true, the context will be restarted after a line feed on
      * the input console. Enabled by default.
@@ -807,11 +808,16 @@ public class RunMojo extends JettyRunWarMojo {
             String browserHost;
 
             if (wildcardDNS != null && "localhost".equals(defaultHost)) {
-                // Domains that don't need 127.0.0.1 subdomain, e.g., localtest.me or readme.localtest.me
-                if (wildcardDNS.endsWith("localtest.me")) {
+                // First check for modern DNS (no IP infix)
+                if (MODERN_DNS_RECOMMENDATION.contains(wildcardDNS)) {
+                    // Modern behavior without IP infix
                     browserHost = getProject().getArtifactId() + "." + wildcardDNS;
                 } else {
+                    // Deprecated path (with IP infix and warning)
                     browserHost = getProject().getArtifactId() + ".127.0.0.1." + wildcardDNS;
+                    getLog().warn("DEPRECATED: '" + wildcardDNS + "' uses an IPv4-only format.");
+                    getLog().warn("Switch to '" + MODERN_DNS_RECOMMENDATION + "' for dual-stack support: -DwildcardDNS="
+                            + MODERN_DNS_RECOMMENDATION);
                 }
             } else {
                 getLog().info("Try setting -DwildcardDNS=nip.io in a profile");
@@ -819,8 +825,7 @@ public class RunMojo extends JettyRunWarMojo {
             }
             getLog().info("===========> Browse to: http://" + browserHost + ":"
                     + (defaultPort != 0 ? defaultPort : MavenServerConnector.DEFAULT_PORT)
-                    + webApp.getContextPath()
-                    + "/");
+                    + webApp.getContextPath() + "/");
         }
         super.startJetty();
     }
