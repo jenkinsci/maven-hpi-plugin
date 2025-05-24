@@ -805,14 +805,21 @@ public class RunMojo extends JettyRunWarMojo {
                 httpConnector.setHost(defaultHost);
             }
             String browserHost;
+
             if (wildcardDNS != null && "localhost".equals(defaultHost)) {
-                browserHost = getProject().getArtifactId() + ".127.0.0.1." + wildcardDNS;
+                // Domains that don't need 127.0.0.1 subdomain, e.g., localtest.me or readme.localtest.me
+                if (wildcardDNS.endsWith("localtest.me")) {
+                    browserHost = getProject().getArtifactId() + "." + wildcardDNS;
+                } else {
+                    browserHost = getProject().getArtifactId() + ".127.0.0.1." + wildcardDNS;
+                }
             } else {
                 getLog().info("Try setting -DwildcardDNS=nip.io in a profile");
                 browserHost = httpConnector.getHost();
             }
             getLog().info("===========> Browse to: http://" + browserHost + ":"
-                    + (defaultPort != 0 ? defaultPort : MavenServerConnector.DEFAULT_PORT) + webApp.getContextPath()
+                    + (defaultPort != 0 ? defaultPort : MavenServerConnector.DEFAULT_PORT)
+                    + webApp.getContextPath()
                     + "/");
         }
         super.startJetty();
