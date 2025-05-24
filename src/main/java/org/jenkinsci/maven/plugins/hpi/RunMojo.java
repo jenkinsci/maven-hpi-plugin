@@ -816,8 +816,7 @@ public class RunMojo extends JettyRunWarMojo {
                     // Deprecated path (with IP infix and warning)
                     browserHost = getProject().getArtifactId() + ".127.0.0.1." + wildcardDNS;
                     getLog().warn("DEPRECATED: '" + wildcardDNS + "' uses an IPv4-only format.");
-                    getLog().warn("Switch to '" + MODERN_DNS_RECOMMENDATION + "' for dual-stack support: -DwildcardDNS="
-                            + MODERN_DNS_RECOMMENDATION);
+                    getLog().warn("Consider using a modern DNS service like 'localtest.me' instead.");
                 }
             } else {
                 getLog().info("Try setting -DwildcardDNS=nip.io in a profile");
