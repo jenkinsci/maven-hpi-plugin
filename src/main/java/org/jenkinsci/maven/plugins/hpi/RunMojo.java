@@ -811,20 +811,20 @@ public class RunMojo extends JettyRunWarMojo {
             if (wildcardDNS != null && "localhost".equals(defaultHost)) {
                 // First check for modern DNS (no IP infix)
                 if (MODERN_DNS_RECOMMENDATION.contains(wildcardDNS)) {
-                // Modern behavior without IP infix
-                browserHost = getProject().getArtifactId() + "." + wildcardDNS;
+                    // Modern behavior without IP infix
+                    browserHost = getProject().getArtifactId() + "." + wildcardDNS;
                 } else {
-                // Deprecated path (with IP infix and warning)
-                browserHost = getProject().getArtifactId() + ".127.0.0.1." + wildcardDNS;
-                getLog().warn("DEPRECATED: '" + wildcardDNS + "' uses an IPv4-only format.");
-                getLog().warn("Consider using a modern DNS service like 'localtest.me' instead.");
+                    // Deprecated path (with IP infix and warning)
+                    browserHost = getProject().getArtifactId() + ".127.0.0.1." + wildcardDNS;
+                    getLog().warn("DEPRECATED: '" + wildcardDNS + "' uses an IPv4-only format.");
+                    getLog().warn("Consider using a modern DNS service like 'localtest.me' instead.");
                 }
             } else {
                 getLog().info("Try setting -DwildcardDNS=nip.io in a profile");
                 browserHost = httpConnector.getHost();
             }
             getLog().info("===========> Browse to: http://" + browserHost + ":"
-                    + (defaultPort != 0 ? defaultPort : MavenServerConnector.DEFAULT_PORT) + webApp.getContextPath() 
+                    + (defaultPort != 0 ? defaultPort : MavenServerConnector.DEFAULT_PORT) + webApp.getContextPath()
                     + "/");
         }
         super.startJetty();
