@@ -193,7 +193,7 @@ public class RunMojo extends JettyRunWarMojo {
     protected String wildcardDNS;
 
     // private static final Set<String> DEPRECATED_DNS_SERVICES = Set.of("nip.io", "xip.io");
-    private static final Set<String> MODERN_DNS_RECOMMENDATION = Set.of("localtest.me", "readme.localtest.me");
+    private static final Set<String> MODERN_DNS_RECOMMENDATION = Set.of("localtest.me");
     /**
      * If true, the context will be restarted after a line feed on
      * the input console. Enabled by default.
@@ -820,7 +820,7 @@ public class RunMojo extends JettyRunWarMojo {
                     getLog().warn("Consider using a modern DNS service like 'localtest.me' instead.");
                 }
             } else {
-                getLog().info("Try setting -DwildcardDNS=nip.io in a profile");
+                getLog().info("Try setting -DwildcardDNS=localtest.me (recommended, supports IPv4/IPv6) or -DwildcardDNS=nip.io (legacy IPv4-only) in a profile");
                 browserHost = httpConnector.getHost();
             }
             getLog().info("===========> Browse to: http://" + browserHost + ":"
