@@ -820,7 +820,8 @@ public class RunMojo extends JettyRunWarMojo {
                     getLog().warn("Consider using a modern DNS service like 'localtest.me' instead.");
                 }
             } else {
-                getLog().info("Try setting -DwildcardDNS=localtest.me (recommended, supports IPv4/IPv6) or -DwildcardDNS=nip.io (legacy IPv4-only) in a profile");
+                getLog().info(
+                                "Try setting -DwildcardDNS=localtest.me (recommended, supports IPv4/IPv6) or -DwildcardDNS=nip.io (legacy IPv4-only) in a profile");
                 browserHost = httpConnector.getHost();
             }
             getLog().info("===========> Browse to: http://" + browserHost + ":"
