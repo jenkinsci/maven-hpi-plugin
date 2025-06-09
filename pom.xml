@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.128</version>
+    <version>1.132</version>
     <relativePath />
   </parent>
 
@@ -36,7 +36,7 @@
   </scm>
 
   <properties>
-    <revision>3.62</revision>
+    <revision>3.66</revision>
     <changelist>-SNAPSHOT</changelist>
     <!-- used for escape -->
     <begin>${${$}}{</begin>
@@ -44,11 +44,11 @@
     <dollar>$</dollar>
     <openbracket>{</openbracket>
     <gitHubRepo>jenkinsci/${project.artifactId}</gitHubRepo>
-    <jetty.version>12.0.16</jetty.version>
+    <jetty.version>12.0.22</jetty.version>
     <!-- if we update this all consumers need to be running at least this version -->
     <maven.version>3.9.6</maven.version>
     <maven-plugin-tools.version>3.15.1</maven-plugin-tools.version>
-    <maven-resolver.version>2.0.6</maven-resolver.version>
+    <maven-resolver.version>2.0.9</maven-resolver.version>
     <spotless.check.skip>false</spotless.check.skip>
   </properties>
 
@@ -71,7 +71,7 @@
       <dependency>
         <groupId>org.ow2.asm</groupId>
         <artifactId>asm-bom</artifactId>
-        <version>9.7.1</version>
+        <version>9.8</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -83,7 +83,7 @@
       <dependency>
         <groupId>commons-io</groupId>
         <artifactId>commons-io</artifactId>
-        <version>2.18.0</version>
+        <version>2.19.0</version>
       </dependency>
       <dependency>
         <groupId>commons-logging</groupId>
@@ -108,12 +108,12 @@
       <dependency>
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-interpolation</artifactId>
-        <version>1.27</version>
+        <version>1.28</version>
       </dependency>
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
-        <version>2.0.16</version>
+        <version>2.0.17</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -184,13 +184,18 @@
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-xml</artifactId>
-      <version>3.0.1</version>
+      <version>3.0.2</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-maven</artifactId>
       <version>${jetty.version}</version>
       <exclusions>
+        <!-- Pulls in conflicting versions of Apache Commons Logging and Apache HttpComponents Client 4 -->
+        <exclusion>
+          <groupId>org.apache.maven.plugin-tools</groupId>
+          <artifactId>maven-plugin-tools-api</artifactId>
+        </exclusion>
         <exclusion>
           <groupId>org.codehaus.plexus</groupId>
           <artifactId>plexus-xml</artifactId>
@@ -206,6 +211,11 @@
       <artifactId>jetty-ee9-maven-plugin</artifactId>
       <version>${jetty.version}</version>
       <exclusions>
+        <!-- Pulls in conflicting versions of Apache Commons Logging and Apache HttpComponents Client 4 -->
+        <exclusion>
+          <groupId>org.apache.maven.plugin-tools</groupId>
+          <artifactId>maven-plugin-tools-api</artifactId>
+        </exclusion>
         <exclusion>
           <groupId>org.codehaus.plexus</groupId>
           <artifactId>plexus-xml</artifactId>
@@ -238,7 +248,7 @@
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-groovy</artifactId>
-      <version>1948.v0f99403fe86a_</version>
+      <version>1990.v99d303a_82457</version>
       <exclusions>
         <exclusion>
           <groupId>jakarta.annotation</groupId>
