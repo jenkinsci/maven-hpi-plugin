@@ -106,6 +106,21 @@
         <version>${maven-resolver.version}</version>
       </dependency>
       <dependency>
+        <groupId>org.apache.maven.resolver</groupId>
+        <artifactId>maven-resolver-impl</artifactId>
+        <version>${maven-resolver.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.resolver</groupId>
+        <artifactId>maven-resolver-connector-basic</artifactId>
+        <version>${maven-resolver.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.resolver</groupId>
+        <artifactId>maven-resolver-transport-http</artifactId>
+        <version>${maven-resolver.version}</version>
+      </dependency>
+      <dependency>
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-interpolation</artifactId>
         <version>1.28</version>
@@ -160,11 +175,11 @@
       <artifactId>maven-archiver</artifactId>
       <version>3.6.0</version>
     </dependency>
-    <dependency>
-      <groupId>org.apache.maven.shared</groupId>
-      <artifactId>maven-dependency-tree</artifactId>
-      <version>3.3.0</version>
-    </dependency>
+<!--    <dependency>-->
+<!--      <groupId>org.apache.maven.shared</groupId>-->
+<!--      <artifactId>maven-dependency-tree</artifactId>-->
+<!--      <version>3.3.0</version>-->
+<!--    </dependency>-->
     <dependency>
       <groupId>org.apache.maven.shared</groupId>
       <artifactId>maven-filtering</artifactId>
