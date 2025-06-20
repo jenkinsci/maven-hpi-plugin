@@ -1,9 +1,7 @@
 package org.jenkinsci.maven.plugins.hpi;
 
 import org.apache.maven.RepositoryUtils;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
-import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.collection.CollectRequest;
@@ -26,7 +24,7 @@ public abstract class AbstractDependencyGraphTraversingMojo extends AbstractJenk
      * Traverses the whole dependency tree rooted at the project.
      */
     protected void traverseProject() throws DependencyResolutionException {
-        RepositorySystemSession repoSession = newRepositorySystemSession(repositorySystem);
+        RepositorySystemSession repoSession = newRepositorySystemSession();
         DefaultArtifact rootArtifact = new DefaultArtifact(project.getGroupId(), project.getArtifactId(), project.getPackaging(), project.getVersion());
         Dependency rootDependency = new Dependency(rootArtifact, "compile");
         List<RemoteRepository> remoteRepos = project.getRemoteArtifactRepositories().stream()
@@ -41,7 +39,7 @@ public abstract class AbstractDependencyGraphTraversingMojo extends AbstractJenk
         visit(rootNode, true);
     }
 
-    private RepositorySystemSession newRepositorySystemSession(RepositorySystem system) {
+    private RepositorySystemSession newRepositorySystemSession() {
         return MavenRepositorySystemUtils.newSession();
     }
 
