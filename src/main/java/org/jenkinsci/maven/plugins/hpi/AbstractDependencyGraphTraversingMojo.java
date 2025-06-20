@@ -21,8 +21,6 @@ import java.util.stream.Collectors;
  * @author Kohsuke Kawaguchi
  */
 public abstract class AbstractDependencyGraphTraversingMojo extends AbstractJenkinsMojo {
-    @Component
-    protected RepositorySystem repositorySystem;
 
     /**
      * Traverses the whole dependency tree rooted at the project.
@@ -30,7 +28,7 @@ public abstract class AbstractDependencyGraphTraversingMojo extends AbstractJenk
     protected void traverseProject() throws DependencyResolutionException {
         RepositorySystemSession repoSession = newRepositorySystemSession(repositorySystem);
         DefaultArtifact rootArtifact = new DefaultArtifact(project.getGroupId(), project.getArtifactId(), project.getPackaging(), project.getVersion());
-        Dependency rootDependency = new Dependency(rootArtifact, "");
+        Dependency rootDependency = new Dependency(rootArtifact, "compile");
         List<RemoteRepository> remoteRepos = project.getRemoteArtifactRepositories().stream()
                 .map(RepositoryUtils::toRepo)
                 .collect(Collectors.toList());
