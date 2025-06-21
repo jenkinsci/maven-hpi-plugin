@@ -1,19 +1,19 @@
 package org.jenkinsci.maven.plugins.hpi;
 
+import java.util.List;
+import java.util.stream.Collectors;
 import org.apache.maven.RepositoryUtils;
-import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
+import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.collection.CollectRequest;
 import org.eclipse.aether.graph.Dependency;
 import org.eclipse.aether.graph.DependencyNode;
+import org.eclipse.aether.repository.LocalRepository;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.resolution.DependencyRequest;
 import org.eclipse.aether.resolution.DependencyResolutionException;
 import org.eclipse.aether.resolution.DependencyResult;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -25,7 +25,8 @@ public abstract class AbstractDependencyGraphTraversingMojo extends AbstractJenk
      */
     protected void traverseProject() throws DependencyResolutionException {
         RepositorySystemSession repoSession = newRepositorySystemSession();
-        DefaultArtifact rootArtifact = new DefaultArtifact(project.getGroupId(), project.getArtifactId(), project.getPackaging(), project.getVersion());
+        DefaultArtifact rootArtifact = new DefaultArtifact(
+                project.getGroupId(), project.getArtifactId(), project.getPackaging(), project.getVersion());
         Dependency rootDependency = new Dependency(rootArtifact, "compile");
         List<RemoteRepository> remoteRepos = project.getRemoteArtifactRepositories().stream()
                 .map(RepositoryUtils::toRepo)
@@ -40,7 +41,11 @@ public abstract class AbstractDependencyGraphTraversingMojo extends AbstractJenk
     }
 
     private RepositorySystemSession newRepositorySystemSession() {
-        return MavenRepositorySystemUtils.newSession();
+        DefaultRepositorySystemSession repoSession = new DefaultRepositorySystemSession(session.getRepositorySession());
+        LocalRepository localRepo =
+                new LocalRepository(session.getLocalRepository().getBasedir());
+        repoSession.setLocalRepositoryManager(repositorySystem.newLocalRepositoryManager(repoSession, localRepo));
+        return repoSession;
     }
 
     /**

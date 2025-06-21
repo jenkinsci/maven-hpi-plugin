@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -80,7 +79,7 @@ public class AssembleDependenciesMojo extends AbstractDependencyGraphTraversingM
 
         MavenArtifact a = wrap(RepositoryUtils.toArtifact(artifact));
         if (!a.isPlugin(getLog())) {
-            return "hpi".equals(artifact.getExtension()) || artifact.getArtifactId().endsWith("-plugin");
+            return isRoot;
         }
 
         MavenArtifact existing = hpis.get(a.getArtifactId());
