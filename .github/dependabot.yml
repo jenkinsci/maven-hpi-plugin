@@ -9,7 +9,13 @@ updates:
     ignore:
       # Maven core artifacts are provided by the running Maven, so do not update
       # to prevent consuming something unavailable.
-      - dependency-name: "org.apache.maven:*"
+      - dependency-name: "org.apache.maven:maven-artifact"
+      - dependency-name: "org.apache.maven:maven-core"
+      - dependency-name: "org.apache.maven:maven-model"
+      - dependency-name: "org.apache.maven:maven-model-builder"
+      - dependency-name: "org.apache.maven:maven-plugin-api"
+      - dependency-name: "org.apache.maven:maven-resolver-provider"
+      - dependency-name: "org.apache.maven:maven-settings"
       # Per https://codehaus-plexus.github.io/plexus-utils/ pin plexus-xml to 3
       # for Maven 3 compatibility, as plexus-xml 4 works only in Maven 4.
       - dependency-name: "org.codehaus.plexus:plexus-xml"
