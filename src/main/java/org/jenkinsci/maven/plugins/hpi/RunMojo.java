@@ -188,9 +188,21 @@ public class RunMojo extends JettyRunWarMojo {
      * Optional wildcard DNS domain to help set a distinct Jenkins root URL from every plugin.
      * Just prints a URL you ought to set.
      * Recommended: {@code nip.io}
+     *
+     * @deprecated Use {@link #wildcardDNSSuffix} instead for more flexible configuration.
      */
+    @Deprecated
     @Parameter(property = "wildcardDNS")
     protected String wildcardDNS;
+
+    /**
+     * Optional DNS suffix to use for generating the Jenkins root URL, e.g. {@code localtest.me}, {@code nip.io}, etc.
+     * If set, this will be used directly as the suffix, without adding any IP infix.
+     *
+     * @since 3.XX
+     */
+    @Parameter(property = "wildcardDNSSuffix")
+    protected String wildcardDNSSuffix;
 
     // private static final Set<String> DEPRECATED_DNS_SERVICES = Set.of("nip.io", "xip.io");
     private static final Set<String> MODERN_DNS_RECOMMENDATION = Set.of("localtest.me");
@@ -808,20 +820,23 @@ public class RunMojo extends JettyRunWarMojo {
             }
             String browserHost;
 
-            if (wildcardDNS != null && "localhost".equals(defaultHost)) {
-                // First check for modern DNS (no IP infix)
+            // New flexible DNS logic
+            if (wildcardDNSSuffix != null && !wildcardDNSSuffix.isEmpty() && "localhost".equals(defaultHost)) {
+                // Use the new parameter directly, no IP infix
+                browserHost = getProject().getArtifactId() + "." + wildcardDNSSuffix;
+                getLog().info("Using wildcardDNSSuffix for browser host: " + browserHost);
+            } else if (wildcardDNS != null && !wildcardDNS.isEmpty() && "localhost".equals(defaultHost)) {
+                // Legacy/deprecated behavior
                 if (MODERN_DNS_RECOMMENDATION.contains(wildcardDNS)) {
-                    // Modern behavior without IP infix
                     browserHost = getProject().getArtifactId() + "." + wildcardDNS;
                 } else {
-                    // Deprecated path (with IP infix and warning)
                     browserHost = getProject().getArtifactId() + ".127.0.0.1." + wildcardDNS;
-                    getLog().warn("DEPRECATED: '" + wildcardDNS + "' uses an IPv4-only format.");
-                    getLog().warn("Consider using a modern DNS service like 'localtest.me' instead.");
+                    getLog().warn("DEPRECATED: 'wildcardDNS' uses an IPv4-only format and is deprecated. Use 'wildcardDNSSuffix' instead.");
+                    getLog().warn("Consider using a modern DNS service like 'localtest.me' and the 'wildcardDNSSuffix' parameter.");
                 }
             } else {
                 getLog().info(
-                                "Try setting -DwildcardDNS=localtest.me (recommended, supports IPv4/IPv6) or -DwildcardDNS=nip.io (legacy IPv4-only) in a profile");
+                        "Try setting -DwildcardDNSSuffix=localtest.me (recommended, supports IPv4/IPv6) or -DwildcardDNSSuffix=nip.io (legacy IPv4-only) in a profile");
                 browserHost = httpConnector.getHost();
             }
             getLog().info("===========> Browse to: http://" + browserHost + ":"
