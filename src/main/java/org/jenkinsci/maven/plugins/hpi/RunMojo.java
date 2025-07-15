@@ -831,12 +831,14 @@ public class RunMojo extends JettyRunWarMojo {
                     browserHost = getProject().getArtifactId() + "." + wildcardDNS;
                 } else {
                     browserHost = getProject().getArtifactId() + ".127.0.0.1." + wildcardDNS;
-                    getLog().warn("DEPRECATED: 'wildcardDNS' uses an IPv4-only format and is deprecated. Use 'wildcardDNSSuffix' instead.");
-                    getLog().warn("Consider using a modern DNS service like 'localtest.me' and the 'wildcardDNSSuffix' parameter.");
+                    getLog().warn(
+                                    "DEPRECATED: 'wildcardDNS' uses an IPv4-only format and is deprecated. Use 'wildcardDNSSuffix' instead.");
+                    getLog().warn(
+                                    "Consider using a modern DNS service like 'localtest.me' and the 'wildcardDNSSuffix' parameter.");
                 }
             } else {
                 getLog().info(
-                        "Try setting -DwildcardDNSSuffix=localtest.me (recommended, supports IPv4/IPv6) or -DwildcardDNSSuffix=nip.io (legacy IPv4-only) in a profile");
+                                "Try setting -DwildcardDNSSuffix=localtest.me (recommended, supports IPv4/IPv6) or -DwildcardDNSSuffix=nip.io (legacy IPv4-only) in a profile");
                 browserHost = httpConnector.getHost();
             }
             getLog().info("===========> Browse to: http://" + browserHost + ":"
