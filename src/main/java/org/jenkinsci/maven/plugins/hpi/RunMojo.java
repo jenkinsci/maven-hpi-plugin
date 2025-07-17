@@ -620,7 +620,7 @@ public class RunMojo extends JettyRunWarMojo {
             webApp.setTempDirectory(tmp.toFile());
         }
 
-        // Set unlimited form content size for Jetty (see https://github.com/jenkinsci/maven-hpi-plugin/issues/625)
+        // Set unlimited form content size for Jetty
         getWebAppConfig().setMaxFormContentSize(-1);
 
         File extractedWebAppDir = new File(webApp.getTempDirectory(), "webapp");
