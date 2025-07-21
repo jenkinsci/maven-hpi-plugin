@@ -187,10 +187,20 @@ public class RunMojo extends JettyRunWarMojo {
     /**
      * Optional wildcard DNS domain to help set a distinct Jenkins root URL from every plugin.
      * Just prints a URL you ought to set.
-     * Recommended: {@code nip.io}
+     * The domain suffix is expected to be prepended with an identifier and an IP address ({@code xxx.127.0.0.1.$suffix}).
+     * Recommended: {@code nip.io} but consider {@link #wildcardLocalhostDNS} instead.
      */
     @Parameter(property = "wildcardDNS")
     protected String wildcardDNS;
+
+    /**
+     * Optional wildcard localhost DNS domain to help set a distinct Jenkins root URL from every plugin.
+     * Just prints a URL you ought to set.
+     * The domain suffix is expected to be prepended with an identifier ({@code xxx.$suffix}) and to resolve to localhost.
+     * Recommended: {@code localtest.me}
+     */
+    @Parameter(property = "wildcardLocalhostDNS")
+    protected String wildcardLocalhostDNS;
 
     /**
      * If true, the context will be restarted after a line feed on
@@ -805,10 +815,14 @@ public class RunMojo extends JettyRunWarMojo {
                 httpConnector.setHost(defaultHost);
             }
             String browserHost;
-            if (wildcardDNS != null && "localhost".equals(defaultHost)) {
+            if (!"localhost".equals(defaultHost)) {
+                browserHost = httpConnector.getHost();
+            } else if (wildcardLocalhostDNS != null) {
+                browserHost = getProject().getArtifactId() + "." + wildcardLocalhostDNS;
+            } else if (wildcardDNS != null) {
                 browserHost = getProject().getArtifactId() + ".127.0.0.1." + wildcardDNS;
             } else {
-                getLog().info("Try setting -DwildcardDNS=nip.io in a profile");
+                getLog().info("Try setting -DwildcardLocalhostDNS=localtest.me in a profile");
                 browserHost = httpConnector.getHost();
             }
             getLog().info("===========> Browse to: http://" + browserHost + ":"
