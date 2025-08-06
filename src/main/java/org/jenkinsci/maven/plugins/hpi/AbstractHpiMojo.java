@@ -563,7 +563,8 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
                     """
                     Expected list of bundled artifacts %s did not match actual list of bundled artifacts %s. \
                     Review the bundled artifacts and add `<hpi.bundledArtifacts>%s</hpi.bundledArtifacts>` to `<properties>` in pom.xml if the actual list is correct. \
-                    If the actual list is not correct, add `<exclusion>`s or modify dependencies as needed to prevent the artifacts from being bundled.\
+                    If the actual list is not correct, add `<exclusion>`s or modify dependencies as needed to prevent the artifacts from being bundled. \
+                    Review https://www.jenkins.io/doc/developer/plugin-development/dependencies-and-class-loading/#bundling-third-party-libraries for more details.\
                     """
                             .formatted(
                                     bundledArtifacts, actualBundledArtifacts, String.join(",", actualBundledArtifacts));
