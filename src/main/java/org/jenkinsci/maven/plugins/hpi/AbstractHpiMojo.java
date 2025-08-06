@@ -525,7 +525,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
             ScopeArtifactFilter filter = new ScopeArtifactFilter(Artifact.SCOPE_RUNTIME);
             if (!artifact.isOptional() && filter.include(artifact.artifact)) {
                 if (artifact.getDependencyTrail().size() > 2) {
-                    getLog().warn("Bundling transitive dependency " + targetFileName + " (via "
+                    getLog().info("Bundling transitive dependency " + targetFileName + " (via "
                             + artifact.getDependencyTrail().get(1).replaceAll("[^:]+:([^:]+):.+", "$1") + ")");
                 } else {
                     getLog().info("Bundling direct dependency " + targetFileName);
