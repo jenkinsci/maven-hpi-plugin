@@ -11,7 +11,7 @@
 
   <groupId>org.jenkins-ci.tools</groupId>
   <artifactId>maven-hpi-plugin</artifactId>
-  <version>${revision}${changelist}</version>
+  <version>${revision}.${changelist}</version>
   <packaging>maven-plugin</packaging>
 
   <name>Maven Jenkins Plugin</name>
@@ -36,8 +36,8 @@
   </scm>
 
   <properties>
-    <revision>3.67</revision>
-    <changelist>-SNAPSHOT</changelist>
+    <revision>3</revision>
+    <changelist>999999-SNAPSHOT</changelist>
     <!-- used for escape -->
     <begin>${${$}}{</begin>
     <end>$}</end>
