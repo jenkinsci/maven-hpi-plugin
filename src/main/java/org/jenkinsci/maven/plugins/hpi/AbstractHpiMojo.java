@@ -218,6 +218,24 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
     protected boolean pluginFirstClassLoader = false;
 
     /**
+     * If {@code true}, then if {@link #bundledArtifacts} does not match the actual list of
+     * bundled artifacts, the build will fail.
+     * @since TODO
+     */
+    @Parameter(defaultValue = "${hpi.strictBundledArtifacts}")
+    private boolean strictBundledArtifacts;
+
+    /**
+     * A list of comma-separated Maven artifact IDs that correspond to Jar files that are expected
+     * to be bundled in the plugin's HPI file.
+     * If this list does not match the actual bundled artifacts, the build will either fail if
+     * {@link #strictBundledArtifactsCheck} is enabled, or a warning will be logged otherwise.
+     * @since TODO
+     */
+    @Parameter(defaultValue = "${hpi.bundledArtifacts}")
+    private List<String> bundledArtifacts;
+
+    /**
      * If true, test scope dependencies count as if they are normal dependencies.
      * This is only useful during hpi:run, so not exposing it as a configurable parameter.
      */
@@ -468,6 +486,8 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
             }
         }
 
+        List<String> actualBundledArtifacts = new ArrayList<>();
+
         OUTER:
         for (MavenArtifact artifact : artifacts) {
             getLog().debug("Considering artifact trail " + artifact.getDependencyTrail());
@@ -505,11 +525,12 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
             ScopeArtifactFilter filter = new ScopeArtifactFilter(Artifact.SCOPE_RUNTIME);
             if (!artifact.isOptional() && filter.include(artifact.artifact)) {
                 if (artifact.getDependencyTrail().size() > 2) {
-                    getLog().warn("Bundling transitive dependency " + targetFileName + " (via "
+                    getLog().info("Bundling transitive dependency " + targetFileName + " (via "
                             + artifact.getDependencyTrail().get(1).replaceAll("[^:]+:([^:]+):.+", "$1") + ")");
                 } else {
                     getLog().info("Bundling direct dependency " + targetFileName);
                 }
+                actualBundledArtifacts.add(artifact.getArtifactId());
                 String type = artifact.getType();
                 if ("tld".equals(type)) {
                     FileUtils.copyFileIfModified(artifact.getFile(), new File(tldDirectory, targetFileName));
@@ -533,6 +554,26 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
                         }
                     }
                 }
+            }
+        }
+
+        Collections.sort(actualBundledArtifacts);
+        if (!actualBundledArtifacts.equals(bundledArtifacts)) {
+            var message =
+                    """
+                    Expected list of bundled artifacts %s did not match actual list of bundled artifacts %s. \
+                    Review the bundled artifacts and add `<hpi.bundledArtifacts>%s</hpi.bundledArtifacts>` to `<properties>` in pom.xml if the actual list is correct. \
+                    If the actual list is not correct, add `<exclusion>`s or modify dependencies as needed to prevent the artifacts from being bundled. \
+                    Review https://www.jenkins.io/doc/developer/plugin-development/dependencies-and-class-loading/#bundling-third-party-libraries for more details.\
+                    """
+                            .formatted(
+                                    bundledArtifacts, actualBundledArtifacts, String.join(",", actualBundledArtifacts));
+            if (strictBundledArtifacts) {
+                throw new MojoExecutionException(message);
+            } else {
+                getLog().warn(
+                                message
+                                        + " Enable strict checks by adding `<hpi.strictBundledArtifacts>true</hpi.strictBundledArtifacts>` to pom.xml");
             }
         }
 
