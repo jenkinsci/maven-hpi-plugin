@@ -686,7 +686,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                 }
                 DependencyManagement dm = project.getDependencyManagement();
                 if (dm != null) {
-                    log.info(String.format("Adding dependency management entry %s:%s", key, dependency.getVersion()));
+                    log.debug(String.format("Adding dependency management entry %s:%s", key, dependency.getVersion()));
                     dm.addDependency(dependency);
                 } else {
                     throw new MojoExecutionException(String.format(
@@ -750,9 +750,16 @@ public class TestDependencyMojo extends AbstractHpiMojo {
                     && dependency.getArtifactId().equals(project.getArtifactId())) {
                 throw new MojoExecutionException("Cannot add self as dependency management entry");
             }
-            log.info(String.format("Adding dependency management entry %s:%s", key, version));
+            log.debug(String.format("Adding dependency management entry %s:%s", key, version));
             project.getDependencyManagement().getDependencies().add(dependency);
         }
+
+        log.info("Updated and/or added "
+                + (appliedOverrides.size()
+                        + appliedBundledPlugins.size()
+                        + overrideAdditions.size()
+                        + unappliedBundledPlugins.size())
+                + " direct dependencies and/or dependency management entries");
 
         log.debug("adjusted dependencies: " + project.getDependencies());
         if (project.getDependencyManagement() != null) {
@@ -775,7 +782,7 @@ public class TestDependencyMojo extends AbstractHpiMojo {
         String overrideVersion = overrides.get(key);
         if (overrideVersion != null) {
             String classifier = dependency.getClassifier();
-            log.info(String.format(
+            log.debug(String.format(
                     "Updating %s %s%s from %s to %s",
                     type, key, classifier != null ? ":" + classifier : "", dependency.getVersion(), overrideVersion));
             dependency.setVersion(overrideVersion);

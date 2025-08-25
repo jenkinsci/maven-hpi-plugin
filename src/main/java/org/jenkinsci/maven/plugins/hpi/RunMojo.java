@@ -104,7 +104,7 @@ import sun.misc.Unsafe;
  * </p>
  *
  * <p>
- * To specify the HTTP port, use {@code -Djetty.port=PORT}
+ * To specify the HTTP port, use {@code -Dport=PORT}
  * </p>
  *
  * @author Kohsuke Kawaguchi

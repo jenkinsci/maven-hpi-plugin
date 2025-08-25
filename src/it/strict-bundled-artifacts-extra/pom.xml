@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.jenkins-ci.plugins</groupId>
+    <artifactId>plugin</artifactId>
+    <version>5.18</version>
+    <relativePath />
+  </parent>
+
+  <groupId>org.jenkins-ci.tools.hpi.its</groupId>
+  <artifactId>strict-bundled-artifacts-extra</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <packaging>hpi</packaging>
+
+  <properties>
+    <jenkins.version>2.516.1</jenkins.version>
+    <hpi-plugin.version>@project.version@</hpi-plugin.version>
+    <spotless.check.skip>false</spotless.check.skip>
+    <hpi.strictBundledArtifacts>true</hpi.strictBundledArtifacts>
+    <!-- slf4j-api is listed here but is not actually bundled -->
+    <hpi.bundledArtifacts>metrics-core,metrics-json,slf4j-api</hpi.bundledArtifacts>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>io.dropwizard.metrics5</groupId>
+      <artifactId>metrics-json</artifactId>
+      <version>5.0.1</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-api</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+  </dependencies>
+
+  <repositories>
+    <repository>
+      <id>repo.jenkins-ci.org</id>
+      <url>https://repo.jenkins-ci.org/public/</url>
+    </repository>
+  </repositories>
+
+  <pluginRepositories>
+    <pluginRepository>
+      <id>repo.jenkins-ci.org</id>
+      <url>https://repo.jenkins-ci.org/public/</url>
+    </pluginRepository>
+  </pluginRepositories>
+</project>
