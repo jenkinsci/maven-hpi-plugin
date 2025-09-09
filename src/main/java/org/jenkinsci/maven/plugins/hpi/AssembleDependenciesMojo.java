@@ -70,8 +70,9 @@ public class AssembleDependenciesMojo extends AbstractDependencyGraphTraversingM
         org.eclipse.aether.artifact.Artifact a = g.getArtifact();
 
         // Convert Aether artifact to Maven artifact using the artifactFactory
-        Artifact mavenArtifact = artifactFactory.createArtifact(
-                a.getGroupId(), a.getArtifactId(), a.getVersion(), getNodeScope(g), a.getExtension());
+        Artifact mavenArtifact = artifactFactory.createArtifactWithClassifier(
+                a.getGroupId(), a.getArtifactId(), a.getVersion(), a.getExtension(), null);
+        mavenArtifact.setScope(getNodeScope(g));
 
         // Create a MavenArtifact wrapper
         MavenArtifact ma =
