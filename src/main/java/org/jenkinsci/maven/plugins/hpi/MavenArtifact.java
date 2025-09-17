@@ -209,12 +209,8 @@ public class MavenArtifact implements Comparable<MavenArtifact> {
      * Returns {@link MavenArtifact} for the hpi variant of this artifact.
      */
     public MavenArtifact getHpi() throws IOException {
-        Artifact a = artifactFactory.createArtifact(
-                artifact.getGroupId(),
-                artifact.getArtifactId(),
-                artifact.getVersion(),
-                Artifact.SCOPE_COMPILE,
-                getResolvedType());
+        Artifact a = artifactFactory.createArtifactWithClassifier(
+                artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), getResolvedType(), null);
         return new MavenArtifact(a, repositorySystem, artifactFactory, builder, session, project);
     }
 

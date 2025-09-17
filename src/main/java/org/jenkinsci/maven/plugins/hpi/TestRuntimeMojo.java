@@ -70,8 +70,8 @@ public class TestRuntimeMojo extends AbstractJenkinsMojo {
 
     @NonNull
     private Artifact resolveJenkinsWar() throws MojoExecutionException {
-        Artifact artifact =
-                artifactFactory.createArtifact("org.jenkins-ci.main", "jenkins-war", findJenkinsVersion(), null, "war");
+        Artifact artifact = artifactFactory.createArtifactWithClassifier(
+                "org.jenkins-ci.main", "jenkins-war", findJenkinsVersion(), "war", null);
         return MavenArtifact.resolveArtifact(artifact, project, session, repositorySystem);
     }
 
