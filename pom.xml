@@ -48,7 +48,7 @@
     <!-- if we update this all consumers need to be running at least this version -->
     <maven.version>3.9.6</maven.version>
     <maven-plugin-tools.version>3.15.1</maven-plugin-tools.version>
-    <maven-resolver.version>2.0.10</maven-resolver.version>
+    <maven-resolver.version>2.0.11</maven-resolver.version>
     <spotless.check.skip>false</spotless.check.skip>
   </properties>
 
@@ -138,7 +138,7 @@
     <dependency>
       <groupId>io.jenkins.lib</groupId>
       <artifactId>support-log-formatter</artifactId>
-      <version>1.3</version>
+      <version>118.v18c3eb_f88f07</version>
     </dependency>
     <dependency>
       <groupId>javax.inject</groupId>
@@ -243,7 +243,7 @@
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-groovy</artifactId>
-      <version>2033.va_95221851a_23</version>
+      <version>2036.v69a_e0454da_b_9</version>
       <exclusions>
         <exclusion>
           <groupId>jakarta.annotation</groupId>
