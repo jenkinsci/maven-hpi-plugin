@@ -83,8 +83,8 @@ public class WarMojo extends RunMojo {
             }
 
             // find corresponding .hpi file
-            Artifact hpi =
-                    artifactFactory.createArtifact(a.getGroupId(), a.getArtifactId(), a.getVersion(), null, "hpi");
+            Artifact hpi = artifactFactory.createArtifactWithClassifier(
+                    a.getGroupId(), a.getArtifactId(), a.getVersion(), "hpi", null);
             hpi = MavenArtifact.resolveArtifact(hpi, project, session, repositorySystem);
 
             if (hpi.getFile().isDirectory()) {

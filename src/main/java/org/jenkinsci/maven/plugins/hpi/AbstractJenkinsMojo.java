@@ -132,7 +132,8 @@ public abstract class AbstractJenkinsMojo extends AbstractMojo {
             groupId = "org.jenkins-ci.main";
             artifactId = "jenkins-core";
         }
-        Artifact artifact = artifactFactory.createArtifact(groupId, artifactId, findJenkinsVersion(), null, "jar");
+        Artifact artifact =
+                artifactFactory.createArtifactWithClassifier(groupId, artifactId, findJenkinsVersion(), "jar", null);
         return MavenArtifact.resolveArtifact(artifact, project, session, repositorySystem);
     }
 

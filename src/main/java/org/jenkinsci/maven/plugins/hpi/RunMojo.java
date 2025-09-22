@@ -388,8 +388,8 @@ public class RunMojo extends JettyRunWarMojo {
                 }
 
                 // find corresponding .hpi file
-                Artifact hpi =
-                        artifactFactory.createArtifact(a.getGroupId(), a.getArtifactId(), a.getVersion(), null, "hpi");
+                Artifact hpi = artifactFactory.createArtifactWithClassifier(
+                        a.getGroupId(), a.getArtifactId(), a.getVersion(), "hpi", null);
                 hpi = MavenArtifact.resolveArtifact(hpi, project, session, repositorySystem);
 
                 // check recursive dependency. this is a rare case that happens when we split out some things from the
@@ -489,6 +489,7 @@ public class RunMojo extends JettyRunWarMojo {
         return packages;
     }
 
+    @SuppressWarnings("removal")
     private static void openPackages(Collection<String> packagesToOpen) throws Throwable {
         final Collection<?> modules = allModules();
         if (modules == null) {
