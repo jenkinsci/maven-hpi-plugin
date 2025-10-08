@@ -733,6 +733,17 @@ public class RunMojo extends JettyRunWarMojo {
 
     private void finishConfigurationBeforeStart() {
         WebAppContext wac = getWebAppConfig();
+        // Allow unlimited form content size so large POSTs (e.g., large role assignments) are accepted.
+        // Previously this was controlled by a system property which
+        // newer Jetty versions no longer honor, so set it directly on the context.
+        try {
+            wac.setMaxFormContentSize(-1);
+        } catch (NoSuchMethodError | UnsupportedOperationException e) {
+            // If the Jetty version in use does not support this method, fall back to
+            // the system property (already set elsewhere) and log the absence.
+            getLog().warn("Jetty does not support setMaxFormContentSize on WebAppContext; "
+                    + "falling back to system property handling");
+        }
         // to allow the development environment to run multiple "mvn hpi:run" with different port,
         // use different session cookie names. Otherwise they can mix up. See
         // http://stackoverflow.com/questions/1612177/are-http-cookies-port-specific
