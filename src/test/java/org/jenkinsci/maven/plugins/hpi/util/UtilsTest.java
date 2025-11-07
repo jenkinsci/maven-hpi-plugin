@@ -5,12 +5,12 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 
 import java.util.Collections;
 import java.util.Set;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class UtilsTest {
+class UtilsTest {
 
     @Test
-    public void setUnionCalculation() {
+    void setUnionCalculation() {
         checkUnion("union of a set is itself", new String[] {"one", "two", "three"}, Set.of("one", "two", "three"));
 
         checkUnion(
@@ -43,7 +43,7 @@ public class UtilsTest {
                 Set.of("four", "five", "six"));
 
         checkUnion(
-                "union of something and an empty set and is somethine",
+                "union of something and an empty set is something",
                 new String[] {"four", "five", "six"},
                 Set.of("four", "five", "six"),
                 Collections.emptySet());
@@ -52,7 +52,7 @@ public class UtilsTest {
     }
 
     @SafeVarargs
-    public static <T> void checkUnion(String reason, T[] expected, Set<T>... unions) {
+    private static <T> void checkUnion(String reason, T[] expected, Set<T>... unions) {
         assertThat(reason, Utils.unionOf(unions), containsInAnyOrder(expected));
     }
 }
