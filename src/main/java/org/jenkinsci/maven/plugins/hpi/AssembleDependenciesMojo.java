@@ -6,13 +6,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.maven.RepositoryUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.shared.dependency.graph.DependencyGraphBuilderException;
-import org.apache.maven.shared.dependency.graph.DependencyNode;
 import org.codehaus.plexus.util.FileUtils;
+import org.eclipse.aether.graph.DependencyNode;
 
 /**
  * Used to assemble transitive dependencies of plugins into one location.
@@ -24,7 +24,7 @@ import org.codehaus.plexus.util.FileUtils;
  * @author Kohsuke Kawaguchi
  */
 @Mojo(name = "assemble-dependencies", requiresProject = true, threadSafe = true)
-public class AssembleDependenciesMojo extends AbstractDependencyGraphTraversingMojo {
+public class AssembleDependenciesMojo extends ResolverDependencyGraphTraversingMojo {
     /**
      * Where to copy plugins into.
      */
@@ -47,7 +47,8 @@ public class AssembleDependenciesMojo extends AbstractDependencyGraphTraversingM
      * Scopes to include.
      */
     // skip test scope as that's not meant to be bundled
-    // "provided" indicates the plugin assumes that scope is available, so skip that as well
+    // "provided" indicates the plugin assumes that scope is available, so skip that
+    // as well
     // "system" is not used for plugins
     @Parameter
     private String scopes = "compile,runtime";
@@ -57,8 +58,8 @@ public class AssembleDependenciesMojo extends AbstractDependencyGraphTraversingM
     private final Map<String, MavenArtifact> hpis = new HashMap<>();
 
     @Override
-    protected boolean accept(DependencyNode g) {
-        MavenArtifact a = wrap(g.getArtifact());
+    protected boolean accept(DependencyNode node, DependencyNode parent) {
+        MavenArtifact a = wrap(RepositoryUtils.toArtifact(node.getArtifact()));
 
         if (!parsedScopes.contains(a.getScope())) {
             return false;
@@ -70,7 +71,7 @@ public class AssembleDependenciesMojo extends AbstractDependencyGraphTraversingM
 
         if (!a.isPlugin(getLog())) {
             // only traverse chains of direct plugin dependencies, unless it's from the root
-            return g.getParent() == null;
+            return parent == null;
         }
 
         MavenArtifact v = hpis.get(a.getArtifactId());
@@ -93,7 +94,7 @@ public class AssembleDependenciesMojo extends AbstractDependencyGraphTraversingM
             }
 
             traverseProject();
-        } catch (DependencyGraphBuilderException e) {
+        } catch (Exception e) {
             throw new MojoExecutionException("Failed to list up dependencies", e);
         }
 
