@@ -70,10 +70,10 @@ public class TestInsertionMojo extends AbstractJenkinsMojo {
     private boolean requirePI;
 
     /**
-     * If true, verify that all the jelly scripts have the Jelly XSS PI in them.
+     * If true, verify that all the jelly scripts don't contain inline javascript.
      */
-    @Parameter(property = "jelly.requireNoInlineJS", defaultValue = "true")
-    private boolean requireNoInlineJS;
+    @Parameter(property = "jelly.prohibitInlineJS", defaultValue = "true")
+    private boolean prohibitInlineJS;
 
     /**
      * Optional string that represents "groupId:artifactId" of the Jenkins test harness.
@@ -170,7 +170,7 @@ public class TestInsertionMojo extends AbstractJenkinsMojo {
                 parameters.put("outputDirectory", %s);
                 parameters.put("testOutputDirectory", %s);
                 parameters.put("requirePI", %s);
-                parameters.put("requireNoInlineJS", %s);
+                parameters.put("prohibitInlineJS", %s);
                 return org.jvnet.hudson.test.PluginAutomaticTestBuilder.build(parameters);
               }
             }
@@ -184,7 +184,7 @@ public class TestInsertionMojo extends AbstractJenkinsMojo {
                             quote(project.getBuild().getOutputDirectory()),
                             quote(project.getBuild().getTestOutputDirectory()),
                             quote(String.valueOf(requirePI)),
-                            quote(String.valueOf(requireNoInlineJS)));
+                            quote(String.valueOf(prohibitInlineJS)));
 
             w.print(content);
 
