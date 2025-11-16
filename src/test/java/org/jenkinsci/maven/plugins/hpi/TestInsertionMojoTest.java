@@ -1,15 +1,15 @@
 package org.jenkinsci.maven.plugins.hpi;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.apache.maven.plugin.MojoFailureException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class TestInsertionMojoTest {
+class TestInsertionMojoTest {
 
     @Test
-    public void legalizePackageName() throws Exception {
+    void legalizePackageName() throws Exception {
         assertEquals(
                 "org.jenkinsci.maven.plugins.hpi",
                 TestInsertionMojo.legalizePackageName("org.jenkinsci.maven.plugins.hpi"));

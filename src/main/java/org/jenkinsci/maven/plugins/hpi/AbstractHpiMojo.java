@@ -220,7 +220,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
     /**
      * If {@code true}, then if {@link #bundledArtifacts} does not match the actual list of
      * bundled artifacts, the build will fail.
-     * @since TODO
+     * @since 3.1746.v2e9fe7dc4d95
      */
     @Parameter(defaultValue = "${hpi.strictBundledArtifacts}")
     private boolean strictBundledArtifacts;
@@ -229,8 +229,8 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
      * A list of comma-separated Maven artifact IDs that correspond to Jar files that are expected
      * to be bundled in the plugin's HPI file.
      * If this list does not match the actual bundled artifacts, the build will either fail if
-     * {@link #strictBundledArtifactsCheck} is enabled, or a warning will be logged otherwise.
-     * @since TODO
+     * {@link #strictBundledArtifacts} is enabled, or a warning will be logged otherwise.
+     * @since 3.1746.v2e9fe7dc4d95
      */
     @Parameter(defaultValue = "${hpi.bundledArtifacts}")
     private List<String> bundledArtifacts;
@@ -565,9 +565,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
                     Review the bundled artifacts and add `<hpi.bundledArtifacts>%s</hpi.bundledArtifacts>` to `<properties>` in pom.xml if the actual list is correct. \
                     If the actual list is not correct, add `<exclusion>`s or modify dependencies as needed to prevent the artifacts from being bundled. \
                     Review https://www.jenkins.io/doc/developer/plugin-development/dependencies-and-class-loading/#bundling-third-party-libraries for more details.\
-                    """
-                            .formatted(
-                                    bundledArtifacts, actualBundledArtifacts, String.join(",", actualBundledArtifacts));
+                    """.formatted(bundledArtifacts, actualBundledArtifacts, String.join(",", actualBundledArtifacts));
             if (strictBundledArtifacts) {
                 throw new MojoExecutionException(message);
             } else {
