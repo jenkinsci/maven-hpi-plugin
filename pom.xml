@@ -242,6 +242,11 @@
       <version>1.12</version>
     </dependency>
     <dependency>
+      <groupId>org.kohsuke</groupId>
+      <artifactId>github-api</artifactId>
+      <version>1.314</version>
+    </dependency>
+    <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-groovy</artifactId>
       <version>2050.v425108fd5089</version>
