@@ -158,7 +158,7 @@ public class TagLibInterfaceGeneratorMojo extends AbstractMojo {
                         String baseName = FilenameUtils.getBaseName(tag.getName());
                         String methodName;
                         if (!JJavaName.isJavaIdentifier(tag.getName())) {
-                            methodName = baseName.replace('-', '_');
+                            methodName = baseName.replaceAll("[.-]", "_");
                             if (ReservedName.NAMES.contains(methodName)) {
                                 methodName += '_';
                             }
