@@ -64,12 +64,15 @@ public class AssembleDependenciesMojo extends AbstractDependencyGraphTraversingM
         Artifact artifact = g.getArtifact();
         Dependency dep = g.getDependency();
 
+        if (isRoot) {
+            return true;
+        }
+
         if (dep == null) {
             return false;
         }
 
-        String scope = dep.getScope();
-        if (!parsedScopes.contains(scope)) {
+        if (!parsedScopes.contains(dep.getScope())) {
             return false;
         }
 
@@ -79,11 +82,11 @@ public class AssembleDependenciesMojo extends AbstractDependencyGraphTraversingM
 
         MavenArtifact a = wrap(RepositoryUtils.toArtifact(artifact));
         if (!a.isPlugin(getLog())) {
-            return isRoot;
+            return false;
         }
 
-        MavenArtifact existing = hpis.get(a.getArtifactId());
-        if (existing == null || a.isNewerThan(existing)) {
+        MavenArtifact v = hpis.get(a.getArtifactId());
+        if (v == null || a.isNewerThan(v)) {
             hpis.put(a.getArtifactId(), a);
         }
 

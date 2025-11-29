@@ -1,51 +1,56 @@
 package org.jenkinsci.maven.plugins.hpi;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.*;
 import org.apache.maven.RepositoryUtils;
-import org.eclipse.aether.DefaultRepositorySystemSession;
+import org.apache.maven.project.MavenProject;
 import org.eclipse.aether.RepositorySystemSession;
-import org.eclipse.aether.artifact.DefaultArtifact;
-import org.eclipse.aether.collection.CollectRequest;
+import org.eclipse.aether.artifact.ArtifactTypeRegistry;
+import org.eclipse.aether.collection.*;
 import org.eclipse.aether.graph.Dependency;
 import org.eclipse.aether.graph.DependencyNode;
-import org.eclipse.aether.repository.LocalRepository;
-import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.resolution.DependencyRequest;
 import org.eclipse.aether.resolution.DependencyResolutionException;
-import org.eclipse.aether.resolution.DependencyResult;
 
 /**
- * @author Kohsuke Kawaguchi
+ * Migrate from maven-dependency-tree to direct use of Resolver API
+ * @author Kohsuke Kawaguchi, flowerlake
  */
 public abstract class AbstractDependencyGraphTraversingMojo extends AbstractJenkinsMojo {
 
     /**
-     * Traverses the whole dependency tree rooted at the project.
+     * Resolves and traverses the project's dependency tree.
+     * <p>
+     * This method uses the Maven Resolver API to resolve dependencies of the project
+     *
+     * @throws DependencyResolutionException if dependency resolution fails
      */
     protected void traverseProject() throws DependencyResolutionException {
-        RepositorySystemSession repoSession = newRepositorySystemSession();
-        DefaultArtifact rootArtifact = new DefaultArtifact(
-                project.getGroupId(), project.getArtifactId(), project.getPackaging(), project.getVersion());
-        Dependency rootDependency = new Dependency(rootArtifact, "compile");
-        List<RemoteRepository> remoteRepos = project.getRemoteArtifactRepositories().stream()
-                .map(RepositoryUtils::toRepo)
-                .collect(Collectors.toList());
-        CollectRequest collectRequest = new CollectRequest();
-        collectRequest.setRoot(rootDependency);
-        collectRequest.setRepositories(remoteRepos);
-        DependencyRequest dependencyRequest = new DependencyRequest(collectRequest, null);
-        DependencyResult result = repositorySystem.resolveDependencies(repoSession, dependencyRequest);
-        DependencyNode rootNode = result.getRoot();
-        visit(rootNode, true);
-    }
+        RepositorySystemSession repoSession = session.getRepositorySession();
+        MavenProject shadow = project.clone();
 
-    private RepositorySystemSession newRepositorySystemSession() {
-        DefaultRepositorySystemSession repoSession = new DefaultRepositorySystemSession(session.getRepositorySession());
-        LocalRepository localRepo =
-                new LocalRepository(session.getLocalRepository().getBasedir());
-        repoSession.setLocalRepositoryManager(repositorySystem.newLocalRepositoryManager(repoSession, localRepo));
-        return repoSession;
+        ArtifactTypeRegistry artifactTypeRegistry = repoSession.getArtifactTypeRegistry();
+        List<Dependency> projectDependencies = shadow.getDependencies().stream()
+                .map(dep -> RepositoryUtils.toDependency(dep, artifactTypeRegistry))
+                .toList();
+
+        List<Dependency> managedDependencies = new ArrayList<>();
+        if (shadow.getDependencyManagement() != null) {
+            managedDependencies = shadow.getDependencyManagement().getDependencies().stream()
+                    .map(dep -> RepositoryUtils.toDependency(dep, artifactTypeRegistry))
+                    .toList();
+        }
+
+        CollectRequest collectRequest = new CollectRequest();
+        collectRequest.setRootArtifact(RepositoryUtils.toArtifact(shadow.getArtifact()));
+        collectRequest.setRepositories(shadow.getRemoteProjectRepositories());
+        collectRequest.setDependencies(projectDependencies);
+        collectRequest.setManagedDependencies(managedDependencies);
+
+        DependencyRequest dependencyRequest = new DependencyRequest(collectRequest, null);
+        DependencyNode root = repositorySystem
+                .resolveDependencies(repoSession, dependencyRequest)
+                .getRoot();
+        visit(root, true);
     }
 
     /**
