@@ -330,8 +330,6 @@ public class RunMojo extends JettyRunWarMojo {
 
         // auto-enable stapler trace, unless otherwise configured already.
         setSystemPropertyIfEmpty("stapler.trace", "true");
-        // allow Jetty to accept a bigger form so that it can handle update center JSON post
-        setSystemPropertyIfEmpty("org.eclipse.jetty.server.Request.maxFormContentSize", "-1");
         // general-purpose system property so that we can tell from Jenkins if we are running in the hpi:run mode.
         setSystemPropertyIfEmpty("hudson.hpi.run", "true");
         // expose the current top-directory of the plugin
@@ -626,6 +624,8 @@ public class RunMojo extends JettyRunWarMojo {
             FileUtils.deleteDirectory(extractedWebAppDir);
         }
         getWebAppConfig().setWar(webAppFile.getCanonicalPath());
+        // allow Jetty to accept a bigger form so that it can handle update center JSON post
+        getWebAppConfig().setMaxFormContentSize(-1);
         super.configureWebApp();
         for (Artifact a : project.getArtifacts()) {
             if (a.getGroupId().equals("org.jenkins-ci.main")
@@ -733,17 +733,6 @@ public class RunMojo extends JettyRunWarMojo {
 
     private void finishConfigurationBeforeStart() {
         WebAppContext wac = getWebAppConfig();
-        // Allow unlimited form content size so large POSTs (e.g., large role assignments) are accepted.
-        // Previously this was controlled by a system property which
-        // newer Jetty versions no longer honor, so set it directly on the context.
-        try {
-            wac.setMaxFormContentSize(-1);
-        } catch (NoSuchMethodError | UnsupportedOperationException e) {
-            // If the Jetty version in use does not support this method, fall back to
-            // the system property (already set elsewhere) and log the absence.
-            getLog().warn("Jetty does not support setMaxFormContentSize on WebAppContext; "
-                    + "falling back to system property handling");
-        }
         // to allow the development environment to run multiple "mvn hpi:run" with different port,
         // use different session cookie names. Otherwise they can mix up. See
         // http://stackoverflow.com/questions/1612177/are-http-cookies-port-specific
