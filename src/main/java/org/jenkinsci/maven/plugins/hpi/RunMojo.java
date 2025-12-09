@@ -37,6 +37,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -441,27 +442,120 @@ public class RunMojo extends JettyRunWarMojo {
         super.execute();
     }
 
-    private void openInternalPackagesIfRequired() {
+    private void openInternalPackagesIfRequired() throws MojoExecutionException {
         Runtime.Version runtimeVersion = Runtime.version();
         if (runtimeVersion.feature() < 16) {
             return;
         }
         try {
-            final List<String> unavailableRequiredPackages = unavailableRequiredPackages();
-            if (!unavailableRequiredPackages.isEmpty()) {
-                openPackages(unavailableRequiredPackages);
-                final List<String> failedToOpen = unavailableRequiredPackages();
+            // Read Add-Opens from jenkins.war manifest
+            List<String> packagesToOpen = getRequiredPackagesFromManifest();
+            if (packagesToOpen.isEmpty()) {
+                getLog().debug("No Add-Opens found in jenkins.war manifest, trying legacy approach");
+                final List<String> unavailableRequiredPackages = unavailableRequiredPackages();
+                if (!unavailableRequiredPackages.isEmpty()) {
+                    openPackages(unavailableRequiredPackages);
+                    final List<String> failedToOpen = unavailableRequiredPackages();
+                    if (!failedToOpen.isEmpty()) {
+                        String warning =
+                                "Some required internal classes are unavailable. Please consider adding the following JVM arguments: ";
+                        warning += failedToOpen.stream()
+                                .map(pkg -> "--add-opens java.base/" + pkg + "=ALL-UNNAMED")
+                                .collect(Collectors.joining(" "));
+                        getLog().warn(warning);
+                    }
+                }
+            } else {
+                getLog().info("Attempting to open " + packagesToOpen.size() + " packages from jenkins.war manifest");
+                openPackages(packagesToOpen);
+                // Verify which packages failed to open
+                List<String> failedToOpen = verifyPackagesOpened(packagesToOpen);
                 if (!failedToOpen.isEmpty()) {
-                    String warning =
-                            "Some required internal classes are unavailable. Please consider adding the following JVM arguments: ";
+                    String warning = "Failed to open some packages at runtime. ";
+                    if (runtimeVersion.feature() >= 25) {
+                        warning += "This is a known issue on Java " + runtimeVersion.feature() + ". ";
+                    }
+                    warning += "Please add the following to MAVEN_OPTS before running mvn hpi:run:\n";
                     warning += failedToOpen.stream()
-                            .map(pkg -> "--add-opens java.base/" + pkg + "=ALL-UNNAMED")
+                            .map(pkg -> "--add-opens " + pkg + "=ALL-UNNAMED")
                             .collect(Collectors.joining(" "));
                     getLog().warn(warning);
                 }
             }
         } catch (Throwable t) {
             getLog().error("Failed to check for available JDK packages", t);
+        }
+    }
+
+    private List<String> getRequiredPackagesFromManifest() throws MojoExecutionException {
+        List<String> packages = new ArrayList<>();
+        try {
+            if (webAppFile != null && webAppFile.exists()) {
+                try (JarFile jarFile = new JarFile(webAppFile)) {
+                    java.util.jar.Manifest manifest = jarFile.getManifest();
+                    if (manifest != null) {
+                        String addOpens = manifest.getMainAttributes().getValue("Add-Opens");
+                        if (addOpens != null && !addOpens.trim().isEmpty()) {
+                            for (String module : addOpens.split("\\s+")) {
+                                if (!module.isEmpty()) {
+                                    packages.add(module);
+                                }
+                            }
+                            getLog().debug("Found Add-Opens in manifest: " + addOpens);
+                        }
+                    }
+                }
+            }
+        } catch (IOException e) {
+            getLog().warn("Failed to read Add-Opens from jenkins.war manifest: " + e.getMessage());
+        }
+        return packages;
+    }
+
+    private List<String> verifyPackagesOpened(List<String> packagesToCheck) {
+        List<String> failed = new ArrayList<>();
+        for (String modulePackage : packagesToCheck) {
+            // Parse module/package format like "java.base/java.io"
+            String[] parts = modulePackage.split("/");
+            if (parts.length == 2) {
+                String packageName = parts[1];
+                // Try to test if package is accessible by checking a common class
+                if (!isPackageAccessible(packageName)) {
+                    failed.add(modulePackage);
+                }
+            }
+        }
+        return failed;
+    }
+
+    private boolean isPackageAccessible(String packageName) {
+        // Try to access internal classes from this package
+        // This is a heuristic - we test if we can access package-private members
+        try {
+            // For common packages, try well-known internal classes
+            if (packageName.equals("java.io")) {
+                Class<?> clazz = Class.forName("java.io.FileDescriptor");
+                Field f = clazz.getDeclaredField("fd");
+                f.setAccessible(true);
+                return true;
+            } else if (packageName.equals("java.lang")) {
+                Class<?> clazz = Class.forName("java.lang.String$CaseInsensitiveComparator");
+                Constructor<?> c = clazz.getDeclaredConstructor();
+                c.setAccessible(true);
+                return true;
+            } else if (packageName.equals("java.util")) {
+                Class<?> clazz = Class.forName("java.util.UUID$Holder");
+                Constructor<?> c = clazz.getDeclaredConstructor();
+                c.setAccessible(true);
+                return true;
+            }
+            // For other packages, assume they're accessible if we got this far
+            return true;
+        } catch (InaccessibleObjectException e) {
+            return false;
+        } catch (Exception e) {
+            // Class not found or other issues - assume accessible
+            return true;
         }
     }
 
@@ -503,12 +597,34 @@ public class RunMojo extends JettyRunWarMojo {
         final MethodHandle modifiers = lookup.findSetter(Method.class, "modifiers", Integer.TYPE);
         final Method exportMethod = Class.forName("java.lang.Module").getDeclaredMethod("implAddOpens", String.class);
         modifiers.invokeExact(exportMethod, Modifier.PUBLIC);
+
+        // Build a map of module names to modules
+        Map<String, Object> moduleMap = new LinkedHashMap<>();
         for (Object module : modules) {
-            final Collection<String> packages = (Collection<String>)
-                    module.getClass().getMethod("getPackages").invoke(module);
-            for (String name : packages) {
-                if (packagesToOpen.contains(name)) {
-                    exportMethod.invoke(module, name);
+            String moduleName = (String) module.getClass().getMethod("getName").invoke(module);
+            moduleMap.put(moduleName, module);
+        }
+
+        for (String packageSpec : packagesToOpen) {
+            // Handle both "module/package" and "package" formats
+            String moduleName;
+            String packageName;
+            if (packageSpec.contains("/")) {
+                String[] parts = packageSpec.split("/", 2);
+                moduleName = parts[0];
+                packageName = parts[1];
+            } else {
+                // Legacy format: just package name, assume java.base
+                moduleName = "java.base";
+                packageName = packageSpec;
+            }
+
+            Object module = moduleMap.get(moduleName);
+            if (module != null) {
+                final Collection<String> packages = (Collection<String>)
+                        module.getClass().getMethod("getPackages").invoke(module);
+                if (packages.contains(packageName)) {
+                    exportMethod.invoke(module, packageName);
                 }
             }
         }
