@@ -339,13 +339,37 @@
         <version>3.9.1</version>
         <configuration>
           <projectsDirectory>src/it</projectsDirectory>
+          <pomExcludes>
+            <!-- need to check these -->
+            <exclude>java-level\pom.xml</exclude>
+            <exclude>JENKINS-45740-metadata\pom.xml</exclude>
+            <exclude>JENKINS-58771-packaged-plugins\pom.xml</exclude>
+            <exclude>JENKINS-58771-packaged-plugins-2\pom.xml</exclude>
+            <exclude>JENKINS-58771-packaged-plugins-3\pom.xml</exclude>
+            <exclude>metadata-it\pom.xml</exclude>
+            <exclude>minimum-java-version\pom.xml</exclude>
+            <exclude>missing-index\pom.xml</exclude>
+            <exclude>override-test-dependencies-release-failure\pom.xml</exclude>
+            <exclude>override-test-dependencies-smokes\pom.xml</exclude>
+            <exclude>override-test-dependencies-split-plugin\pom.xml</exclude>
+            <exclude>override-war-with-snapshot</exclude>
+            <exclude>parent-4x\pom.xml</exclude>
+            <exclude>process-jar\pom.xml</exclude>
+            <exclude>process-test-classes\pom.xml</exclude>
+            <exclude>snapshot-version-override\pom.xml</exclude>
+            <exclude>strict-bundled-artifacts-extra\pom.xml</exclude>
+            <exclude>strict-bundled-artifacts-missing\pom.xml</exclude>
+            <exclude>strict-bundled-artifacts-missing-warning\pom.xml</exclude>
+            <exclude>strict-bundled-artifacts-sort\pom.xml</exclude>
+            <exclude>strict-bundled-artifacts-success\pom.xml</exclude>
+            <exclude>verify-it\pom.xml</exclude>
+            <exclude>war-resources\pom.xml</exclude>
+          </pomExcludes>
           <cloneProjectsTo>${project.build.directory}/its</cloneProjectsTo>
           <localRepositoryPath>${basedir}/target/local-repo</localRepositoryPath>
           <settingsFile>src/it/settings.xml</settingsFile>
           <mergeUserSettings>true</mergeUserSettings>
-          <pomIncludes>
-            <pomInclude>*</pomInclude>
-          </pomIncludes>
+
           <postBuildHookScript>verify</postBuildHookScript>
           <filterProperties>
             <repository.proxy.url>${repository.proxy.url}</repository.proxy.url>

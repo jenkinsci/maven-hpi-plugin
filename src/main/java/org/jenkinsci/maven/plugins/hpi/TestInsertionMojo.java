@@ -1,6 +1,7 @@
 package org.jenkinsci.maven.plugins.hpi;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.util.VersionNumber;
 import java.io.File;
 import java.io.IOException;
@@ -74,6 +75,7 @@ public class TestInsertionMojo extends AbstractJenkinsMojo {
     protected String jenkinsTestHarnessId;
 
     @Override
+    @SuppressFBWarnings("VA_FORMAT_STRING_USES_NEWLINE")
     public void execute() throws MojoExecutionException, MojoFailureException {
         if (!project.getPackaging().equals("hpi")) {
             Artifact jenkinsTestHarness = null;
@@ -160,13 +162,13 @@ public class TestInsertionMojo extends AbstractJenkinsMojo {
                 }
                 """.formatted(
                             packageName,
-                            project.getBasedir().getAbsolutePath(),
+                            escape(project.getBasedir().getAbsolutePath()),
                             project.getGroupId(),
                             project.getArtifactId(),
                             project.getVersion(),
                             project.getPackaging(),
-                            project.getBuild().getOutputDirectory(),
-                            project.getBuild().getTestOutputDirectory(),
+                            escape(project.getBuild().getOutputDirectory()),
+                            escape(project.getBuild().getTestOutputDirectory()),
                             String.valueOf(requirePI),
                             injectedTestName);
 
@@ -185,6 +187,10 @@ public class TestInsertionMojo extends AbstractJenkinsMojo {
             // Ignore, as this is an optimization for performance rather than correctness.
             getLog().warn("Failed to clear last modified time on " + javaFile, e);
         }
+    }
+
+    private static String escape(String s) {
+        return s.replace("\\", "\\\\");
     }
 
     static String legalizePackageName(@NonNull String input) throws MojoFailureException {
