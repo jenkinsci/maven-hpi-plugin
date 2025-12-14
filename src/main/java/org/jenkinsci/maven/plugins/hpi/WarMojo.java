@@ -6,13 +6,11 @@ import java.util.Optional;
 import java.util.Set;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.MavenProjectHelper;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Zip;
 import org.apache.tools.ant.types.ZipFileSet;
@@ -43,9 +41,6 @@ public class WarMojo extends RunMojo {
     @Parameter(property = "addThisPluginToCustomWar", defaultValue = "false")
     private boolean addThisPluginToCustomWar = false;
 
-    @Component
-    protected MavenProjectHelper projectHelper;
-
     /**
      * Executes the WarMojo on the current project.
      *
@@ -54,8 +49,7 @@ public class WarMojo extends RunMojo {
     @Override
     public void execute() throws MojoExecutionException {
         if (outputFile == null) {
-            outputFile =
-                    new File(getProject().getBasedir(), "target/" + getProject().getArtifactId() + ".war");
+            outputFile = new File(project.getBasedir(), "target/" + project.getArtifactId() + ".war");
         }
 
         File war = getJenkinsWarArtifact().getFile();
@@ -67,11 +61,11 @@ public class WarMojo extends RunMojo {
         z.setSrc(war);
         rezip.addZipfileset(z);
 
-        getProject().setArtifacts(resolveDependencies(dependencyResolution));
+        project.setArtifacts(resolveDependencies(dependencyResolution));
 
         Set<MavenArtifact> projectArtifacts = new LinkedHashSet<>(getProjectArtifacts());
-        if (getProject().getPackaging().equals("hpi") && addThisPluginToCustomWar) {
-            Optional.ofNullable(getProject()).map(MavenProject::getArtifact).map(a -> {
+        if (project.getPackaging().equals("hpi") && addThisPluginToCustomWar) {
+            Optional.ofNullable(project).map(MavenProject::getArtifact).map(a -> {
                 projectArtifacts.add(wrap(a)); // side effect
                 getLog().debug("This plugin " + a + "to be added to custom war");
                 return projectArtifacts; // have to return something from multiline lambda inside map()
@@ -101,6 +95,6 @@ public class WarMojo extends RunMojo {
         rezip.execute();
         getLog().info("Generated " + outputFile);
 
-        projectHelper.attachArtifact(getProject(), "war", outputFile);
+        projectHelper.attachArtifact(project, "war", outputFile);
     }
 }

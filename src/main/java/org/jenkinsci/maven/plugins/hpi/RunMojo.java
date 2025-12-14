@@ -14,53 +14,22 @@
 // ========================================================================
 package org.jenkinsci.maven.plugins.hpi;
 
-import edu.umd.cs.findbugs.annotations.Nullable;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.util.VersionNumber;
-import io.jenkins.lib.support_log_formatter.SupportLogFormatter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InaccessibleObjectException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
-import java.util.UUID;
 import java.util.jar.JarFile;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.LogManager;
-import java.util.logging.Logger;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.factory.ArtifactFactory;
-import org.apache.maven.execution.MavenSession;
-import org.apache.maven.lifecycle.internal.LifecycleDependencyResolver;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.BuildPluginManager;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -75,30 +44,13 @@ import org.apache.maven.project.DefaultDependencyResolutionRequest;
 import org.apache.maven.project.DependencyResolutionException;
 import org.apache.maven.project.DependencyResolutionRequest;
 import org.apache.maven.project.DependencyResolutionResult;
-import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectDependenciesResolver;
-import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.graph.DependencyFilter;
 import org.eclipse.aether.util.filter.ScopeDependencyFilter;
-import org.eclipse.jetty.ee9.maven.plugin.JettyRunWarMojo;
-import org.eclipse.jetty.ee9.maven.plugin.MavenWebAppContext;
-import org.eclipse.jetty.ee9.webapp.WebAppClassLoader;
-import org.eclipse.jetty.ee9.webapp.WebAppContext;
-import org.eclipse.jetty.ee9.websocket.server.config.JettyWebSocketServletContainerInitializer;
-import org.eclipse.jetty.http.HttpCompliance;
-import org.eclipse.jetty.http.UriCompliance;
-import org.eclipse.jetty.maven.MavenServerConnector;
-import org.eclipse.jetty.security.HashLoginService;
-import org.eclipse.jetty.security.UserStore;
-import org.eclipse.jetty.server.HttpConfiguration;
-import org.eclipse.jetty.server.HttpConnectionFactory;
-import org.eclipse.jetty.util.security.Password;
 import org.twdata.maven.mojoexecutor.MojoExecutor;
-import sun.misc.Unsafe;
 
 /**
- * Runs Jenkins with the current plugin project.
+ * Runs Jenkins with the current plugin project by forking a new Java process running {@code java -jar jenkins.war}.
  *
  * <p>
  * This only needs the source files to be compiled, so run in the compile phase.
@@ -112,12 +64,7 @@ import sun.misc.Unsafe;
  */
 @Mojo(name = "run", requiresDependencyResolution = ResolutionScope.TEST)
 @Execute(phase = LifecyclePhase.COMPILE)
-public class RunMojo extends JettyRunWarMojo {
-    private static final Map<String, String> REQUIRED_PACKAGES_TO_TEST_CLASSES =
-            Map.of("java.lang", "String$CaseInsensitiveComparator", "java.util", "UUID$Holder");
-
-    @Parameter(defaultValue = "${session}", required = true, readonly = true)
-    protected MavenSession session;
+public class RunMojo extends AbstractJenkinsMojo {
 
     /**
      * The location of the war file.
@@ -158,12 +105,6 @@ public class RunMojo extends JettyRunWarMojo {
     protected File warSourceDirectory;
 
     @Component
-    protected RepositorySystem repositorySystem;
-
-    @Component
-    protected ArtifactFactory artifactFactory;
-
-    @Component
     private ProjectDependenciesResolver dependenciesResolver;
 
     @Component
@@ -171,16 +112,12 @@ public class RunMojo extends JettyRunWarMojo {
 
     /**
      * Specifies the HTTP port number.
-     *
-     * If connectors are configured in the Mojo, that'll take precedence.
      */
     @Parameter(property = "port", defaultValue = "8080")
     protected int defaultPort;
 
     /**
      * Specifies the host (network interface) to bind to.
-     *
-     * If connectors are configured in the Mojo, that'll take precedence.
      */
     @Parameter(property = "host", defaultValue = "localhost")
     protected String defaultHost;
@@ -202,28 +139,6 @@ public class RunMojo extends JettyRunWarMojo {
      */
     @Parameter(property = "wildcardLocalhostDNS")
     protected String wildcardLocalhostDNS;
-
-    /**
-     * If true, the context will be restarted after a line feed on
-     * the input console. Enabled by default.
-     *
-     * @deprecated use {@link JettyRunWarMojo#scan}
-     */
-    @Deprecated
-    @Parameter(property = "jetty.consoleForceReload", defaultValue = "true")
-    protected boolean consoleForceReload;
-
-    @Component
-    protected ProjectBuilder projectBuilder;
-
-    /**
-     * Optional string that represents "groupId:artifactId" of Jenkins core jar.
-     * If left unspecified, the default groupId/artifactId pair for Jenkins is looked for.
-     *
-     * @since 1.65
-     */
-    @Parameter
-    protected String jenkinsCoreId;
 
     /**
      * Optional string that represents "groupId:artifactId" of Jenkins war.
@@ -252,64 +167,21 @@ public class RunMojo extends JettyRunWarMojo {
     protected boolean pluginFirstClassLoader = false;
 
     /**
-     * List of loggers to define.
-     * Keys are logger names (usually package or class names);
-     * values are level names (such as {@code FINE}).
-     * @since 1.98
+     * The context path for the webapp.
      */
-    @Parameter
-    private Map<String, String> loggers;
-
-    private Collection<Logger> loggerReferences; // just to prevent GC
-
-    /**
-     * Specify the minimum version of Java that this plugin requires.
-     *
-     * @deprecated removed without replacement
-     */
-    @Deprecated
-    @Parameter
-    private String minimumJavaVersion;
-
-    /**
-     * The context path for the webapp. Defaults to the
-     * name of the webapp's artifact.
-     *
-     * @deprecated Use &lt;webApp&gt;&lt;contextPath&gt; instead.
-     */
-    @Deprecated
-    @Parameter(readonly = true, required = true, defaultValue = "/${project.artifactId}")
+    @Parameter(property = "contextPath", defaultValue = "/${project.artifactId}")
     protected String contextPath;
 
     @Component
     protected PluginWorkspaceMap pluginWorkspaceMap;
 
+    private Process jenkinsProcess;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        openInternalPackagesIfRequired();
-        getProject().setArtifacts(resolveDependencies(dependencyResolution));
+        project.setArtifacts(resolveDependencies(dependencyResolution));
 
-        File basedir = getProject().getBasedir();
-
-        if (webApp == null || webApp.getContextPath() == null) {
-            if (contextPath != null) {
-                getLog().warn(
-                                "Please use `webApp/contextPath` configuration parameter in place of the deprecated `contextPath` parameter");
-                if (webApp == null) {
-                    try {
-                        webApp = new MavenWebAppContext() {
-                            @Override
-                            protected ClassLoader configureClassLoader(ClassLoader loader) {
-                                return getWebAppClassLoader(this);
-                            }
-                        };
-                    } catch (Exception e) {
-                        throw new MojoExecutionException("Failed to initialize webApp configuration", e);
-                    }
-                }
-                webApp.setContextPath(contextPath);
-            }
-        }
+        File basedir = project.getBasedir();
 
         // compute jenkinsHome
         if (jenkinsHome == null) {
@@ -329,17 +201,8 @@ public class RunMojo extends JettyRunWarMojo {
             }
         }
 
-        // auto-enable stapler trace, unless otherwise configured already.
-        setSystemPropertyIfEmpty("stapler.trace", "true");
-        // allow Jetty to accept a bigger form so that it can handle update center JSON post
-        setSystemPropertyIfEmpty("org.eclipse.jetty.server.Request.maxFormContentSize", "-1");
-        // general-purpose system property so that we can tell from Jenkins if we are running in the hpi:run mode.
-        setSystemPropertyIfEmpty("hudson.hpi.run", "true");
-        // expose the current top-directory of the plugin
-        setSystemPropertyIfEmpty("jenkins.moduleRoot", basedir.getAbsolutePath());
-
         // look for jenkins.war
-        Artifacts jenkinsArtifacts = Artifacts.of(getProject())
+        Artifacts jenkinsArtifacts = Artifacts.of(project)
                 .groupIdIs("org.jenkins-ci.main", "org.jvnet.hudson.main")
                 .artifactIdIsNot("remoting"); // remoting moved to its own release cycle
 
@@ -360,23 +223,11 @@ public class RunMojo extends JettyRunWarMojo {
             }
         }
 
-        // set JENKINS_HOME
-        setSystemPropertyIfEmpty("JENKINS_HOME", jenkinsHome.getAbsolutePath());
         File pluginsDir = new File(jenkinsHome, "plugins");
         try {
             Files.createDirectories(pluginsDir.toPath());
         } catch (IOException e) {
             throw new MojoExecutionException("Failed to create directories for '" + pluginsDir + "'", e);
-        }
-
-        // enable view auto refreshing via stapler
-        setSystemPropertyIfEmpty("stapler.jelly.noCache", "true");
-
-        List<Resource> res = getProject().getBuild().getResources();
-        if (!res.isEmpty()) {
-            // pick up the first one and use it
-            Resource r = res.get(0);
-            setSystemPropertyIfEmpty("stapler.resourcePath", r.getDirectory());
         }
 
         generateHpl();
@@ -420,75 +271,102 @@ public class RunMojo extends JettyRunWarMojo {
             throw new MojoExecutionException("Unable to copy dependency plugin", e);
         }
 
-        if (System.getProperty("java.util.logging.config.file") == null) {
-            // see org.apache.juli.logging.DirectJDKLog
-            System.setProperty("org.apache.juli.formatter", SupportLogFormatter.class.getName());
-        }
-
-        if (loggers != null) {
-            for (Handler h : LogManager.getLogManager().getLogger("").getHandlers()) {
-                if (h instanceof ConsoleHandler) {
-                    h.setLevel(Level.ALL);
-                }
-            }
-            loggerReferences = new LinkedList<>();
-            for (Map.Entry<String, String> logger : loggers.entrySet()) {
-                Logger l = Logger.getLogger(logger.getKey());
-                loggerReferences.add(l);
-                l.setLevel(Level.parse(logger.getValue()));
-            }
-        }
-
-        super.execute();
-    }
-
-    private void openInternalPackagesIfRequired() throws MojoExecutionException {
-        Runtime.Version runtimeVersion = Runtime.version();
-        if (runtimeVersion.feature() < 16) {
-            return;
-        }
+        // Fork and run Jenkins
         try {
-            // Read Add-Opens from jenkins.war manifest
-            List<String> packagesToOpen = getRequiredPackagesFromManifest();
-            if (packagesToOpen.isEmpty()) {
-                getLog().debug("No Add-Opens found in jenkins.war manifest, trying legacy approach");
-                final List<String> unavailableRequiredPackages = unavailableRequiredPackages();
-                if (!unavailableRequiredPackages.isEmpty()) {
-                    openPackages(unavailableRequiredPackages);
-                    final List<String> failedToOpen = unavailableRequiredPackages();
-                    if (!failedToOpen.isEmpty()) {
-                        String warning =
-                                "Some required internal classes are unavailable. Please consider adding the following JVM arguments: ";
-                        warning += failedToOpen.stream()
-                                .map(pkg -> "--add-opens java.base/" + pkg + "=ALL-UNNAMED")
-                                .collect(Collectors.joining(" "));
-                        getLog().warn(warning);
-                    }
-                }
-            } else {
-                getLog().info("Attempting to open " + packagesToOpen.size() + " packages from jenkins.war manifest");
-                openPackages(packagesToOpen);
-                // Verify which packages failed to open
-                List<String> failedToOpen = verifyPackagesOpened(packagesToOpen);
-                if (!failedToOpen.isEmpty()) {
-                    String warning = "Failed to open some packages at runtime. ";
-                    if (runtimeVersion.feature() >= 25) {
-                        warning += "This is a known issue on Java " + runtimeVersion.feature() + ". ";
-                    }
-                    warning += "Please add the following to MAVEN_OPTS before running mvn hpi:run:\n";
-                    warning += failedToOpen.stream()
-                            .map(pkg -> "--add-opens " + pkg + "=ALL-UNNAMED")
-                            .collect(Collectors.joining(" "));
-                    getLog().warn(warning);
-                }
-            }
-        } catch (Throwable t) {
-            getLog().error("Failed to check for available JDK packages", t);
+            startJenkins();
+        } catch (IOException | InterruptedException e) {
+            throw new MojoExecutionException("Failed to start Jenkins", e);
         }
     }
 
-    private List<String> getRequiredPackagesFromManifest() throws MojoExecutionException {
-        List<String> packages = new ArrayList<>();
+    @SuppressFBWarnings(
+            value = "COMMAND_INJECTION",
+            justification = "Command is constructed from controlled sources, not user input")
+    private void startJenkins() throws IOException, InterruptedException, MojoExecutionException {
+        List<String> command = new ArrayList<>();
+
+        // Get Java executable
+        String javaExecutable = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
+        command.add(javaExecutable);
+
+        // Add JVM arguments from manifest
+        List<String> addOpensArgs = getAddOpensFromManifest();
+        if (!addOpensArgs.isEmpty()) {
+            getLog().info("Adding --add-opens arguments from jenkins.war manifest");
+            command.addAll(addOpensArgs);
+        }
+
+        // Add system properties
+        command.add("-DJENKINS_HOME=" + jenkinsHome.getAbsolutePath());
+        command.add("-Dstapler.trace=true");
+        command.add("-Dstapler.jelly.noCache=true");
+        command.add("-Dhudson.hpi.run=true");
+        command.add("-Djenkins.moduleRoot=" + project.getBasedir().getAbsolutePath());
+
+        // Add resource path if exists
+        List<Resource> res = project.getBuild().getResources();
+        if (!res.isEmpty()) {
+            Resource r = res.get(0);
+            command.add("-Dstapler.resourcePath=" + r.getDirectory());
+        }
+
+        // Run the Jenkins WAR
+        command.add("-jar");
+        command.add(webAppFile.getAbsolutePath());
+
+        // Add Winstone arguments
+        command.add("--httpPort=" + defaultPort);
+        command.add("--httpListenAddress=" + defaultHost);
+        if (contextPath != null && !contextPath.isEmpty() && !contextPath.equals("/")) {
+            command.add("--prefix=" + contextPath);
+        }
+
+        // Display the command
+        getLog().info("Starting Jenkins with command:");
+        getLog().info(String.join(" ", command));
+
+        String browserHost;
+        if (!"localhost".equals(defaultHost)) {
+            browserHost = defaultHost;
+        } else if (wildcardLocalhostDNS != null) {
+            browserHost = project.getArtifactId() + "." + wildcardLocalhostDNS;
+        } else if (wildcardDNS != null) {
+            browserHost = project.getArtifactId() + ".127.0.0.1." + wildcardDNS;
+        } else {
+            getLog().info("Try setting -DwildcardLocalhostDNS=localtest.me in a profile");
+            browserHost = defaultHost;
+        }
+        getLog().info("===========> Browse to: http://" + browserHost + ":" + defaultPort + contextPath + "/");
+
+        // Start the process
+        ProcessBuilder pb = new ProcessBuilder(command);
+        pb.inheritIO();
+        pb.directory(project.getBasedir());
+
+        jenkinsProcess = pb.start();
+
+        // Add shutdown hook to kill the process
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            if (jenkinsProcess != null && jenkinsProcess.isAlive()) {
+                getLog().info("Stopping Jenkins...");
+                jenkinsProcess.destroy();
+                try {
+                    jenkinsProcess.waitFor();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        }));
+
+        // Wait for the process to complete
+        int exitCode = jenkinsProcess.waitFor();
+        if (exitCode != 0) {
+            throw new MojoExecutionException("Jenkins process exited with code " + exitCode);
+        }
+    }
+
+    private List<String> getAddOpensFromManifest() throws MojoExecutionException {
+        List<String> args = new ArrayList<>();
         try {
             if (webAppFile != null && webAppFile.exists()) {
                 try (JarFile jarFile = new JarFile(webAppFile)) {
@@ -498,7 +376,8 @@ public class RunMojo extends JettyRunWarMojo {
                         if (addOpens != null && !addOpens.trim().isEmpty()) {
                             for (String module : addOpens.split("\\s+")) {
                                 if (!module.isEmpty()) {
-                                    packages.add(module);
+                                    args.add("--add-opens");
+                                    args.add(module + "=ALL-UNNAMED");
                                 }
                             }
                             getLog().debug("Found Add-Opens in manifest: " + addOpens);
@@ -509,154 +388,13 @@ public class RunMojo extends JettyRunWarMojo {
         } catch (IOException e) {
             getLog().warn("Failed to read Add-Opens from jenkins.war manifest: " + e.getMessage());
         }
-        return packages;
-    }
-
-    private List<String> verifyPackagesOpened(List<String> packagesToCheck) {
-        List<String> failed = new ArrayList<>();
-        for (String modulePackage : packagesToCheck) {
-            // Parse module/package format like "java.base/java.io"
-            String[] parts = modulePackage.split("/");
-            if (parts.length == 2) {
-                String packageName = parts[1];
-                // Try to test if package is accessible by checking a common class
-                if (!isPackageAccessible(packageName)) {
-                    failed.add(modulePackage);
-                }
-            }
-        }
-        return failed;
-    }
-
-    private boolean isPackageAccessible(String packageName) {
-        // Try to access internal classes from this package
-        // This is a heuristic - we test if we can access package-private members
-        try {
-            // For common packages, try well-known internal classes
-            if (packageName.equals("java.io")) {
-                Class<?> clazz = Class.forName("java.io.FileDescriptor");
-                Field f = clazz.getDeclaredField("fd");
-                f.setAccessible(true);
-                return true;
-            } else if (packageName.equals("java.lang")) {
-                Class<?> clazz = Class.forName("java.lang.String$CaseInsensitiveComparator");
-                Constructor<?> c = clazz.getDeclaredConstructor();
-                c.setAccessible(true);
-                return true;
-            } else if (packageName.equals("java.util")) {
-                Class<?> clazz = Class.forName("java.util.UUID$Holder");
-                Constructor<?> c = clazz.getDeclaredConstructor();
-                c.setAccessible(true);
-                return true;
-            }
-            // For other packages, assume they're accessible if we got this far
-            return true;
-        } catch (InaccessibleObjectException e) {
-            return false;
-        } catch (Exception e) {
-            // Class not found or other issues - assume accessible
-            return true;
-        }
-    }
-
-    @SuppressFBWarnings(value = "REC_CATCH_EXCEPTION", justification = "workaround JDK11")
-    private static List<String> unavailableRequiredPackages() {
-        final List<String> packages = new ArrayList<>();
-        for (Map.Entry<String, String> e : REQUIRED_PACKAGES_TO_TEST_CLASSES.entrySet()) {
-            final String key = e.getKey();
-            final String value = e.getValue();
-            try {
-                final Class<?> clazz = Class.forName(key + "." + value);
-                if (clazz.isEnum()) {
-                    clazz.getMethod("values").invoke(null);
-                } else {
-                    Constructor<?> c = clazz.getDeclaredConstructor();
-                    c.setAccessible(true);
-                    c.newInstance();
-                }
-            } catch (InaccessibleObjectException ex) {
-                packages.add(key);
-            } catch (Exception ignore) {
-                // in old versions of JDK some classes could be unavailable
-            }
-        }
-        return packages;
-    }
-
-    private static void openPackages(Collection<String> packagesToOpen) throws Throwable {
-        final Collection<?> modules = allModules();
-        if (modules == null) {
-            return;
-        }
-        final Field unsafeField = Unsafe.class.getDeclaredField("theUnsafe");
-        unsafeField.setAccessible(true);
-        final Unsafe unsafe = (Unsafe) unsafeField.get(null);
-        final Field implLookupField = MethodHandles.Lookup.class.getDeclaredField("IMPL_LOOKUP");
-        final MethodHandles.Lookup lookup = (MethodHandles.Lookup)
-                unsafe.getObject(unsafe.staticFieldBase(implLookupField), unsafe.staticFieldOffset(implLookupField));
-        final MethodHandle modifiers = lookup.findSetter(Method.class, "modifiers", Integer.TYPE);
-        final Method exportMethod = Class.forName("java.lang.Module").getDeclaredMethod("implAddOpens", String.class);
-        modifiers.invokeExact(exportMethod, Modifier.PUBLIC);
-
-        // Build a map of module names to modules
-        Map<String, Object> moduleMap = new LinkedHashMap<>();
-        for (Object module : modules) {
-            String moduleName = (String) module.getClass().getMethod("getName").invoke(module);
-            moduleMap.put(moduleName, module);
-        }
-
-        for (String packageSpec : packagesToOpen) {
-            // Handle both "module/package" and "package" formats
-            String moduleName;
-            String packageName;
-            if (packageSpec.contains("/")) {
-                String[] parts = packageSpec.split("/", 2);
-                moduleName = parts[0];
-                packageName = parts[1];
-            } else {
-                // Legacy format: just package name, assume java.base
-                moduleName = "java.base";
-                packageName = packageSpec;
-            }
-
-            Object module = moduleMap.get(moduleName);
-            if (module != null) {
-                final Collection<String> packages = (Collection<String>)
-                        module.getClass().getMethod("getPackages").invoke(module);
-                if (packages.contains(packageName)) {
-                    exportMethod.invoke(module, packageName);
-                }
-            }
-        }
-    }
-
-    @Nullable
-    @SuppressFBWarnings(value = "REC_CATCH_EXCEPTION", justification = "workaround JDK11")
-    private static Collection<?> allModules() {
-        // calling ModuleLayer.boot().modules() by reflection
-        try {
-            final Object boot =
-                    Class.forName("java.lang.ModuleLayer").getMethod("boot").invoke(null);
-            if (boot == null) {
-                return null;
-            }
-            final Object modules = boot.getClass().getMethod("modules").invoke(boot);
-            return (Collection<?>) modules;
-        } catch (Exception ignore) {
-            return null;
-        }
+        return args;
     }
 
     private boolean hasSameGavAsProject(Artifact a) {
-        return getProject().getGroupId().equals(a.getGroupId())
-                && getProject().getArtifactId().equals(a.getArtifactId())
-                && getProject().getVersion().equals(a.getVersion());
-    }
-
-    private void setSystemPropertyIfEmpty(String name, String value) {
-        if (System.getProperty(name) == null) {
-            System.setProperty(name, value);
-        }
+        return project.getGroupId().equals(a.getGroupId())
+                && project.getArtifactId().equals(a.getArtifactId())
+                && project.getVersion().equals(a.getVersion());
     }
 
     private void copyPlugin(File src, File pluginsDir, String shortName) throws IOException {
@@ -673,7 +411,6 @@ public class RunMojo extends JettyRunWarMojo {
         }
         getLog().info("Copying dependency Jenkins plugin " + src);
         FileUtils.copyFile(src, dst);
-        // TODO skip .pinned file creation if Jenkins version is >= 2.0
         // pin the dependency plugin, so that even if a different version of the same plugin is bundled to Jenkins,
         // we still use the plugin as specified by the POM of the plugin.
         Files.writeString(pluginsDir.toPath().resolve(shortName + ".jpi.pinned"), "pinned", StandardCharsets.US_ASCII);
@@ -726,238 +463,14 @@ public class RunMojo extends JettyRunWarMojo {
                 MojoExecutor.executionEnvironment(project, session, pluginManager));
     }
 
-    @Override
-    public void configureWebApp() throws Exception {
-        if (webApp.getTempDirectory() == null) {
-            // Preëmpt AbstractWebAppMojo.configureWebApp and choose a better name
-            Path target = Paths.get(project.getBuild().getDirectory());
-            Path tmp = target.resolve("jetty");
-            if (!Files.isDirectory(tmp)) {
-                Files.createDirectories(tmp);
-            }
-            webApp.setTempDirectory(tmp.toFile());
-        }
-        File extractedWebAppDir = new File(webApp.getTempDirectory(), "webapp");
-        if (isExtractedWebAppDirStale(extractedWebAppDir, webAppFile)) {
-            FileUtils.deleteDirectory(extractedWebAppDir);
-        }
-        getWebAppConfig().setWar(webAppFile.getCanonicalPath());
-        super.configureWebApp();
-        for (Artifact a : project.getArtifacts()) {
-            if (a.getGroupId().equals("org.jenkins-ci.main")
-                    && a.getArtifactId().equals("jenkins-core")) {
-                File coreBasedir = pluginWorkspaceMap.read(a.getId());
-                if (coreBasedir != null) {
-                    String extraCP = new File(coreBasedir, "src/main/resources").toURI() + ","
-                            + new File(coreBasedir, "target/classes").toURI();
-                    getLog().info("Will load directly from " + extraCP);
-                    getWebAppConfig().setExtraClasspath(extraCP);
-                }
-            }
-        }
-        JettyWebSocketServletContainerInitializer.configure(getWebAppConfig(), null);
-        HashLoginService hashLoginService = (new HashLoginService("default"));
-        UserStore userStore = new UserStore();
-        hashLoginService.setUserStore(userStore);
-        userStore.addUser("alice", new Password("alice"), new String[] {"user", "female"});
-        userStore.addUser("bob", new Password("bob"), new String[] {"user", "male"});
-        userStore.addUser("charlie", new Password("charlie"), new String[] {"user", "male"});
-        getWebAppConfig().getSecurityHandler().setLoginService(hashLoginService);
-        finishConfigurationBeforeStart();
-    }
-
-    private static final String VERSION_PATH = "META-INF/maven/org.jenkins-ci.main/jenkins-war/pom.properties";
-    private static final String VERSION_PROP = "version";
-
-    private boolean isExtractedWebAppDirStale(File extractedWebAppDir, File webApp) throws IOException {
-        if (!extractedWebAppDir.isDirectory()) {
-            getLog().info(extractedWebAppDir + " does not yet exist, will receive " + webApp);
-            return false;
-        }
-        if (extractedWebAppDir.lastModified() < webApp.lastModified()) {
-            getLog().info(extractedWebAppDir + " is older than " + webApp + ", will recreate");
-            return true;
-        }
-        File extractedPath = new File(extractedWebAppDir, VERSION_PATH);
-        if (!extractedPath.isFile()) {
-            getLog().warn("no such file " + extractedPath);
-            return false;
-        }
-        String extractedVersion;
-        try (InputStream is = new FileInputStream(extractedPath)) {
-            extractedVersion = loadVersion(is);
-        }
-        if (extractedVersion == null) {
-            getLog().warn("no " + VERSION_PROP + " in " + extractedPath);
-            return false;
-        }
-        String originalVersion;
-        try (ZipFile zip = new ZipFile(webApp)) {
-            ZipEntry entry = zip.getEntry(VERSION_PATH);
-            if (entry == null) {
-                getLog().warn("no " + VERSION_PATH + " in " + webApp);
-                return false;
-            }
-
-            try (InputStream is = zip.getInputStream(entry)) {
-                originalVersion = loadVersion(is);
-            }
-        }
-        if (originalVersion == null) {
-            getLog().warn("no " + VERSION_PROP + " in jar:" + webApp.toURI() + "!/" + VERSION_PATH);
-            return false;
-        }
-        if (!extractedVersion.equals(originalVersion)) {
-            getLog().info("Version " + extractedVersion + " in " + extractedWebAppDir + " does not match "
-                    + originalVersion + " in " + webApp + ", will recreate");
-            return true;
-        }
-        getLog().info(extractedWebAppDir + " already up to date with respect to " + webApp);
-        return false;
-    }
-
-    private String loadVersion(InputStream is) throws IOException {
-        Properties props = new Properties();
-        props.load(is);
-        return props.getProperty(VERSION_PROP);
-    }
-
-    @Override
-    public void startScanner() throws Exception {
-        // use a bigger buffer as Stapler traces can get pretty large on deeply nested URL
-        // this can only be done after MavenServerConnector.doStart() is called, which happens in
-        // AbstractWebAppMojo.startJetty() and this startScanner method is one of the few places that are run afterward.
-        HttpConfiguration hc =
-                httpConnector.getConnectionFactory(HttpConnectionFactory.class).getHttpConfiguration();
-        hc.setHttpCompliance(HttpCompliance.RFC7230);
-        hc.setUriCompliance(UriCompliance.LEGACY);
-        // Use a bigger buffer, as Stapler traces can get pretty large on deeply nested URLs.
-        hc.setResponseHeaderSize(12 * 1024);
-
-        super.startScanner();
-    }
-
-    @Override
-    protected boolean isPackagingSupported() {
-        if (!supportedPackagings.contains("hpi")) {
-            List<String> newSupportedPackagings = new ArrayList<>(supportedPackagings);
-            newSupportedPackagings.add("hpi");
-            supportedPackagings = List.copyOf(newSupportedPackagings);
-        }
-        return super.isPackagingSupported();
-    }
-
-    private void finishConfigurationBeforeStart() {
-        WebAppContext wac = getWebAppConfig();
-        // to allow the development environment to run multiple "mvn hpi:run" with different port,
-        // use different session cookie names. Otherwise they can mix up. See
-        // http://stackoverflow.com/questions/1612177/are-http-cookies-port-specific
-        wac.getSessionHandler()
-                .getSessionCookieConfig()
-                .setName("JSESSIONID."
-                        + UUID.randomUUID().toString().replace("-", "").substring(0, 8));
-    }
-
-    private ClassLoader getWebAppClassLoader(WebAppContext wac) {
-        try {
-            // for Jenkins modules, swap the component from jenkins.war by target/classes
-            // via classloader magic
-            WebAppClassLoader wacl =
-                    new WebAppClassLoader(
-                            new JettyAndServletApiOnlyClassLoader(
-                                    ClassLoader.getPlatformClassLoader(),
-                                    getClass().getClassLoader()),
-                            wac) {
-                        private final Pattern exclusionPattern;
-
-                        {
-                            if (getProject().getPackaging().equals("jenkins-module")) {
-                                // classes compiled from jenkins module should behave as if it's a part of the core
-                                // load resources from source folders directly
-                                for (Resource r : getProject().getResources()) {
-                                    super.addURL(
-                                            new File(r.getDirectory()).toURI().toURL());
-                                }
-                                super.addURL(new File(getProject().getBuild().getOutputDirectory())
-                                        .toURI()
-                                        .toURL());
-
-                                // add all the jar dependencies of the module
-                                // "provided" includes all core and others, so drop them
-                                // similarly, "test" would pull in all the harness
-                                // pom dependency is sometimes used so that one can depend on its transitive
-                                // dependencies
-                                for (Artifact a : Artifacts.of(getProject())
-                                        .scopeIsNot("provided", "test")
-                                        .typeIsNot("pom")) {
-                                    super.addURL(a.getFile().toURI().toURL());
-                                }
-
-                                exclusionPattern = Pattern.compile(
-                                        "[/\\\\]\\Q" + getProject().getArtifactId() + "\\E-[0-9]([^/\\\\]+)\\.jar$");
-                            } else {
-                                exclusionPattern = Pattern.compile("this should never match");
-                            }
-                        }
-
-                        @Override
-                        public void addClassPath(String classPath) throws IOException {
-                            if (exclusionPattern != null
-                                    && exclusionPattern.matcher(classPath).find()) {
-                                return;
-                            }
-                            super.addClassPath(classPath);
-                        }
-
-                        @Override
-                        public void addJars(org.eclipse.jetty.util.resource.Resource lib) {
-                            super.addJars(lib);
-                        }
-                    };
-            return wacl;
-        } catch (IOException e) {
-            throw new Error(e);
-        }
-    }
-
-    @Override
-    public void startJetty() throws MojoExecutionException, MojoFailureException {
-        if (httpConnector == null && (defaultPort != 0 || (defaultHost != null && !defaultHost.isEmpty()))) {
-            httpConnector = new MavenServerConnector();
-            if (defaultPort != 0) {
-                httpConnector.setPort(defaultPort);
-            }
-            if (defaultHost != null && !defaultHost.isEmpty()) {
-                httpConnector.setHost(defaultHost);
-            }
-            String browserHost;
-            if (!"localhost".equals(defaultHost)) {
-                browserHost = httpConnector.getHost();
-            } else if (wildcardLocalhostDNS != null) {
-                browserHost = getProject().getArtifactId() + "." + wildcardLocalhostDNS;
-            } else if (wildcardDNS != null) {
-                browserHost = getProject().getArtifactId() + ".127.0.0.1." + wildcardDNS;
-            } else {
-                getLog().info("Try setting -DwildcardLocalhostDNS=localtest.me in a profile");
-                browserHost = httpConnector.getHost();
-            }
-            getLog().info("===========> Browse to: http://" + browserHost + ":"
-                    + (defaultPort != 0 ? defaultPort : MavenServerConnector.DEFAULT_PORT) + webApp.getContextPath()
-                    + "/");
-        }
-        super.startJetty();
-    }
-
     /**
      * Performs the equivalent of "@requiresDependencyResolution" mojo attribute,
      * so that we can choose the scope at runtime.
-     * @see LifecycleDependencyResolver#getDependencies(MavenProject, Collection, Collection,
-     *     MavenSession, boolean, Set)
      */
     protected Set<Artifact> resolveDependencies(String scope) throws MojoExecutionException {
         try {
             DependencyResolutionRequest request =
-                    new DefaultDependencyResolutionRequest(getProject(), session.getRepositorySession());
+                    new DefaultDependencyResolutionRequest(project, session.getRepositorySession());
             request.setResolutionFilter(getDependencyFilter(scope));
             DependencyResolutionResult result = dependenciesResolver.resolve(request);
 
@@ -967,7 +480,7 @@ public class RunMojo extends JettyRunWarMojo {
                 RepositoryUtils.toArtifacts(
                         artifacts,
                         result.getDependencyGraph().getChildren(),
-                        List.of(getProject().getArtifact().getId()),
+                        List.of(project.getArtifact().getId()),
                         request.getResolutionFilter());
             }
             return artifacts;
@@ -991,14 +504,10 @@ public class RunMojo extends JettyRunWarMojo {
 
     public Set<MavenArtifact> getProjectArtifacts() {
         Set<MavenArtifact> r = new HashSet<>();
-        for (Artifact a : getProject().getArtifacts()) {
+        for (Artifact a : project.getArtifacts()) {
             r.add(wrap(a));
         }
         return r;
-    }
-
-    protected MavenArtifact wrap(Artifact a) {
-        return new MavenArtifact(a, repositorySystem, artifactFactory, projectBuilder, session, project);
     }
 
     protected Artifact getJenkinsWarArtifact() throws MojoExecutionException {
@@ -1029,13 +538,5 @@ public class RunMojo extends JettyRunWarMojo {
                     + "</dependency>");
         }
         throw new MojoExecutionException("Unable to find jenkins.war");
-    }
-
-    protected MavenProject getProject() {
-        return project;
-    }
-
-    public WebAppContext getWebAppConfig() {
-        return webApp;
     }
 }
