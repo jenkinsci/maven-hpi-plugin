@@ -20,6 +20,7 @@
     <hpi.strictBundledArtifacts>true</hpi.strictBundledArtifacts>
     <!-- slf4j-api is listed here but is not actually bundled -->
     <hpi.bundledArtifacts>metrics-core,metrics-json,slf4j-api</hpi.bundledArtifacts>
+    <maven-hpi-plugin.disabledTestInjection>true</maven-hpi-plugin.disabledTestInjection>
   </properties>
 
   <dependencies>

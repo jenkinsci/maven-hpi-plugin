@@ -19,6 +19,7 @@
     <spotless.check.skip>false</spotless.check.skip>
     <hpi.strictBundledArtifacts>true</hpi.strictBundledArtifacts>
     <hpi.bundledArtifacts>metrics-json,metrics-core</hpi.bundledArtifacts>
+    <maven-hpi-plugin.disabledTestInjection>true</maven-hpi-plugin.disabledTestInjection>
   </properties>
 
   <dependencies>

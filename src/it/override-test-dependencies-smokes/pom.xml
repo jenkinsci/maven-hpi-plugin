@@ -21,6 +21,7 @@
     <surefire.rerunFailingTestsCount>0</surefire.rerunFailingTestsCount>
     <workflow-step-api-plugin.version>2.9</workflow-step-api-plugin.version>
     <spotless.check.skip>false</spotless.check.skip>
+    <maven-hpi-plugin.disabledTestInjection>true</maven-hpi-plugin.disabledTestInjection>
   </properties>
   <dependencies>
     <dependency>

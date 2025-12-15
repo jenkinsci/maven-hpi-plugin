@@ -40,6 +40,7 @@
     <!--Examples of real use-cases-->
     <hpi.pluginChangelogUrl>https://github.com/jenkinsci/configuration-as-code-plugin/releases</hpi.pluginChangelogUrl>
     <hpi.pluginLogoUrl>https://raw.githubusercontent.com/jenkinsci/configuration-as-code-plugin/master/plugin/src/main/webapp/img/logo-head.svg</hpi.pluginLogoUrl>
+    <maven-hpi-plugin.disabledTestInjection>true</maven-hpi-plugin.disabledTestInjection>
   </properties>
 
   <repositories>

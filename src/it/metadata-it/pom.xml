@@ -38,5 +38,6 @@
     <hpi-plugin.version>@project.version@</hpi-plugin.version>
     <gitHubRepo>jenkinsci/maven-hpi-plugin</gitHubRepo>
     <spotless.check.skip>false</spotless.check.skip>
+    <maven-hpi-plugin.disabledTestInjection>true</maven-hpi-plugin.disabledTestInjection>
   </properties>
 </project>

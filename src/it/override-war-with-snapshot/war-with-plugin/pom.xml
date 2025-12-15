@@ -69,5 +69,6 @@
   <properties>
     <jenkins.version>2.452.4</jenkins.version>
     <revision>1.0.0-SNAPSHOT</revision>
+    <maven-hpi-plugin.disabledTestInjection>true</maven-hpi-plugin.disabledTestInjection>
   </properties>
 </project>
