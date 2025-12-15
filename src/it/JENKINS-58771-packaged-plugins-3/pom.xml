@@ -17,6 +17,7 @@
     <jenkins.version>2.452.4</jenkins.version>
     <hpi-plugin.version>@project.version@</hpi-plugin.version>
     <spotless.check.skip>false</spotless.check.skip>
+    <maven-hpi-plugin.disabledTestInjection>true</maven-hpi-plugin.disabledTestInjection>
   </properties>
 
   <dependencyManagement>

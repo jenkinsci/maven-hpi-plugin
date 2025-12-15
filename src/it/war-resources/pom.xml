@@ -43,6 +43,7 @@
     <jenkins.version>2.452.4</jenkins.version>
     <hpi-plugin.version>@project.version@</hpi-plugin.version>
     <spotless.check.skip>false</spotless.check.skip>
+    <maven-hpi-plugin.disabledTestInjection>true</maven-hpi-plugin.disabledTestInjection>
     <!-- used for filtering -->
     <prop1>hello</prop1>
     <prop2>goodbye</prop2>

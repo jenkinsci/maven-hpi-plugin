@@ -19,6 +19,7 @@
     <spotless.check.skip>false</spotless.check.skip>
     <!-- jackson-annotations, jackson-core, and jackson-databind are bundled but not listed here -->
     <hpi.bundledArtifacts>metrics-core,metrics-json</hpi.bundledArtifacts>
+    <maven-hpi-plugin.disabledTestInjection>true</maven-hpi-plugin.disabledTestInjection>
   </properties>
 
   <dependencies>
