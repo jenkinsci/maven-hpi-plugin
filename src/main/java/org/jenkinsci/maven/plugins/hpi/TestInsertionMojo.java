@@ -154,6 +154,13 @@ public class TestInsertionMojo extends AbstractJenkinsMojo {
         }
     }
 
+    /**
+     * Check JUnit Jupiter compatibility via JTH version used.
+     *
+     * @deprecated use {@link #getJUnitJupiterSuite(String)} instead.
+     * @return true if JUnit Jupiter is supported
+     */
+    @Deprecated(forRemoval = true)
     private boolean isJUnitJupiterSupported() {
         Artifact jenkinsTestHarness = null;
         if (jenkinsTestHarnessId != null) {
@@ -175,7 +182,15 @@ public class TestInsertionMojo extends AbstractJenkinsMojo {
         return false;
     }
 
+    /**
+     * Generate InjectedTest as junit.framework.TestCast
+     * @param packageName the package name to be used for the injected test.
+     * @return test class as formatted string
+     *
+     * @deprecated use {@link #getJUnitJupiterSuite(String)} instead.
+     */
     @SuppressFBWarnings("VA_FORMAT_STRING_USES_NEWLINE")
+    @Deprecated(forRemoval = true)
     private String getJUnitTestCase(String packageName) {
         return """
             package %s;
@@ -214,6 +229,11 @@ public class TestInsertionMojo extends AbstractJenkinsMojo {
                         String.valueOf(requirePI));
     }
 
+    /**
+     * Generate InjectedTest as org.junit.platform.suite.api.Suite
+     * @param packageName the package name to be used for the injected test.
+     * @return test class as formatted string
+     */
     @SuppressFBWarnings("VA_FORMAT_STRING_USES_NEWLINE")
     private String getJUnitJupiterSuite(String packageName) {
         return """
