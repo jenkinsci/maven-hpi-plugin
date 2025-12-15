@@ -2,7 +2,6 @@ package org.jenkinsci.maven.plugins.hpi;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import hudson.util.VersionNumber;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -78,13 +77,6 @@ public class TestInsertionMojo extends AbstractJenkinsMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
         if (disabledTestInjection) {
             getLog().info("Skipping auto-test generation");
-            return;
-        }
-
-        String target = findJenkinsVersion();
-        if (new VersionNumber(target).compareTo(new VersionNumber("1.327")) < 0) {
-            getLog().info("Skipping auto-test generation because we are targeting Jenkins " + target
-                    + " (at least 1.327 is required).");
             return;
         }
 
