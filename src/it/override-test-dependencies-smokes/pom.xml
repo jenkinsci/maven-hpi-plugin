@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>4.86</version>
+    <version>5.2098.v4d48a_c4c68e7</version>
     <relativePath />
   </parent>
   <groupId>org.jenkins-ci.tools.hpi.its</groupId>
@@ -12,7 +12,7 @@
   <version>1.0-SNAPSHOT</version>
   <packaging>hpi</packaging>
   <properties>
-    <jenkins.version>2.452.4</jenkins.version>
+    <jenkins.version>2.479.3</jenkins.version>
     <hpi-plugin.version>@project.version@</hpi-plugin.version>
     <!-- TODO cannot include `invoker.goals=-DoverrideVersions=…,… test` in invoker.properties since then that is misinterpreted as multiple arguments for invoker.goals -->
     <overrideVersions>org.jenkins-ci.plugins.workflow:workflow-step-api:2.11,org.jenkins-ci.plugins.workflow:workflow-api:2.17,org.jenkins-ci.plugins.workflow:workflow-cps:2.32</overrideVersions>
@@ -21,7 +21,6 @@
     <surefire.rerunFailingTestsCount>0</surefire.rerunFailingTestsCount>
     <workflow-step-api-plugin.version>2.9</workflow-step-api-plugin.version>
     <spotless.check.skip>false</spotless.check.skip>
-    <maven-hpi-plugin.disabledTestInjection>true</maven-hpi-plugin.disabledTestInjection>
   </properties>
   <dependencies>
     <dependency>
