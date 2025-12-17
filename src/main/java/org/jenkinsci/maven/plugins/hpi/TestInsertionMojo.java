@@ -140,13 +140,10 @@ public class TestInsertionMojo extends AbstractJenkinsMojo {
                  * You can disable the code generation by configuring maven-hpi-plugin to &lt;disabledTestInjection&gt;true&lt;/disabledTestInjection&gt;.
                  */
                 @Suite
-                @ConfigurationParameter(key = "InjectedTest.basedir", value = "%s")
                 @ConfigurationParameter(key = "InjectedTest.groupId", value = "%s")
                 @ConfigurationParameter(key = "InjectedTest.artifactId", value = "%s")
                 @ConfigurationParameter(key = "InjectedTest.version", value = "%s")
-                @ConfigurationParameter(key = "InjectedTest.packaging", value = "%s")
                 @ConfigurationParameter(key = "InjectedTest.outputDirectory", value = "%s")
-                @ConfigurationParameter(key = "InjectedTest.testOutputDirectory", value = "%s")
                 @ConfigurationParameter(key = "InjectedTest.requirePI", value = "%s")
                 @SelectPackages("org.jvnet.hudson.test.injected")
                 class %s {
@@ -154,13 +151,10 @@ public class TestInsertionMojo extends AbstractJenkinsMojo {
                 }
                 """.formatted(
                             packageName,
-                            escape(project.getBasedir().getAbsolutePath()),
                             project.getGroupId(),
                             project.getArtifactId(),
                             project.getVersion(),
-                            project.getPackaging(),
                             escape(project.getBuild().getOutputDirectory()),
-                            escape(project.getBuild().getTestOutputDirectory()),
                             String.valueOf(requirePI),
                             injectedTestName);
             Files.writeString(javaFile.toPath(), content);
@@ -181,7 +175,7 @@ public class TestInsertionMojo extends AbstractJenkinsMojo {
     }
 
     private static String escape(String s) {
-        return s.replace("\\", "\\\\");
+        return s.replace("\\", "\\\\").replace("\"", "\\\"");
     }
 
     static String legalizePackageName(@NonNull String input) throws MojoFailureException {
