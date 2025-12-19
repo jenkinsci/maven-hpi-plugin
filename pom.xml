@@ -56,6 +56,13 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
+        <!-- 4.10.2 transitve dep of maven-archiver has memory issues
+          https://github.com/codehaus-plexus/plexus-archiver/issues/399 -->
+        <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-archiver</artifactId>
+        <version>4.10.4</version>
+      </dependency>
+      <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-bom</artifactId>
         <version>${jetty.version}</version>
