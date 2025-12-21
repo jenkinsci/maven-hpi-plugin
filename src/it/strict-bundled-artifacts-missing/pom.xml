@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>5.18</version>
+    <version>5.2098.v4d48a_c4c68e7</version>
     <relativePath />
   </parent>
 
@@ -20,7 +20,6 @@
     <hpi.strictBundledArtifacts>true</hpi.strictBundledArtifacts>
     <!-- jackson-annotations, jackson-core, and jackson-databind are bundled but not listed here -->
     <hpi.bundledArtifacts>metrics-core,metrics-json</hpi.bundledArtifacts>
-    <maven-hpi-plugin.disabledTestInjection>true</maven-hpi-plugin.disabledTestInjection>
   </properties>
 
   <dependencies>
