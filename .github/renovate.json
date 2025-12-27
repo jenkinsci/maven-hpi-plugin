@@ -6,8 +6,8 @@
   "customManagers": [
     {
       "customType": "regex",
-      "fileMatch": [
-        "src/site/site.xml"
+      "managerFilePatterns": [
+        "/src/site/site.xml/"
       ],
       "matchStrings": [
         "<version>(?<currentValue>.*?)</version>"
