@@ -1,11 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:recommended",
-    ":semanticCommitsDisabled"
-  ],
-  "enabledManagers": [
-    "custom.regex"
+    "github>jenkinsci/renovate-config"
   ],
   "customManagers": [
     {
@@ -20,11 +16,33 @@
       "datasourceTemplate": "maven"
     }
   ],
-  "labels": [
-    "dependencies"
-  ],
-  "rebaseWhen": "conflicted",
-  "schedule": [
-    "on the first day of the month"
+  "ignoreDeps": [
+    {
+      "dependencyName": "org.apache.maven:maven-artifact"
+    },
+    {
+      "dependencyName": "org.apache.maven:maven-core"
+    },
+    {
+      "dependencyName": "org.apache.maven:maven-model"
+    },
+    {
+      "dependencyName": "org.apache.maven:maven-model-builder"
+    },
+    {
+      "dependencyName": "org.apache.maven:maven-plugin-api"
+    },
+    {
+      "dependencyName": "org.apache.maven:maven-resolver-provider"
+    },
+    {
+      "dependencyName": "org.apache.maven:maven-settings"
+    },
+    {
+      "dependencyName": "org.codehaus.plexus:plexus-xml",
+      "versions": [
+        ">=4.0.0"
+      ]
+    }
   ]
 }
