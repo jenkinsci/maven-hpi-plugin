@@ -16,33 +16,32 @@
       "datasourceTemplate": "maven"
     }
   ],
-  "ignoreDeps": [
+  "packageRules": [
     {
-      "dependencyName": "org.apache.maven:maven-artifact"
+      "description": "Ignore core Maven internals handled by CI/runtime",
+      "matchManagers": [
+        "maven"
+      ],
+      "matchPackageNames": [
+        "org.apache.maven:maven-artifact",
+        "org.apache.maven:maven-core",
+        "org.apache.maven:maven-model",
+        "org.apache.maven:maven-model-builder",
+        "org.apache.maven:maven-plugin-api",
+        "org.apache.maven:maven-resolver-provider",
+        "org.apache.maven:maven-settings"
+      ],
+      "enabled": false
     },
     {
-      "dependencyName": "org.apache.maven:maven-core"
-    },
-    {
-      "dependencyName": "org.apache.maven:maven-model"
-    },
-    {
-      "dependencyName": "org.apache.maven:maven-model-builder"
-    },
-    {
-      "dependencyName": "org.apache.maven:maven-plugin-api"
-    },
-    {
-      "dependencyName": "org.apache.maven:maven-resolver-provider"
-    },
-    {
-      "dependencyName": "org.apache.maven:maven-settings"
-    },
-    {
-      "dependencyName": "org.codehaus.plexus:plexus-xml",
-      "versions": [
-        ">=4.0.0"
-      ]
+      "description": "Allow only plexus-xml 4.x and newer",
+      "matchManagers": [
+        "maven"
+      ],
+      "matchPackageNames": [
+        "org.codehaus.plexus:plexus-xml"
+      ],
+      "allowedVersions": ">=4.0.0"
     }
   ]
 }
