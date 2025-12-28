@@ -625,7 +625,7 @@ public class RunMojo extends JettyRunWarMojo {
         }
         getWebAppConfig().setWar(webAppFile.getCanonicalPath());
         // allow Jetty to accept a bigger form so that it can handle update center JSON post
-        getWebAppConfig().setMaxFormContentSize(-1);
+        getWebAppConfig().setMaxFormContentSize(Integer.MAX_VALUE);
         super.configureWebApp();
         for (Artifact a : project.getArtifacts()) {
             if (a.getGroupId().equals("org.jenkins-ci.main")
