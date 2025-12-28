@@ -624,7 +624,8 @@ public class RunMojo extends JettyRunWarMojo {
             FileUtils.deleteDirectory(extractedWebAppDir);
         }
         getWebAppConfig().setWar(webAppFile.getCanonicalPath());
-        // allow Jetty to accept a bigger form so that it can handle update center JSON post
+        // allow Jetty to accept large forms because Jenkins accepts large forms at runtime
+        // Jenkins cloud configuration is an example of a case where large forms are needed.
         getWebAppConfig().setMaxFormContentSize(Integer.MAX_VALUE);
         super.configureWebApp();
         for (Artifact a : project.getArtifacts()) {
