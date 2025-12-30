@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>4.86</version>
+    <version>5.2098.v4d48a_c4c68e7</version>
     <relativePath />
   </parent>
 
@@ -23,7 +23,7 @@
   </scm>
 
   <properties>
-    <jenkins.version>2.452.4</jenkins.version>
+    <jenkins.version>2.479.3</jenkins.version>
     <hpi-plugin.version>@project.version@</hpi-plugin.version>
     <spotless.check.skip>false</spotless.check.skip>
   </properties>

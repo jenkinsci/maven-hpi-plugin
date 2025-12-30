@@ -1,17 +1,13 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:recommended",
-    ":semanticCommitsDisabled"
-  ],
-  "enabledManagers": [
-    "custom.regex"
+    "github>jenkinsci/renovate-config"
   ],
   "customManagers": [
     {
       "customType": "regex",
-      "fileMatch": [
-        "src/site/site.xml"
+      "managerFilePatterns": [
+        "/src/site/site.xml/"
       ],
       "matchStrings": [
         "<version>(?<currentValue>.*?)</version>"
@@ -20,11 +16,32 @@
       "datasourceTemplate": "maven"
     }
   ],
-  "labels": [
-    "dependencies"
-  ],
-  "rebaseWhen": "conflicted",
-  "schedule": [
-    "on the first day of the month"
+  "packageRules": [
+    {
+      "description": "Ignore core Maven internals handled by CI/runtime",
+      "matchManagers": [
+        "maven"
+      ],
+      "matchPackageNames": [
+        "org.apache.maven:maven-artifact",
+        "org.apache.maven:maven-core",
+        "org.apache.maven:maven-model",
+        "org.apache.maven:maven-model-builder",
+        "org.apache.maven:maven-plugin-api",
+        "org.apache.maven:maven-resolver-provider",
+        "org.apache.maven:maven-settings"
+      ],
+      "enabled": false
+    },
+    {
+      "description": "Allow only plexus-xml 4.x and newer",
+      "matchManagers": [
+        "maven"
+      ],
+      "matchPackageNames": [
+        "org.codehaus.plexus:plexus-xml"
+      ],
+      "allowedVersions": ">=4.0.0"
+    }
   ]
 }
