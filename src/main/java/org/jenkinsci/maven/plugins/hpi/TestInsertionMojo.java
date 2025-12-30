@@ -144,7 +144,7 @@ public class TestInsertionMojo extends AbstractJenkinsMojo {
                 class %s extends org.jvnet.hudson.test.injected.InjectedTestBase {
 
                     %s() {
-                        super("%s", "%s", "%s", "%s", %b);
+                        super("%s", "%s", "%s", "%s", %b, %b);
                     }
                 }
                 """.formatted(
