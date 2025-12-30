@@ -156,8 +156,7 @@ public class TestInsertionMojo extends AbstractJenkinsMojo {
                             project.getVersion(),
                             escape(project.getBuild().getOutputDirectory()),
                             requirePI,
-                            prohibitInlineJS
-                    );
+                            prohibitInlineJS);
             Files.writeString(javaFile.toPath(), content);
         } catch (IOException e) {
             throw new MojoExecutionException("Failed to create injected tests", e);
