@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -38,13 +39,20 @@ import jenkins.YesNoMaybe;
 import net.java.sezpoz.Index;
 import net.java.sezpoz.IndexItem;
 import org.apache.commons.io.IOUtils;
+import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.project.DefaultDependencyResolutionRequest;
+import org.apache.maven.project.DependencyResolutionException;
+import org.apache.maven.project.DependencyResolutionRequest;
+import org.apache.maven.project.DependencyResolutionResult;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectDependenciesResolver;
 import org.apache.maven.shared.filtering.MavenFilteringException;
 import org.apache.maven.shared.filtering.MavenResourcesExecution;
 import org.apache.maven.shared.filtering.MavenResourcesFiltering;
@@ -55,6 +63,8 @@ import org.codehaus.plexus.archiver.manager.NoSuchArchiverException;
 import org.codehaus.plexus.util.DirectoryScanner;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.StringUtils;
+import org.eclipse.aether.graph.DependencyFilter;
+import org.eclipse.aether.util.filter.ScopeDependencyFilter;
 import org.jenkinsci.maven.plugins.hpi.util.Utils;
 
 public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
@@ -161,6 +171,9 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
      */
     @Component
     protected ArchiverManager archiverManager;
+
+    @Component
+    protected ProjectDependenciesResolver dependenciesResolver;
 
     private static final String WEB_INF = "WEB-INF";
 
@@ -352,7 +365,7 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
 
         try {
             List<Resource> webResources = this.webResources != null ? List.of(this.webResources) : null;
-            if (webResources != null && webResources.size() > 0) {
+            if (webResources != null && !webResources.isEmpty()) {
                 copyResourcesWithFiltering(webResources, webappDirectory);
             }
 
@@ -559,23 +572,22 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
 
         Collections.sort(actualBundledArtifacts);
         if (!actualBundledArtifacts.equals(bundledArtifacts)) {
-            var message =
-                    """
-                    Expected list of bundled artifacts %s did not match actual list of bundled artifacts %s. \
-                    Review the bundled artifacts and add `<hpi.bundledArtifacts>%s</hpi.bundledArtifacts>` to `<properties>` in pom.xml if the actual list is correct. \
-                    If the actual list is not correct, add `<exclusion>`s or modify dependencies as needed to prevent the artifacts from being bundled. \
-                    Review https://www.jenkins.io/doc/developer/plugin-development/dependencies-and-class-loading/#bundling-third-party-libraries for more details.\
-                    """.formatted(bundledArtifacts, actualBundledArtifacts, String.join(",", actualBundledArtifacts));
+            String message = String.format(
+                    "Expected list of bundled artifacts %s did not match actual list of bundled artifacts %s. "
+                            + "Review the bundled artifacts and add <hpi.bundledArtifacts>%s</hpi.bundledArtifacts> to <properties> in pom.xml if the actual list is correct. "
+                            + "If the actual list is not correct, add <exclusion>s or modify dependencies as needed to prevent the artifacts from being bundled. "
+                            + "Review https://www.jenkins.io/doc/developer/plugin-development/dependencies-and-class-loading/#bundling-third-party-libraries for more details.",
+                    bundledArtifacts, actualBundledArtifacts, String.join(",", actualBundledArtifacts));
             if (strictBundledArtifacts) {
                 throw new MojoExecutionException(message);
             } else {
                 getLog().warn(
                                 message
-                                        + " Enable strict checks by adding `<hpi.strictBundledArtifacts>true</hpi.strictBundledArtifacts>` to pom.xml");
+                                        + " Enable strict checks by adding <hpi.strictBundledArtifacts>true</hpi.strictBundledArtifacts> to pom.xml");
             }
         }
 
-        if (dependentWarDirectories.size() > 0) {
+        if (!dependentWarDirectories.isEmpty()) {
             getLog().info("Overlaying " + dependentWarDirectories.size() + " war(s).");
 
             // overlay dependent wars
@@ -787,5 +799,47 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
             }
             return Boolean.TRUE;
         }
+    }
+
+    /**
+     * Performs the equivalent of "@requiresDependencyResolution" mojo attribute,
+     * so that we can choose the scope at runtime.
+     * @see LifecycleDependencyResolver#getDependencies(MavenProject, Collection, Collection,
+     *     MavenSession, boolean, Set)
+     */
+    protected Set<Artifact> resolveDependencies(String scope) throws MojoExecutionException {
+        try {
+            DependencyResolutionRequest request =
+                    new DefaultDependencyResolutionRequest(project, session.getRepositorySession());
+            request.setResolutionFilter(getDependencyFilter(scope));
+            DependencyResolutionResult result = dependenciesResolver.resolve(request);
+
+            Set<Artifact> artifacts = new LinkedHashSet<>();
+            if (result.getDependencyGraph() != null
+                    && !result.getDependencyGraph().getChildren().isEmpty()) {
+                RepositoryUtils.toArtifacts(
+                        artifacts,
+                        result.getDependencyGraph().getChildren(),
+                        List.of(project.getArtifact().getId()),
+                        request.getResolutionFilter());
+            }
+            return artifacts;
+        } catch (DependencyResolutionException e) {
+            throw new MojoExecutionException("Unable to resolve dependencies", e);
+        }
+    }
+
+    /**
+     * Returns all the transitive plugin dependencies as MavenArtifact.
+     */
+    protected Set<MavenArtifact> getProjectArtifacts() {
+        return wrap(Artifacts.of(project));
+    }
+
+    protected DependencyFilter getDependencyFilter(String scope) {
+        if (scope == null || scope.isEmpty()) {
+            return null;
+        }
+        return new ScopeDependencyFilter(null, scope);
     }
 }
