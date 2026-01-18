@@ -20,6 +20,7 @@ import hudson.util.VersionNumber;
 import io.jenkins.lib.support_log_formatter.SupportLogFormatter;
 import java.io.File;
 import java.io.IOException;
+import java.lang.management.RuntimeMXBean;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InaccessibleObjectException;
 import java.nio.charset.StandardCharsets;
@@ -425,6 +426,10 @@ public class RunMojo extends AbstractHpiMojo {
         String javaExe = System.getProperty("java.home") + "/bin/java";
         cmd.add(javaExe);
 
+        if (isDebuggerPresent()) {
+            cmd.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:0");
+        }
+
         // Add configured system properties early
         if (systemProperties != null && !systemProperties.isEmpty()) {
             for (Map.Entry<String, String> e : systemProperties.entrySet()) {
@@ -478,53 +483,18 @@ public class RunMojo extends AbstractHpiMojo {
         }
     }
 
-    @SuppressFBWarnings(value = "REC_CATCH_EXCEPTION", justification = "workaround JDK11")
-    private static List<String> unavailableRequiredPackages() {
-        final List<String> packages = new ArrayList<>();
-        for (Map.Entry<String, String> e : REQUIRED_PACKAGES_TO_TEST_CLASSES.entrySet()) {
-            final String key = e.getKey();
-            final String value = e.getValue();
-            try {
-                final Class<?> clazz = Class.forName(key + "." + value);
-                if (clazz.isEnum()) {
-                    clazz.getMethod("values").invoke(null);
-                } else {
-                    Constructor<?> c = clazz.getDeclaredConstructor();
-                    c.setAccessible(true);
-                    c.newInstance();
-                }
-            } catch (InaccessibleObjectException ex) {
-                packages.add(key);
-            } catch (Exception ignore) {
-                // in old versions of JDK some classes could be unavailable
-            }
-        }
-        return packages;
-    }
+    public static boolean isDebuggerPresent() {
+        // Get ahold of the Java Runtime Environment (JRE) management interface
+        RuntimeMXBean runtime = java.lang.management.ManagementFactory.getRuntimeMXBean();
 
-    private static void openPackages(Collection<String> packagesToOpen) throws Throwable {
-        // Reflection-based opening of packages is not portable and not supported in all JVMs.
-        // Instead, log a warning to the user.
-        if (!packagesToOpen.isEmpty()) {
-            System.err.println("WARNING: The following packages may require --add-opens: " + packagesToOpen);
-        }
-    }
+        // Get the command line arguments that we were originally passed in
+        List<String> args = runtime.getInputArguments();
 
-    @Nullable
-    @SuppressFBWarnings(value = "REC_CATCH_EXCEPTION", justification = "workaround JDK11")
-    private static Collection<?> allModules() {
-        // calling ModuleLayer.boot().modules() by reflection
-        try {
-            final Object boot =
-                    Class.forName("java.lang.ModuleLayer").getMethod("boot").invoke(null);
-            if (boot == null) {
-                return null;
-            }
-            final Object modules = boot.getClass().getMethod("modules").invoke(boot);
-            return (Collection<?>) modules;
-        } catch (Exception ignore) {
-            return null;
-        }
+        // Check if the Java Debug Wire Protocol (JDWP) agent is used.
+        // One of the items might contain something like "-agentlib:jdwp=transport=dt_socket,address=9009,server=y,suspend=n"
+        // We're looking for the string "jdwp".
+
+        return args.toString().contains("jdwp");
     }
 
     private boolean hasSameGavAsProject(Artifact a) {
