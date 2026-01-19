@@ -805,8 +805,6 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
     /**
      * Performs the equivalent of "@requiresDependencyResolution" mojo attribute,
      * so that we can choose the scope at runtime.
-     * @see LifecycleDependencyResolver#getDependencies(MavenProject, Collection, Collection,
-     *     MavenSession, boolean, Set)
      */
     protected Set<Artifact> resolveDependencies(String scope) throws MojoExecutionException {
         try {

@@ -175,11 +175,11 @@ public class RunMojo extends AbstractHpiMojo {
     private WebApp webApp;
 
     /**
-     * Simple bean used for parsing <webApp> configuration.
+     * Simple bean used for parsing webApp configuration.
      */
     public static final class WebApp {
         /**
-         * Maps to <webApp><contextPath>...</contextPath></webApp>.
+         * Maps to &lt;webApp&gt;&lt;contextPath&gt;...&lt;/contextPath&gt;&lt;/webApp&gt;.
          */
         @Parameter
         private String contextPath;
