@@ -346,30 +346,10 @@ public class RunMojo extends AbstractHpiMojo {
         String effectiveHost = (defaultHost == null || defaultHost.trim().isEmpty()) ? "localhost" : defaultHost.trim();
         // If wildcard DNS is enabled, Jenkins will be accessed via a hostname different from the bind host.
         // In that case, default to listening on all interfaces unless the user explicitly configured a host.
-        boolean wildcardEnabled =
-                (wildcardLocalhostDNS != null && !wildcardLocalhostDNS.trim().isEmpty())
-                        || (wildcardDNS != null && !wildcardDNS.trim().isEmpty());
-        if (wildcardEnabled
-                && (defaultHost == null || defaultHost.trim().isEmpty() || "localhost".equals(effectiveHost))) {
-            effectiveHost = "0.0.0.0";
-        }
 
-        // Decide what Jenkins URL should be (producing the host users will browse to).
-        String externalHost = effectiveHost;
-        if (wildcardEnabled) {
-            String id = getProject().getArtifactId();
-            if (wildcardLocalhostDNS != null && !wildcardLocalhostDNS.trim().isEmpty()) {
-                // expected: <id>.<suffix> -> resolves to localhost
-                externalHost = id + "." + wildcardLocalhostDNS.trim();
-            } else {
-                // historical expected: <id>.127.0.0.1.<suffix>
-                externalHost = id + ".127.0.0.1." + wildcardDNS.trim();
-            }
-        }
-
+        String externalHost = getExternalHost(effectiveHost);
         String jenkinsUrl = buildJenkinsUrl(externalHost, defaultPort, effectiveContextPath);
         getLog().info("===========> Browse to: " + jenkinsUrl);
-        setSystemPropertyIfEmpty("JENKINS_URL", jenkinsUrl);
 
         // Prepare JVM arguments
         String argLine = getProject().getProperties().getProperty("argLine", "");
@@ -459,6 +439,26 @@ public class RunMojo extends AbstractHpiMojo {
         } catch (IOException | InterruptedException e) {
             throw new MojoExecutionException("Failed to launch Jenkins", e);
         }
+    }
+
+    private String getExternalHost(String effectiveHost) {
+        boolean wildcardEnabled =
+                (wildcardLocalhostDNS != null && !wildcardLocalhostDNS.trim().isEmpty())
+                        || (wildcardDNS != null && !wildcardDNS.trim().isEmpty());
+
+        // Decide what Jenkins URL should be (producing the host users will browse to).
+        String externalHost = effectiveHost;
+        if (wildcardEnabled) {
+            String id = getProject().getArtifactId();
+            if (wildcardLocalhostDNS != null && !wildcardLocalhostDNS.trim().isEmpty()) {
+                // expected: <id>.<suffix> -> resolves to localhost
+                externalHost = id + "." + wildcardLocalhostDNS.trim();
+            } else {
+                // historical expected: <id>.127.0.0.1.<suffix>
+                externalHost = id + ".127.0.0.1." + wildcardDNS.trim();
+            }
+        }
+        return externalHost;
     }
 
     public static boolean isDebuggerPresent() {
