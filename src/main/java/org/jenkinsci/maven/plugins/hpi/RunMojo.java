@@ -176,14 +176,13 @@ public class RunMojo extends AbstractHpiMojo {
 
     /**
      * Simple bean used for parsing <webApp> configuration.
-     * Must be public for Plexus to instantiate reliably.
      */
     public static final class WebApp {
         /**
          * Maps to <webApp><contextPath>...</contextPath></webApp>.
          */
         @Parameter
-        public String contextPath;
+        private String contextPath;
 
         public WebApp() {
             // required for Plexus instantiation
