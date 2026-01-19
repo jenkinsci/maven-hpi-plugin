@@ -21,8 +21,6 @@ import io.jenkins.lib.support_log_formatter.SupportLogFormatter;
 import java.io.File;
 import java.io.IOException;
 import java.lang.management.RuntimeMXBean;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InaccessibleObjectException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
@@ -447,6 +445,11 @@ public class RunMojo extends AbstractHpiMojo {
         addArgs(cmd, insaneHook);
         addArgs(cmd, javaAgent);
 
+        // When running with the test harness, these properties may include overlapping JVM args
+        // (notably --patch-module for java.base). The JVM fails fast if some options are repeated,
+        // so de-duplicate while preserving order.
+        cmd = dedupeJvmArgs(cmd);
+
         cmd.add("-jar");
         cmd.add(webAppFile.getAbsolutePath());
 
@@ -491,7 +494,8 @@ public class RunMojo extends AbstractHpiMojo {
         List<String> args = runtime.getInputArguments();
 
         // Check if the Java Debug Wire Protocol (JDWP) agent is used.
-        // One of the items might contain something like "-agentlib:jdwp=transport=dt_socket,address=9009,server=y,suspend=n"
+        // One of the items might contain something like
+        // "-agentlib:jdwp=transport=dt_socket,address=9009,server=y,suspend=n"
         // We're looking for the string "jdwp".
 
         return args.toString().contains("jdwp");
@@ -668,11 +672,79 @@ public class RunMojo extends AbstractHpiMojo {
         if (trimmed.isEmpty()) {
             return;
         }
-        for (String part : trimmed.split("\\s+")) {
-            if (!part.isEmpty()) {
-                cmd.add(part);
+
+        // The test harness commonly provides unquoted, whitespace-separated JVM options.
+        // Some of these are 2-token options (e.g. "--add-opens java.base/java.io=ALL-UNNAMED").
+        // Preserve those as pairs so the value doesn't get treated as a main class.
+        String[] parts = trimmed.split("\\s+");
+        for (int i = 0; i < parts.length; i++) {
+            String p = parts[i];
+            if (p == null || p.isEmpty()) {
+                continue;
+            }
+
+            if ("--add-opens".equals(p) || "--add-exports".equals(p) || "--patch-module".equals(p)) {
+                cmd.add(p);
+                if (i + 1 < parts.length) {
+                    String v = parts[++i];
+                    if (v != null && !v.isEmpty()) {
+                        cmd.add(v);
+                    }
+                }
+                continue;
+            }
+
+            cmd.add(p);
+        }
+    }
+
+    /**
+     * De-duplicates JVM arguments while preserving order.
+     *
+     * <p>In particular, some integration-test configurations end up supplying the same
+     * {@code --add-opens} / {@code --patch-module} options via multiple properties.
+     * The JVM rejects some duplicates (e.g. repeating {@code --patch-module java.base=...}),
+     * so we remove exact duplicates before launching.
+     */
+    private static List<String> dedupeJvmArgs(List<String> original) {
+        java.util.LinkedHashSet<String> seenSingles = new java.util.LinkedHashSet<>();
+        java.util.LinkedHashSet<String> seenPairs = new java.util.LinkedHashSet<>();
+        List<String> out = new java.util.ArrayList<>(original.size());
+
+        for (int i = 0; i < original.size(); i++) {
+            String a = original.get(i);
+            if (a == null) {
+                continue;
+            }
+            String s = a.trim();
+            if (s.isEmpty()) {
+                continue;
+            }
+
+            // Handle 2-arg JVM options specially.
+            // These appear as two separate command list entries.
+            if (("--patch-module".equals(s) || "--add-opens".equals(s) || "--add-exports".equals(s))
+                    && i + 1 < original.size()) {
+                String v = original.get(i + 1);
+                String vv = v == null ? "" : v.trim();
+                String key = s + "\u0000" + vv;
+                if (seenPairs.add(key)) {
+                    out.add(s);
+                    if (!vv.isEmpty()) {
+                        out.add(vv);
+                    }
+                }
+                i++; // skip value
+                continue;
+            }
+
+            // Most other JVM args are single tokens, including "--add-opens=..." and "-Dk=v".
+            if (seenSingles.add(s)) {
+                out.add(s);
             }
         }
+
+        return out;
     }
 
     /**
