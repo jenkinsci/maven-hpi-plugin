@@ -76,18 +76,12 @@ public class RunMojo extends AbstractHpiMojo {
     /**
      * Path to {@code $JENKINS_HOME}. The launched Jenkins will use this directory as the workspace.
      */
-    @Parameter(property = "hudsonHome", defaultValue = "${HUDSON_HOME}")
-    private File hudsonHome;
-
-    /**
-     * Path to {@code $JENKINS_HOME}. The launched Jenkins will use this directory as the workspace.
-     */
     @Parameter(property = "jenkinsHome", defaultValue = "${JENKINS_HOME}")
     private File jenkinsHome;
 
     /**
      * Decides the level of dependency resolution.
-     *
+     * <p>
      * This controls what plugins are made available to the
      * running Jenkins.
      */
@@ -132,16 +126,6 @@ public class RunMojo extends AbstractHpiMojo {
     protected String wildcardLocalhostDNS;
 
     /**
-     * If true, the context will be restarted after a line feed on
-     * the input console. Enabled by default.
-     *
-     * @deprecated do not use
-     */
-    @Deprecated
-    @Parameter(property = "jetty.consoleForceReload", defaultValue = "true")
-    protected boolean consoleForceReload;
-
-    /**
      * Optional string that represents "groupId:artifactId" of Jenkins core jar.
      * If left unspecified, the default groupId/artifactId pair for Jenkins is looked for.
      *
@@ -180,25 +164,6 @@ public class RunMojo extends AbstractHpiMojo {
     private Map<String, String> loggers;
 
     private Collection<Logger> loggerReferences; // just to prevent GC
-
-    /**
-     * Specify the minimum version of Java that this plugin requires.
-     *
-     * @deprecated removed without replacement
-     */
-    @Deprecated
-    @Parameter
-    private String minimumJavaVersion;
-
-    /**
-     * The context path for the webapp. Defaults to the
-     * name of the webapp's artifact.
-     *
-     * @deprecated Use &lt;webApp&gt;&lt;contextPath&gt; instead.
-     */
-    @Deprecated
-    @Parameter(readonly = true, required = true, defaultValue = "/${project.artifactId}")
-    protected String contextPath;
 
     @Component
     protected PluginWorkspaceMap pluginWorkspaceMap;

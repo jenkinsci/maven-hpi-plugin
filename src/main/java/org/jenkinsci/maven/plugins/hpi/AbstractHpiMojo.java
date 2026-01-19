@@ -572,18 +572,19 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
 
         Collections.sort(actualBundledArtifacts);
         if (!actualBundledArtifacts.equals(bundledArtifacts)) {
-            String message = String.format(
-                    "Expected list of bundled artifacts %s did not match actual list of bundled artifacts %s. "
-                            + "Review the bundled artifacts and add <hpi.bundledArtifacts>%s</hpi.bundledArtifacts> to <properties> in pom.xml if the actual list is correct. "
-                            + "If the actual list is not correct, add <exclusion>s or modify dependencies as needed to prevent the artifacts from being bundled. "
-                            + "Review https://www.jenkins.io/doc/developer/plugin-development/dependencies-and-class-loading/#bundling-third-party-libraries for more details.",
-                    bundledArtifacts, actualBundledArtifacts, String.join(",", actualBundledArtifacts));
+            var message =
+                    """
+                    Expected list of bundled artifacts %s did not match actual list of bundled artifacts %s. \
+                    Review the bundled artifacts and add `<hpi.bundledArtifacts>%s</hpi.bundledArtifacts>` to `<properties>` in pom.xml if the actual list is correct. \
+                    If the actual list is not correct, add `<exclusion>`s or modify dependencies as needed to prevent the artifacts from being bundled. \
+                    Review https://www.jenkins.io/doc/developer/plugin-development/dependencies-and-class-loading/#bundling-third-party-libraries for more details.\
+                    """.formatted(bundledArtifacts, actualBundledArtifacts, String.join(",", actualBundledArtifacts));
             if (strictBundledArtifacts) {
                 throw new MojoExecutionException(message);
             } else {
                 getLog().warn(
                                 message
-                                        + " Enable strict checks by adding <hpi.strictBundledArtifacts>true</hpi.strictBundledArtifacts> to pom.xml");
+                                        + " Enable strict checks by adding `<hpi.strictBundledArtifacts>true</hpi.strictBundledArtifacts>` to pom.xml");
             }
         }
 
