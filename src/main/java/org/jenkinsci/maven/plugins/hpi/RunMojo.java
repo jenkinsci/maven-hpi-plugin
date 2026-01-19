@@ -95,6 +95,7 @@ public class RunMojo extends AbstractHpiMojo {
      * on a random port. If set to some other string, that string will be appended to the argLine, allowing you to configure
      * arbitrary debuggability options.
      *
+     * @since TODO
      */
     @Parameter(property = "maven.hpi.debug")
     private String debugForkedProcess;
@@ -384,7 +385,7 @@ public class RunMojo extends AbstractHpiMojo {
         insaneHook = expandAtPropertyToken(insaneHook);
         javaAgent = expandAtPropertyToken(javaAgent);
 
-        List<String> cmd = new ArrayList<>();
+        final List<String> cmd = new ArrayList<>();
         String javaExe = System.getProperty("java.home") + "/bin/java";
         cmd.add(javaExe);
 
@@ -406,6 +407,14 @@ public class RunMojo extends AbstractHpiMojo {
             }
         }
 
+        System.getProperties().forEach((k, v) -> {
+            String key = k.toString();
+            if (key.startsWith("maven.hpi.property.")) {
+                String value = v.toString();
+                cmd.add("-D" + key.replace("maven.hpi.property.", "") + "=" + value);
+            }
+        });
+
         addArgs(cmd, argLine);
         addArgs(cmd, addOpens);
         addArgs(cmd, insaneHook);
@@ -414,30 +423,30 @@ public class RunMojo extends AbstractHpiMojo {
         // When running with the test harness, these properties may include overlapping JVM args
         // (notably --patch-module for java.base). The JVM fails fast if some options are repeated,
         // so de-duplicate while preserving order.
-        cmd = dedupeJvmArgs(cmd);
+        List<String> dedupedJvmArgs = dedupeJvmArgs(cmd);
 
-        cmd.add("-jar");
-        cmd.add(webAppFile.getAbsolutePath());
+        dedupedJvmArgs.add("-jar");
+        dedupedJvmArgs.add(webAppFile.getAbsolutePath());
 
         // Winstone options must come after the WAR path.
         // Make the configured host/port effective.
         if (!effectiveHost.isEmpty()) {
-            cmd.add("--httpListenAddress=" + effectiveHost);
+            dedupedJvmArgs.add("--httpListenAddress=" + effectiveHost);
         }
         if (defaultPort > 0) {
-            cmd.add("--httpPort=" + defaultPort);
+            dedupedJvmArgs.add("--httpPort=" + defaultPort);
         }
 
         // Pass context path to Winstone
         if (effectiveContextPath != null) {
             String prefix = effectiveContextPath.trim();
             // Winstone expects --prefix=<value> (no space). Keep the leading slash.
-            cmd.add("--prefix=" + prefix);
+            dedupedJvmArgs.add("--prefix=" + prefix);
         }
 
-        getLog().info("Launching Jenkins: " + String.join(" ", cmd));
+        getLog().info("Launching Jenkins: " + String.join(" ", dedupedJvmArgs));
 
-        ProcessBuilder pb = new ProcessBuilder(cmd);
+        ProcessBuilder pb = new ProcessBuilder(dedupedJvmArgs);
         pb.directory(jenkinsHome);
         pb.inheritIO();
         pb.environment().put("JENKINS_HOME", jenkinsHome.getAbsolutePath());
