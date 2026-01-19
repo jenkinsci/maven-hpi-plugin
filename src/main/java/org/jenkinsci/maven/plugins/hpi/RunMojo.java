@@ -91,6 +91,15 @@ public class RunMojo extends AbstractHpiMojo {
     private BuildPluginManager pluginManager;
 
     /**
+     * Attach a debugger to the forked JVM. If set to "true", the process will suspend and wait for a debugger to attach
+     * on a random port. If set to some other string, that string will be appended to the argLine, allowing you to configure
+     * arbitrary debuggability options.
+     *
+     */
+    @Parameter(property = "maven.hpi.debug")
+    private String debugForkedProcess;
+
+    /**
      * Specifies the HTTP port number.
      *
      * If connectors are configured in the Mojo, that'll take precedence.
@@ -379,8 +388,10 @@ public class RunMojo extends AbstractHpiMojo {
         String javaExe = System.getProperty("java.home") + "/bin/java";
         cmd.add(javaExe);
 
-        if (isDebuggerPresent()) {
+        if (isDebuggerPresent() || "true".equalsIgnoreCase(debugForkedProcess)) {
             cmd.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:0");
+        } else if (debugForkedProcess != null && !debugForkedProcess.trim().isEmpty()) {
+            cmd.add(debugForkedProcess.trim());
         }
 
         // Add configured system properties early
