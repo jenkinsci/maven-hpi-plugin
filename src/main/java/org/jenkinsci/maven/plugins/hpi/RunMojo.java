@@ -36,13 +36,15 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import javax.inject.Inject;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.BuildPluginManager;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Execute;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -59,9 +61,6 @@ import org.twdata.maven.mojoexecutor.MojoExecutor;
 @Mojo(name = "run", requiresDependencyResolution = ResolutionScope.TEST)
 @Execute(phase = LifecyclePhase.COMPILE)
 public class RunMojo extends AbstractHpiMojo {
-    private static final Map<String, String> REQUIRED_PACKAGES_TO_TEST_CLASSES =
-            Map.of("java.lang", "String$CaseInsensitiveComparator", "java.util", "UUID$Holder");
-
     /**
      * The location of the war file.
      *
@@ -88,7 +87,7 @@ public class RunMojo extends AbstractHpiMojo {
     @Parameter(defaultValue = "test")
     protected String dependencyResolution;
 
-    @Component
+    @Inject
     private BuildPluginManager pluginManager;
 
     /**
@@ -165,7 +164,7 @@ public class RunMojo extends AbstractHpiMojo {
 
     private Collection<Logger> loggerReferences; // just to prevent GC
 
-    @Component
+    @Inject
     protected PluginWorkspaceMap pluginWorkspaceMap;
 
     /**
@@ -214,11 +213,6 @@ public class RunMojo extends AbstractHpiMojo {
 
         // compute jenkinsHome
         if (jenkinsHome == null) {
-            if (hudsonHome != null) {
-                getLog().warn(
-                                "Please use the `jenkinsHome` configuration parameter in place of the deprecated `hudsonHome` parameter");
-                jenkinsHome = hudsonHome;
-            }
             String h = System.getenv("JENKINS_HOME");
             if (h == null) {
                 h = System.getenv("HUDSON_HOME");
@@ -337,9 +331,6 @@ public class RunMojo extends AbstractHpiMojo {
                 && webApp.getContextPath() != null
                 && !webApp.getContextPath().trim().isEmpty()) {
             effectiveContextPath = webApp.getContextPath().trim();
-        } else if (contextPath != null && !contextPath.trim().isEmpty()) {
-            // legacy parameter kept for compatibility
-            effectiveContextPath = contextPath.trim();
         }
 
         // Determine the effective bind host (used for Winstone and URL hinting)
@@ -545,10 +536,6 @@ public class RunMojo extends AbstractHpiMojo {
                 MojoExecutor.executionEnvironment(project, session, pluginManager));
     }
 
-    protected MavenArtifact wrap(Artifact a) {
-        return new MavenArtifact(a, repositorySystem, artifactFactory, projectBuilder, session, project);
-    }
-
     protected Artifact getJenkinsWarArtifact() throws MojoExecutionException {
         // First try to find an explicitly declared Jenkins WAR dependency (historical behavior).
         for (Artifact a : resolveDependencies("test")) {
@@ -594,17 +581,15 @@ public class RunMojo extends AbstractHpiMojo {
         if (value == null) {
             return "";
         }
-        String v = value;
 
         // Fast path
-        if (!v.contains("@{")) {
-            return v;
+        if (!value.contains("@{")) {
+            return value;
         }
 
         // Replace all occurrences of @{key}
-        java.util.regex.Matcher m =
-                java.util.regex.Pattern.compile("@\\{([^}]+)}").matcher(v);
-        StringBuffer out = new StringBuffer();
+        Matcher m = Pattern.compile("@\\{([^}]+)}").matcher(value);
+        StringBuilder out = new StringBuilder();
         while (m.find()) {
             String key = m.group(1);
             String resolved = project.getProperties().getProperty(key);
@@ -619,7 +604,7 @@ public class RunMojo extends AbstractHpiMojo {
                 resolved = "";
             }
             // Ensure any $ or \ in resolved values don't get interpreted by Matcher
-            m.appendReplacement(out, java.util.regex.Matcher.quoteReplacement(resolved.trim()));
+            m.appendReplacement(out, Matcher.quoteReplacement(resolved.trim()));
         }
         m.appendTail(out);
         return out.toString().trim();
