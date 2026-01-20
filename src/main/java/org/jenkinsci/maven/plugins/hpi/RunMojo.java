@@ -20,13 +20,17 @@ import hudson.util.VersionNumber;
 import io.jenkins.lib.support_log_formatter.SupportLogFormatter;
 import java.io.File;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -359,16 +363,10 @@ public class RunMojo extends AbstractHpiMojo {
             cmd.add(debugForkedProcess.trim());
         }
 
-        // Add configured system properties early
-        if (systemProperties != null && !systemProperties.isEmpty()) {
-            for (Map.Entry<String, String> e : systemProperties.entrySet()) {
-                if (e.getKey() == null || e.getKey().trim().isEmpty()) {
-                    continue;
-                }
-                String key = e.getKey().trim();
-                String val = e.getValue() == null ? "" : e.getValue();
-                cmd.add("-D" + key + "=" + val);
-            }
+        for (Map.Entry<String, String> e : systemProperties.entrySet()) {
+            String key = e.getKey().trim();
+            String val = e.getValue() == null ? "" : e.getValue();
+            cmd.add("-D" + key + "=" + val);
         }
 
         System.getProperties().forEach((k, v) -> {
@@ -446,8 +444,7 @@ public class RunMojo extends AbstractHpiMojo {
     }
 
     public static boolean isDebuggerPresent() {
-        // Get ahold of the Java Runtime Environment (JRE) management interface
-        RuntimeMXBean runtime = java.lang.management.ManagementFactory.getRuntimeMXBean();
+        RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
 
         // Get the command line arguments that we were originally passed in
         List<String> args = runtime.getInputArguments();
@@ -456,7 +453,6 @@ public class RunMojo extends AbstractHpiMojo {
         // One of the items might contain something like
         // "-agentlib:jdwp=transport=dt_socket,address=9009,server=y,suspend=n"
         // We're looking for the string "jdwp".
-
         return args.toString().contains("jdwp");
     }
 
@@ -660,9 +656,9 @@ public class RunMojo extends AbstractHpiMojo {
      * so we remove exact duplicates before launching.
      */
     private static List<String> dedupeJvmArgs(List<String> original) {
-        java.util.LinkedHashSet<String> seenSingles = new java.util.LinkedHashSet<>();
-        java.util.LinkedHashSet<String> seenPairs = new java.util.LinkedHashSet<>();
-        List<String> out = new java.util.ArrayList<>(original.size());
+        LinkedHashSet<String> seenSingles = new LinkedHashSet<>();
+        LinkedHashSet<String> seenPairs = new LinkedHashSet<>();
+        List<String> out = new ArrayList<>(original.size());
 
         for (int i = 0; i < original.size(); i++) {
             String a = original.get(i);
@@ -708,22 +704,26 @@ public class RunMojo extends AbstractHpiMojo {
         if (host == null || host.isBlank()) {
             return null;
         }
-        StringBuilder url = new StringBuilder();
-        url.append("http://").append(host.trim());
-        if (port != 80 && port > 0) {
-            url.append(":").append(port);
-        }
+
+        String path = null;
         if (contextPath != null && !contextPath.isBlank()) {
             String cp = contextPath.trim();
-            if (!cp.startsWith("/")) {
-                url.append('/');
-            }
-            url.append(cp);
+            path = cp.startsWith("/") ? cp : "/" + cp;
         }
-        if (url.charAt(url.length() - 1) != '/') {
-            url.append('/');
+
+        if (path == null) {
+            path = "/";
+        } else if (!path.endsWith("/")) {
+            path = path + "/";
         }
-        return url.toString();
+
+        try {
+            URI uri = new URI("http", null, host.trim(), port, path, null, null);
+            return uri.toString();
+        } catch (URISyntaxException e) {
+            // Should be rare; fall back to null to avoid crashing `hpi:run`.
+            return null;
+        }
     }
 
     private void writeInitGroovyLoggers(Map<String, String> configuredLoggers, File jenkinsHome)
