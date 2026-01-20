@@ -254,22 +254,11 @@ public class RunMojo extends AbstractHpiMojo {
         }
 
         // set JENKINS_HOME
-        setSystemPropertyIfEmpty("JENKINS_HOME", jenkinsHome.getAbsolutePath());
         File pluginsDir = new File(jenkinsHome, "plugins");
         try {
             Files.createDirectories(pluginsDir.toPath());
         } catch (IOException e) {
             throw new MojoExecutionException("Failed to create directories for '" + pluginsDir + "'", e);
-        }
-
-        // enable view auto refreshing via stapler
-        setSystemPropertyIfEmpty("stapler.jelly.noCache", "true");
-
-        List<Resource> res = getProject().getBuild().getResources();
-        if (!res.isEmpty()) {
-            // pick up the first one and use it
-            Resource r = res.get(0);
-            setSystemPropertyIfEmpty("stapler.resourcePath", r.getDirectory());
         }
 
         generateHpl();
@@ -367,6 +356,17 @@ public class RunMojo extends AbstractHpiMojo {
             String key = e.getKey().trim();
             String val = e.getValue() == null ? "" : e.getValue();
             cmd.add("-D" + key + "=" + val);
+        }
+
+        cmd.add("-DJENKINS_HOME=" + jenkinsHome.getAbsolutePath());
+        // enable view auto refreshing via stapler
+        cmd.add("-Dstapler.jelly.noCache=true");
+
+        List<Resource> res = getProject().getBuild().getResources();
+        if (!res.isEmpty()) {
+            // pick up the first one and use it
+            Resource r = res.get(0);
+            cmd.add("-Dstapler.resourcePath=" + r.getDirectory());
         }
 
         System.getProperties().forEach((k, v) -> {
