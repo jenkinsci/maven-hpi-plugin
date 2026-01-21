@@ -115,7 +115,7 @@ public class RunMojo extends AbstractHpiMojo {
 
     /**
      * Specifies the HTTP port number.
-     *
+     * <p>
      * If connectors are configured in the Mojo, that'll take precedence.
      */
     @Parameter(property = "port", defaultValue = "8080")
@@ -123,7 +123,7 @@ public class RunMojo extends AbstractHpiMojo {
 
     /**
      * Specifies the host (network interface) to bind to.
-     *
+     * <p>
      * If connectors are configured in the Mojo, that'll take precedence.
      */
     @Parameter(property = "host", defaultValue = "localhost")
@@ -365,6 +365,25 @@ public class RunMojo extends AbstractHpiMojo {
             cmd.add("-D" + key + "=" + val);
         }
 
+        for (Artifact a : project.getArtifacts()) {
+            if (a.getGroupId().equals("org.jenkins-ci.main")
+                    && a.getArtifactId().equals("jenkins-core")) {
+                File coreBasedir;
+                try {
+                    coreBasedir = pluginWorkspaceMap.read(a.getId());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                if (coreBasedir != null) {
+                    String extraCP = new File(coreBasedir, "src/main/resources").toURI()
+                            + File.pathSeparator
+                            + new File(coreBasedir, "target/classes").toURI();
+                    cmd.add("-cp");
+                    cmd.add(extraCP);
+                }
+            }
+        }
+
         cmd.add("-DJENKINS_HOME=" + jenkinsHome.getAbsolutePath());
         // enable view auto refreshing via stapler
         cmd.add("-Dstapler.jelly.noCache=true");
@@ -383,9 +402,7 @@ public class RunMojo extends AbstractHpiMojo {
                             && FILTERED_JVM_SYSTEM_PROPERTIES_STARTS_WITH.stream()
                                     .noneMatch(key::startsWith);
                 })
-                .forEach(entry -> {
-                    cmd.add("-D" + entry.getKey() + "=" + entry.getValue());
-                });
+                .forEach(entry -> cmd.add("-D" + entry.getKey() + "=" + entry.getValue()));
 
         addArgs(cmd, argLine);
 
@@ -462,12 +479,6 @@ public class RunMojo extends AbstractHpiMojo {
         return getProject().getGroupId().equals(a.getGroupId())
                 && getProject().getArtifactId().equals(a.getArtifactId())
                 && getProject().getVersion().equals(a.getVersion());
-    }
-
-    private void setSystemPropertyIfEmpty(String name, String value) {
-        if (System.getProperty(name) == null) {
-            System.setProperty(name, value);
-        }
     }
 
     private void copyPlugin(File src, File pluginsDir, String shortName) throws IOException {
