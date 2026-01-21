@@ -61,6 +61,20 @@ import org.twdata.maven.mojoexecutor.MojoExecutor;
 @Mojo(name = "run", requiresDependencyResolution = ResolutionScope.TEST)
 @Execute(phase = LifecyclePhase.COMPILE)
 public class RunMojo extends AbstractHpiMojo {
+
+    /**
+     * Filter for JVM system properties that should not be passed to the forked Jenkins process.
+     */
+    private static final List<String> FILTERED_JVM_SYSTEM_PROPERTIES_STARTS_WITH =
+            List.of("changelist.format", "mvnd.", "maven.", "skip.");
+
+    /**
+     * Additional filter for JVM system properties that should not be passed to the forked Jenkins process.
+     * These properties are mostly ones that this plugin uses that aren't namespaced.
+     */
+    private static final List<String> FILTERED_JVM_SYSTEM_PROPERTIES_EXACT = List.of(
+            "host", "jenkinsHome", "style.color", "port", "test", "wildcardLocalhostDNS", "wildcardDNS", "webAppFile");
+
     /**
      * The location of the war file.
      *
@@ -369,13 +383,16 @@ public class RunMojo extends AbstractHpiMojo {
             cmd.add("-Dstapler.resourcePath=" + r.getDirectory());
         }
 
-        System.getProperties().forEach((k, v) -> {
-            String key = k.toString();
-            if (key.startsWith("maven.hpi.property.")) {
-                String value = v.toString();
-                cmd.add("-D" + key.replace("maven.hpi.property.", "") + "=" + value);
-            }
-        });
+        session.getUserProperties().entrySet().stream()
+                .filter(e -> {
+                    String key = String.valueOf(e.getKey());
+                    return !FILTERED_JVM_SYSTEM_PROPERTIES_EXACT.contains(key)
+                            && FILTERED_JVM_SYSTEM_PROPERTIES_STARTS_WITH.stream()
+                                    .noneMatch(key::startsWith);
+                })
+                .forEach(entry -> {
+                    cmd.add("-D" + entry.getKey() + "=" + entry.getValue());
+                });
 
         addArgs(cmd, argLine);
         addArgs(cmd, addOpens);
