@@ -342,7 +342,11 @@ public class RunMojo extends AbstractHpiMojo {
         getLog().info("===========> Browse to: " + jenkinsUrl);
 
         // Prepare JVM arguments
-        String argLine = getProject().getProperties().getProperty("argLine", "");
+        String argLine = getProject()
+                .getProperties()
+                .getProperty("argLine", "")
+                // remove "insane hook" used for tests (otherwise warnings are triggered on Jenkins start)
+                .replace("@{jenkins.insaneHook} ", "");
         argLine = expandAtPropertyToken(argLine);
 
         final List<String> cmd = new ArrayList<>();
