@@ -14,8 +14,8 @@ try (JarFile j1 = new JarFile(p1)) {
     // there may be other attribute like 'Created-By' that we do not care about we are not checking everything
     assert attributes.getValue('Manifest-Version').equals('1.0') // if this changes then Jenkins may not be able to parse it.
 
-    assert attributes.getValue('Hudson-Version').equals('2.452.4')
-    assert attributes.getValue('Jenkins-Version').equals('2.452.4')
+    assert attributes.getValue('Hudson-Version').equals('2.479.3')
+    assert attributes.getValue('Jenkins-Version').equals('2.479.3')
 
     assert attributes.getValue('Group-Id').equals('org.jenkins-ci.tools.hpi.its.git-metadata')
     assert attributes.getValue('Artifact-Id').equals('plugin1')
@@ -48,8 +48,8 @@ try (JarFile j2 = new JarFile(p2)) {
     Attributes attributes = mf.getMainAttributes()
     assert attributes.getValue('Manifest-Version').equals('1.0') // if this changes then Jenkins may not be able to parse it.
 
-    assert attributes.getValue('Hudson-Version').equals('2.452.4')
-    assert attributes.getValue('Jenkins-Version').equals('2.452.4')
+    assert attributes.getValue('Hudson-Version').equals('2.479.3')
+    assert attributes.getValue('Jenkins-Version').equals('2.479.3')
 
     assert attributes.getValue('Group-Id').equals('org.jenkins-ci.tools.hpi.its.git-metadata')
     assert attributes.getValue('Artifact-Id').equals('multimodule-it-plugin2')
