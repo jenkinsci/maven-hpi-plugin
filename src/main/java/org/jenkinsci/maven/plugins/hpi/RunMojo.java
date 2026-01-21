@@ -30,7 +30,6 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -344,17 +343,7 @@ public class RunMojo extends AbstractHpiMojo {
 
         // Prepare JVM arguments
         String argLine = getProject().getProperties().getProperty("argLine", "");
-        String addOpens = getProject().getProperties().getProperty("jenkins.addOpens", "");
-        String insaneHook = getProject().getProperties().getProperty("jenkins.insaneHook", "");
-        String javaAgent = getProject().getProperties().getProperty("jenkins.javaAgent", "");
-
-        // The test harness may store these as Surefire-style argfile placeholders like "@{jenkins.addOpens}".
-        // When launching `java` directly, such tokens are interpreted as @argfiles and will fail.
-        // Expand them to the underlying property values before building the command.
         argLine = expandAtPropertyToken(argLine);
-        addOpens = expandAtPropertyToken(addOpens);
-        insaneHook = expandAtPropertyToken(insaneHook);
-        javaAgent = expandAtPropertyToken(javaAgent);
 
         final List<String> cmd = new ArrayList<>();
         String javaExe = System.getProperty("java.home") + "/bin/java";
@@ -395,37 +384,29 @@ public class RunMojo extends AbstractHpiMojo {
                 });
 
         addArgs(cmd, argLine);
-        addArgs(cmd, addOpens);
-        addArgs(cmd, insaneHook);
-        addArgs(cmd, javaAgent);
 
-        // When running with the test harness, these properties may include overlapping JVM args
-        // (notably --patch-module for java.base). The JVM fails fast if some options are repeated,
-        // so de-duplicate while preserving order.
-        List<String> dedupedJvmArgs = dedupeJvmArgs(cmd);
-
-        dedupedJvmArgs.add("-jar");
-        dedupedJvmArgs.add(webAppFile.getAbsolutePath());
+        cmd.add("-jar");
+        cmd.add(webAppFile.getAbsolutePath());
 
         // Winstone options must come after the WAR path.
         // Make the configured host/port effective.
         if (!effectiveHost.isEmpty()) {
-            dedupedJvmArgs.add("--httpListenAddress=" + effectiveHost);
+            cmd.add("--httpListenAddress=" + effectiveHost);
         }
         if (defaultPort > 0) {
-            dedupedJvmArgs.add("--httpPort=" + defaultPort);
+            cmd.add("--httpPort=" + defaultPort);
         }
 
         // Pass context path to Winstone
         if (effectiveContextPath != null) {
             String prefix = effectiveContextPath.trim();
             // Winstone expects --prefix=<value> (no space). Keep the leading slash.
-            dedupedJvmArgs.add("--prefix=" + prefix);
+            cmd.add("--prefix=" + prefix);
         }
 
-        getLog().info("Launching Jenkins: " + String.join(" ", dedupedJvmArgs));
+        getLog().info("Launching Jenkins: " + String.join(" ", cmd));
 
-        ProcessBuilder pb = new ProcessBuilder(dedupedJvmArgs);
+        ProcessBuilder pb = new ProcessBuilder(cmd);
         pb.directory(jenkinsHome);
         pb.inheritIO();
         pb.environment().put("JENKINS_HOME", jenkinsHome.getAbsolutePath());
@@ -662,55 +643,6 @@ public class RunMojo extends AbstractHpiMojo {
 
             cmd.add(p);
         }
-    }
-
-    /**
-     * De-duplicates JVM arguments while preserving order.
-     *
-     * <p>In particular, some integration-test configurations end up supplying the same
-     * {@code --add-opens} / {@code --patch-module} options via multiple properties.
-     * The JVM rejects some duplicates (e.g. repeating {@code --patch-module java.base=...}),
-     * so we remove exact duplicates before launching.
-     */
-    private static List<String> dedupeJvmArgs(List<String> original) {
-        LinkedHashSet<String> seenSingles = new LinkedHashSet<>();
-        LinkedHashSet<String> seenPairs = new LinkedHashSet<>();
-        List<String> out = new ArrayList<>(original.size());
-
-        for (int i = 0; i < original.size(); i++) {
-            String a = original.get(i);
-            if (a == null) {
-                continue;
-            }
-            String s = a.trim();
-            if (s.isEmpty()) {
-                continue;
-            }
-
-            // Handle 2-arg JVM options specially.
-            // These appear as two separate command list entries.
-            if (("--patch-module".equals(s) || "--add-opens".equals(s) || "--add-exports".equals(s))
-                    && i + 1 < original.size()) {
-                String v = original.get(i + 1);
-                String vv = v == null ? "" : v.trim();
-                String key = s + "\u0000" + vv;
-                if (seenPairs.add(key)) {
-                    out.add(s);
-                    if (!vv.isEmpty()) {
-                        out.add(vv);
-                    }
-                }
-                i++; // skip value
-                continue;
-            }
-
-            // Most other JVM args are single tokens, including "--add-opens=..." and "-Dk=v".
-            if (seenSingles.add(s)) {
-                out.add(s);
-            }
-        }
-
-        return out;
     }
 
     /**
