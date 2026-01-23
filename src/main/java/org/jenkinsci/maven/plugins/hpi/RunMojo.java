@@ -342,12 +342,7 @@ public class RunMojo extends AbstractHpiMojo {
         getLog().info("===========> Browse to: " + jenkinsUrl);
 
         // Prepare JVM arguments
-        String argLine = getProject()
-                .getProperties()
-                .getProperty("argLine", "")
-                // remove "insane hook" used for tests (otherwise warnings are triggered on Jenkins start)
-                .replace("@{jenkins.insaneHook} ", "");
-        argLine = expandAtPropertyToken(argLine);
+        String argLine = expandAtPropertyToken(jvmArgs);
 
         final List<String> cmd = new ArrayList<>();
         String javaExe = System.getProperty("java.home") + "/bin/java";
@@ -355,7 +350,7 @@ public class RunMojo extends AbstractHpiMojo {
 
         if (isDebuggerPresent() || "true".equalsIgnoreCase(debugForkedProcess)) {
             cmd.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=0");
-        } else if (debugForkedProcess != null && !debugForkedProcess.trim().isEmpty()) {
+        } else if (debugForkedProcess != null && !debugForkedProcess.isBlank()) {
             cmd.add(debugForkedProcess.trim());
         }
 
