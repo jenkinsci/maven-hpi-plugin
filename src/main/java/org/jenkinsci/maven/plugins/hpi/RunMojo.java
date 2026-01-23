@@ -100,6 +100,14 @@ public class RunMojo extends AbstractHpiMojo {
     @Parameter(defaultValue = "test")
     protected String dependencyResolution;
 
+    /**
+     * JVM arguments to be passed when running the Jenkins instance.
+     */
+    @Parameter(
+            property = "maven.hpi.run.jvmArgs",
+            defaultValue = "-Xms512M -Xmx1G -XX:+HeapDumpOnOutOfMemoryError @{jenkins.addOpens}")
+    protected String jvmArgs;
+
     @Inject
     private BuildPluginManager pluginManager;
 
@@ -249,9 +257,11 @@ public class RunMojo extends AbstractHpiMojo {
                 .groupIdIs("org.jenkins-ci.main", "org.jvnet.hudson.main")
                 .artifactIdIsNot("remoting"); // remoting moved to its own release cycle
 
+        Artifact jenkinsWarArtifact =
+                MavenArtifact.resolveArtifact(getJenkinsWarArtifact(), project, session, repositorySystem);
+        setAddOpensProperty(jenkinsWarArtifact);
+
         if (webAppFile == null) {
-            Artifact jenkinsWarArtifact =
-                    MavenArtifact.resolveArtifact(getJenkinsWarArtifact(), project, session, repositorySystem);
             webAppFile = jenkinsWarArtifact.getFile();
             if (webAppFile == null || !webAppFile.isFile()) {
                 throw new MojoExecutionException("Could not find " + webAppFile + " from " + jenkinsWarArtifact);
@@ -341,7 +351,6 @@ public class RunMojo extends AbstractHpiMojo {
         String jenkinsUrl = buildJenkinsUrl(externalHost, defaultPort, effectiveContextPath);
         getLog().info("===========> Browse to: " + jenkinsUrl);
 
-        // Prepare JVM arguments
         String argLine = expandAtPropertyToken(jvmArgs);
 
         final List<String> cmd = new ArrayList<>();
