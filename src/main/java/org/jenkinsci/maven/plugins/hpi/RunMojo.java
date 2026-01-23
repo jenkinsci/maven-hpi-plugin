@@ -354,7 +354,7 @@ public class RunMojo extends AbstractHpiMojo {
         cmd.add(javaExe);
 
         if (isDebuggerPresent() || "true".equalsIgnoreCase(debugForkedProcess)) {
-            cmd.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:0");
+            cmd.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=0");
         } else if (debugForkedProcess != null && !debugForkedProcess.trim().isEmpty()) {
             cmd.add(debugForkedProcess.trim());
         }
