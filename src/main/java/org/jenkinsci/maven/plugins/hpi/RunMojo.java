@@ -122,6 +122,14 @@ public class RunMojo extends AbstractHpiMojo {
     private String debugForkedProcess;
 
     /**
+     * Port number for the debugger to attach to.
+     * <p>
+     * Not used if <code>maven.hpi.debug</code> is specified with a custom debug value.
+     */
+    @Parameter(property = "maven.hpi.debug.port", defaultValue = "5005")
+    protected int debugPort;
+
+    /**
      * Specifies the HTTP port number.
      * <p>
      * If connectors are configured in the Mojo, that'll take precedence.
@@ -358,7 +366,7 @@ public class RunMojo extends AbstractHpiMojo {
         cmd.add(javaExe);
 
         if (isDebuggerPresent() || "true".equalsIgnoreCase(debugForkedProcess)) {
-            cmd.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=0");
+            cmd.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=" + debugPort);
         } else if (debugForkedProcess != null && !debugForkedProcess.isBlank()) {
             cmd.add(debugForkedProcess.trim());
         }
