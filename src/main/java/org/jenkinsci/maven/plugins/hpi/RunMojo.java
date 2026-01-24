@@ -108,6 +108,13 @@ public class RunMojo extends AbstractHpiMojo {
             defaultValue = "-Xms512M -Xmx1G -XX:+HeapDumpOnOutOfMemoryError @{jenkins.addOpens}")
     protected String jvmArgs;
 
+    /**
+     * Arguments to pass to Winstone, e.g. --enable-future-java.
+     */
+    @Parameter(property = "maven.hpi.winstoneArgs")
+    protected String winstoneArgs;
+
+
     @Inject
     private BuildPluginManager pluginManager;
 
@@ -427,6 +434,10 @@ public class RunMojo extends AbstractHpiMojo {
             String prefix = effectiveContextPath.trim();
             // Winstone expects --prefix=<value> (no space). Keep the leading slash.
             cmd.add("--prefix=" + prefix);
+        }
+
+        if (winstoneArgs != null) {
+            cmd.add(winstoneArgs);
         }
 
         getLog().info("Launching Jenkins: " + String.join(" ", cmd));
