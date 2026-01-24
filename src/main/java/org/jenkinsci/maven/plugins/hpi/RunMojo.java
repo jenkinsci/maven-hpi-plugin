@@ -114,7 +114,6 @@ public class RunMojo extends AbstractHpiMojo {
     @Parameter(property = "maven.hpi.winstoneArgs")
     protected String winstoneArgs;
 
-
     @Inject
     private BuildPluginManager pluginManager;
 
