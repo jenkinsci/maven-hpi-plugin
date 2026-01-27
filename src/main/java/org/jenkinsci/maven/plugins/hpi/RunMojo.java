@@ -111,7 +111,7 @@ public class RunMojo extends AbstractHpiMojo {
     /**
      * Arguments to pass to Winstone, e.g. --enable-future-java.
      */
-    @Parameter(property = "maven.hpi.winstoneArgs")
+    @Parameter(property = "maven.hpi.winstoneArgs", defaultValue = "--enable-future-java")
     protected String winstoneArgs;
 
     @Inject
