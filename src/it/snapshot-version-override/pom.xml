@@ -33,7 +33,7 @@
       <plugin>
         <groupId>com.github.stephenc.continuous</groupId>
         <artifactId>git-timestamp-maven-plugin</artifactId>
-        <version>1.1</version>
+        <version>1.47</version>
         <configuration>
           <versionProperty>actual-version</versionProperty>
           <versionFile>target/version.txt</versionFile>
