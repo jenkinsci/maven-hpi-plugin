@@ -25,7 +25,7 @@
     <dependency>
       <groupId>io.dropwizard.metrics5</groupId>
       <artifactId>metrics-json</artifactId>
-      <version>5.0.1</version>
+      <version>5.0.6</version>
       <exclusions>
         <exclusion>
           <groupId>com.fasterxml.jackson.core</groupId>
