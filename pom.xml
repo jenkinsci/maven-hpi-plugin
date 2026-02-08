@@ -56,20 +56,6 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>org.eclipse.jetty</groupId>
-        <artifactId>jetty-bom</artifactId>
-        <version>${jetty.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.eclipse.jetty.ee9</groupId>
-        <artifactId>jetty-ee9-bom</artifactId>
-        <version>${jetty.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-      <dependency>
         <groupId>org.ow2.asm</groupId>
         <artifactId>asm-bom</artifactId>
         <version>9.9.1</version>
@@ -159,8 +145,7 @@
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-archiver</artifactId>
-      <!-- revert the plexus archiver override if updating this https://github.com/apache/maven-archiver/issues/334 -->
-      <version>3.6.5</version>
+      <version>3.6.6</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.shared</groupId>
@@ -179,15 +164,6 @@
       </exclusions>
     </dependency>
     <dependency>
-      <!-- 4.10.2 transitve dep of maven-archiver has memory issues
-          https://github.com/codehaus-plexus/plexus-archiver/issues/399 
-          unfortunately dependencyManagement does not work and we need to promote this to a direct dep
-          -->
-      <groupId>org.codehaus.plexus</groupId>
-      <artifactId>plexus-archiver</artifactId>
-      <version>4.10.4</version>
-    </dependency>
-    <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-utils</artifactId>
       <version>4.0.2</version>
@@ -198,58 +174,9 @@
       <version>3.0.2</version>
     </dependency>
     <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-maven</artifactId>
-      <version>${jetty.version}</version>
-      <exclusions>
-        <!-- Pulls in conflicting versions of Apache Commons Logging and Apache HttpComponents Client 4 -->
-        <exclusion>
-          <groupId>org.apache.maven.plugin-tools</groupId>
-          <artifactId>maven-plugin-tools-api</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.codehaus.plexus</groupId>
-          <artifactId>plexus-xml</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-server</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty.ee9</groupId>
-      <artifactId>jetty-ee9-maven-plugin</artifactId>
-      <version>${jetty.version}</version>
-      <exclusions>
-        <!-- Pulls in conflicting versions of Apache Commons Logging and Apache HttpComponents Client 4 -->
-        <exclusion>
-          <groupId>org.apache.maven.plugin-tools</groupId>
-          <artifactId>maven-plugin-tools-api</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.codehaus.plexus</groupId>
-          <artifactId>plexus-xml</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty.ee9</groupId>
-      <artifactId>jetty-ee9-servlet</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty.ee9</groupId>
-      <artifactId>jetty-ee9-webapp</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty.ee9.websocket</groupId>
-      <artifactId>jetty-ee9-websocket-jetty-server</artifactId>
-      <!-- or jetty-ee9-websocket-jakarta-server -->
-    </dependency>
-    <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>version-number</artifactId>
-      <version>1.12</version>
+      <version>1.14</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
@@ -396,7 +323,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>mrm-maven-plugin</artifactId>
-        <version>1.7.0</version>
+        <version>1.7.1</version>
         <configuration>
           <propertyName>repository.proxy.url</propertyName>
           <repositories>
