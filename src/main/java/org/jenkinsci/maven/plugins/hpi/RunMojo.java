@@ -371,10 +371,14 @@ public class RunMojo extends AbstractHpiMojo {
         String javaExe = System.getProperty("java.home") + "/bin/java";
         cmd.add(javaExe);
 
-        if (isDebuggerPresent() || "true".equalsIgnoreCase(debugForkedProcess)) {
-            cmd.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=" + debugPort);
-        } else if (debugForkedProcess != null && !debugForkedProcess.isBlank()) {
-            cmd.add(debugForkedProcess.trim());
+        if (!"false"
+                .equalsIgnoreCase(
+                        debugForkedProcess)) { // skip when the user explicitly disabled debugging the forked process
+            if (isDebuggerPresent() || "true".equalsIgnoreCase(debugForkedProcess)) {
+                cmd.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=" + debugPort);
+            } else if (debugForkedProcess != null && !debugForkedProcess.isBlank()) {
+                cmd.add(debugForkedProcess.trim());
+            }
         }
 
         for (Map.Entry<String, String> e : systemProperties.entrySet()) {
