@@ -119,7 +119,8 @@ public class RunMojo extends AbstractHpiMojo {
 
     /**
      * Attach a debugger to the forked JVM. If set to "true", the process will suspend and wait for a debugger to attach
-     * on a random port. If set to some other string, that string will be appended to the argLine, allowing you to configure
+     * on a random port. If set to "false" no debugger will attach (even if the maven process has a debugger attached).
+     * If set to some other string, that string will be appended to the argLine, allowing you to configure
      * arbitrary debuggability options.
      *
      * @since TODO
