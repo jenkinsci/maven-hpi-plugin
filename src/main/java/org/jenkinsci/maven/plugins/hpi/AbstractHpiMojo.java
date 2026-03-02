@@ -27,6 +27,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -834,10 +835,32 @@ public abstract class AbstractHpiMojo extends AbstractJenkinsMojo {
         return wrap(Artifacts.of(project));
     }
 
-    protected DependencyFilter getDependencyFilter(String scope) {
-        if (scope == null || scope.isEmpty()) {
+    /**
+     * Create a filter that filters out artifacts not in the given scope.
+     * @param scope the scope to filter on. (e.g. test will include artifacts in all scopes, compile will include compile system and provided)
+     *        must be one of {@code "compile"}, {@code "runtime"}, {@code "test"} or {@code null}
+     * @return a filter that will filter if a dependency would not be visible in the given scope
+     * @throws MojoExecutionException if an invalid or unimplemented scope is provided
+     */
+    protected DependencyFilter getDependencyFilter(String scope) throws MojoExecutionException {
+        Collection<String> excludedScopes = new HashSet<>();
+        Collections.addAll(excludedScopes, "system", "compile", "provided", "runtime", "test");
+
+        if ("compile".equals(scope)) {
+            excludedScopes.remove("system");
+            excludedScopes.remove("compile");
+            excludedScopes.remove("provided");
+        } else if ("runtime".equals(scope)) {
+            excludedScopes.remove("compile");
+            excludedScopes.remove("runtime");
+        } else if ("test".equals(scope)) {
+            excludedScopes.clear();
+        } else if (scope != null) {
+            throw new MojoExecutionException("getDependencyFilter is not implemented for scope: " + scope);
+        } else {
+            // no filtering
             return null;
         }
-        return new ScopeDependencyFilter(null, scope);
+        return new ScopeDependencyFilter(null, excludedScopes);
     }
 }
