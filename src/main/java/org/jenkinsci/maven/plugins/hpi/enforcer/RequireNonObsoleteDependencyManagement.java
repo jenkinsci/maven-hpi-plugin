@@ -48,19 +48,52 @@ import org.apache.maven.project.MavenProject;
 @Named("requireNonObsoleteDependencyManagement")
 public class RequireNonObsoleteDependencyManagement extends AbstractEnforcerRule {
 
+    private final MavenProject project;
+    private final BomResolverUtil bomResolverUtil;
+
     /**
      * Whether to skip this rule.
      */
     @Parameter(property = "requireNonObsoleteDependencyManagement.skip", defaultValue = "false")
-    private boolean skip;
+    private boolean skip = false;
 
-    private final MavenProject project;
-    private final BomResolverUtil bomResolverUtil;
+    /**
+     * List of dependencies to ignore when checking for obsolete overrides.
+     * Each entry should be in the format "groupId:artifactId".
+     * <p>
+     * Example:
+     * <pre>{@code
+     * <requireNonObsoleteDependencyManagement>
+     *   <ignorePatterns>
+     *     <ignorePattern>junit:junit</ignorePattern>
+     *     <ignorePattern>org.mockito:mockito-core</ignorePattern>
+     *   </ignorePatterns>
+     * </requireNonObsoleteDependencyManagement>
+     * }</pre>
+     */
+    @Parameter
+    private List<String> ignorePatterns;
 
     @Inject
     public RequireNonObsoleteDependencyManagement(MavenProject project, BomResolverUtil bomResolverUtil) {
         this.project = Objects.requireNonNull(project);
         this.bomResolverUtil = Objects.requireNonNull(bomResolverUtil);
+    }
+
+    public void setSkip(boolean skip) {
+        this.skip = skip;
+    }
+
+    public boolean isSkip() {
+        return skip;
+    }
+
+    public void setIgnorePatterns(List<String> ignorePatterns) {
+        this.ignorePatterns = ignorePatterns;
+    }
+
+    public List<String> getIgnorePatterns() {
+        return ignorePatterns;
     }
 
     @Override
@@ -127,6 +160,13 @@ public class RequireNonObsoleteDependencyManagement extends AbstractEnforcerRule
             }
 
             String key = dep.getGroupId() + ":" + dep.getArtifactId();
+
+            // Skip if this dependency is in the ignore list
+            if (ignorePatterns != null && ignorePatterns.contains(key)) {
+                getLog().debug("Skipping " + key + " (matches ignorePatterns)");
+                continue;
+            }
+
             BomResolverUtil.BomManagedDependency bomDep = bomDependencies.get(key);
             if (bomDep == null) {
                 continue;
@@ -173,9 +213,9 @@ public class RequireNonObsoleteDependencyManagement extends AbstractEnforcerRule
                         .append(violation.artifactId)
                         .append(": declared ")
                         .append(violation.declaredVersion)
-                        .append(" but ")
+                        .append(" but imported BOM ")
                         .append(violation.bomArtifactId)
-                        .append(" provides ")
+                        .append(" (or a BOM it imports) provides ")
                         .append(violation.bomVersion)
                         .append("\n");
             }
