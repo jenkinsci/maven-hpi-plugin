@@ -99,14 +99,15 @@ public class RequireNonObsoleteDependencyManagement extends AbstractEnforcerRule
     @Override
     public void execute() throws EnforcerRuleException {
         if (skip) {
-            getLog().info("Skipping RequireNonObsoleteDependencyManagement rule");
+            getLog().info("[RequireNonObsoleteDependencyManagement] Skipping rule");
             return;
         }
 
         // Use the original model to see the raw dependencyManagement before BOM imports are resolved
         DependencyManagement depMgmt = project.getOriginalModel().getDependencyManagement();
         if (depMgmt == null || depMgmt.getDependencies() == null) {
-            getLog().info("No dependencyManagement section found, skipping rule");
+            getLog().info(
+                            "[RequireNonObsoleteDependencyManagement] No dependencyManagement section found, skipping rule");
             return;
         }
 
@@ -119,11 +120,11 @@ public class RequireNonObsoleteDependencyManagement extends AbstractEnforcerRule
         }
 
         if (importedBoms.isEmpty()) {
-            getLog().info("No imported BOMs found, skipping rule");
+            getLog().info("[RequireNonObsoleteDependencyManagement] No imported BOMs found, skipping rule");
             return;
         }
 
-        getLog().info("Found " + importedBoms.size() + " imported BOM(s)");
+        getLog().info("[RequireNonObsoleteDependencyManagement] Found " + importedBoms.size() + " imported BOM(s)");
 
         // Phase 2: Resolve BOM managed dependencies
         Map<String, BomResolverUtil.BomManagedDependency> bomDependencies = new LinkedHashMap<>();
@@ -131,18 +132,20 @@ public class RequireNonObsoleteDependencyManagement extends AbstractEnforcerRule
             try {
                 Map<String, BomResolverUtil.BomManagedDependency> resolved =
                         bomResolverUtil.resolveBomManagedDependencies(bomDep, project);
-                getLog().info("Resolved BOM: " + bomDep.getGroupId() + ":" + bomDep.getArtifactId() + ":"
-                        + bomDep.getVersion() + " with " + resolved.size() + " managed dependencies");
+                getLog().info("[RequireNonObsoleteDependencyManagement] Resolved BOM: " + bomDep.getGroupId() + ":"
+                        + bomDep.getArtifactId() + ":" + bomDep.getVersion() + " with " + resolved.size()
+                        + " managed dependencies");
                 // Later BOMs override earlier ones
                 bomDependencies.putAll(resolved);
             } catch (Exception e) {
-                getLog().warn("Failed to resolve BOM " + bomDep.getGroupId() + ":" + bomDep.getArtifactId() + ":"
-                        + bomDep.getVersion() + ": " + e.getMessage());
+                getLog().warn("[RequireNonObsoleteDependencyManagement] Failed to resolve BOM " + bomDep.getGroupId()
+                        + ":" + bomDep.getArtifactId() + ":" + bomDep.getVersion() + ": " + e.getMessage());
             }
         }
 
         if (bomDependencies.isEmpty()) {
-            getLog().info("No managed dependencies found in BOMs, skipping rule");
+            getLog().info(
+                            "[RequireNonObsoleteDependencyManagement] No managed dependencies found in BOMs, skipping rule");
             return;
         }
 
@@ -163,7 +166,8 @@ public class RequireNonObsoleteDependencyManagement extends AbstractEnforcerRule
 
             // Skip if this dependency is in the ignore list
             if (ignorePatterns != null && ignorePatterns.contains(key)) {
-                getLog().debug("Skipping " + key + " (matches ignorePatterns)");
+                getLog().debug("[RequireNonObsoleteDependencyManagement] Skipping " + key
+                        + " (matches ignorePatterns)");
                 continue;
             }
 
@@ -190,8 +194,8 @@ public class RequireNonObsoleteDependencyManagement extends AbstractEnforcerRule
                             bomDep.bomArtifactId()));
                 }
             } catch (Exception e) {
-                getLog().warn("Failed to compare versions for " + key + ": declared=" + declaredVersion + ", BOM="
-                        + bomVersion + ": " + e.getMessage());
+                getLog().warn("[RequireNonObsoleteDependencyManagement] Failed to compare versions for " + key
+                        + ": declared=" + declaredVersion + ", BOM=" + bomVersion + ": " + e.getMessage());
             }
         }
 
@@ -231,7 +235,7 @@ public class RequireNonObsoleteDependencyManagement extends AbstractEnforcerRule
             throw new EnforcerRuleException(message.toString());
         }
 
-        getLog().info("No obsolete overrides found");
+        getLog().info("[RequireNonObsoleteDependencyManagement] No obsolete overrides found");
     }
 
     private String resolveProperties(String value) {
