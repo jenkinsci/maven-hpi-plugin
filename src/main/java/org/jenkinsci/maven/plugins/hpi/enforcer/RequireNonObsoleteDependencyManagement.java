@@ -12,7 +12,6 @@ import org.apache.maven.enforcer.rule.api.AbstractEnforcerRule;
 import org.apache.maven.enforcer.rule.api.EnforcerRuleException;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
-import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
 /**
@@ -54,7 +53,6 @@ public class RequireNonObsoleteDependencyManagement extends AbstractEnforcerRule
     /**
      * Whether to skip this rule.
      */
-    @Parameter(property = "requireNonObsoleteDependencyManagement.skip", defaultValue = "false")
     private boolean skip = false;
 
     /**
@@ -71,7 +69,6 @@ public class RequireNonObsoleteDependencyManagement extends AbstractEnforcerRule
      * </requireNonObsoleteDependencyManagement>
      * }</pre>
      */
-    @Parameter
     private List<String> ignorePatterns;
 
     @Inject
