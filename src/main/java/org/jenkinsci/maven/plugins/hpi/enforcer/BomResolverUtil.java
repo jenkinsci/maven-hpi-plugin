@@ -56,10 +56,10 @@ class BomResolverUtil {
         RepositorySystemSession repositorySession = session.getRepositorySession();
         java.util.List<RemoteRepository> remoteRepositories = project.getRemoteProjectRepositories();
 
-        // Resolve the BOM artifact
+        // Resolve the BOM artifact (resolve properties in all coordinates)
         Artifact bomArtifact = new DefaultArtifact(
-                bomDep.getGroupId(),
-                bomDep.getArtifactId(),
+                resolveProperties(bomDep.getGroupId(), project),
+                resolveProperties(bomDep.getArtifactId(), project),
                 bomDep.getClassifier(),
                 "pom",
                 resolveProperties(bomDep.getVersion(), project));
