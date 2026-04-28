@@ -225,7 +225,8 @@ public class RequireNonObsoleteDependencyManagement extends AbstractEnforcerRule
 
                     To fix this issue:
                       1. Remove the version specifications from <dependencyManagement> for these dependencies, OR
-                      2. Update them to versions newer than what the BOM provides
+                      2. Update them to versions newer than what the BOM provides, OR
+                      3. <requireNonObsoleteDependencyManagement.skip>true</requireNonObsoleteDependencyManagement.skip>
 
                     See https://www.jenkins.io/doc/developer/plugin-development/dependency-management/ for more information.""");
 
