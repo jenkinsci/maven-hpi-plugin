@@ -1,3 +1,5 @@
 // Build should succeed - newer version override is allowed
-assert new File(basedir, 'build.log').exists()
+def buildLog = new File(basedir, 'build.log')
+assert buildLog.exists()
+assert buildLog.text.contains('[RequireNonObsoleteDependencyManagement] No obsolete overrides found')
 return true
