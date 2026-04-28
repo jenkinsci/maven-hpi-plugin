@@ -98,7 +98,7 @@ class BomResolverUtil {
         return bomDependencies;
     }
 
-    private String resolveProperties(String value, MavenProject project) {
+    String resolveProperties(String value, MavenProject project) {
         if (value == null || !value.contains("${")) {
             return value;
         }

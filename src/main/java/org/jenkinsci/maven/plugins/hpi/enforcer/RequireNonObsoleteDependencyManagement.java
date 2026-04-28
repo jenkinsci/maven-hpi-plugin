@@ -174,7 +174,7 @@ public class RequireNonObsoleteDependencyManagement extends AbstractEnforcerRule
             }
 
             // Resolve property placeholders
-            String declaredVersion = resolveProperties(dep.getVersion());
+            String declaredVersion = bomResolverUtil.resolveProperties(dep.getVersion(), project);
             String bomVersion = bomDep.version();
 
             // Compare versions
@@ -234,20 +234,6 @@ public class RequireNonObsoleteDependencyManagement extends AbstractEnforcerRule
         }
 
         getLog().info("[RequireNonObsoleteDependencyManagement] No obsolete overrides found");
-    }
-
-    private String resolveProperties(String value) {
-        if (value == null || !value.contains("${")) {
-            return value;
-        }
-
-        String resolved = value;
-        for (Map.Entry<Object, Object> entry : project.getProperties().entrySet()) {
-            String key = String.valueOf(entry.getKey());
-            String val = String.valueOf(entry.getValue());
-            resolved = resolved.replace("${" + key + "}", val);
-        }
-        return resolved;
     }
 
     private record ObsoleteOverride(
