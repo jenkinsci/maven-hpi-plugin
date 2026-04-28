@@ -213,11 +213,18 @@ public class RequireNonObsoleteDependencyManagement extends AbstractEnforcerRule
                         .append(":")
                         .append(violation.artifactId)
                         .append(": declared ")
-                        .append(violation.declaredVersion)
-                        .append(" but imported BOM ")
+                        .append(violation.declaredVersion);
+
+                if (violation.declaredVersion.equals(violation.bomVersion)) {
+                    message.append(" == ");
+                } else {
+                    message.append(" < ");
+                }
+
+                message.append(violation.bomVersion)
+                        .append(" from imported BOM ")
                         .append(violation.bomArtifactId)
-                        .append(" (or a BOM it imports) provides ")
-                        .append(violation.bomVersion)
+                        .append(" (or a BOM it imports)")
                         .append("\n");
             }
 
