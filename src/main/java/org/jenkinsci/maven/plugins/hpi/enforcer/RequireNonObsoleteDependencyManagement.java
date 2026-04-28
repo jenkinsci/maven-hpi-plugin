@@ -57,14 +57,14 @@ public class RequireNonObsoleteDependencyManagement extends AbstractEnforcerRule
 
     /**
      * List of dependencies to ignore when checking for obsolete overrides.
-     * Each entry should be in the format "groupId:artifactId".
+     * Each entry should be a management key (groupId:artifactId:type[:classifier]).
      * <p>
      * Example:
      * <pre>{@code
      * <requireNonObsoleteDependencyManagement>
      *   <ignorePatterns>
-     *     <ignorePattern>junit:junit</ignorePattern>
-     *     <ignorePattern>org.mockito:mockito-core</ignorePattern>
+     *     <ignorePattern>junit:junit:jar</ignorePattern>
+     *     <ignorePattern>org.mockito:mockito-core:jar</ignorePattern>
      *   </ignorePatterns>
      * </requireNonObsoleteDependencyManagement>
      * }</pre>
@@ -159,7 +159,7 @@ public class RequireNonObsoleteDependencyManagement extends AbstractEnforcerRule
                 continue;
             }
 
-            String key = dep.getGroupId() + ":" + dep.getArtifactId();
+            String key = dep.getManagementKey();
 
             // Skip if this dependency is in the ignore list
             if (ignorePatterns != null && ignorePatterns.contains(key)) {

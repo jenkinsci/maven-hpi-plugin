@@ -45,7 +45,7 @@ class BomResolverUtil {
      *
      * @param bomDep the BOM dependency to resolve
      * @param project the current project (for property resolution)
-     * @return map of "groupId:artifactId" to managed dependency info
+     * @return map of management key to managed dependency info
      * @throws ArtifactResolutionException if BOM cannot be resolved
      * @throws ProjectBuildingException if BOM POM cannot be built
      */
@@ -87,7 +87,7 @@ class BomResolverUtil {
             String bomArtifactId = bomDep.getArtifactId();
             for (Dependency dep : bomDepMgmt.getDependencies()) {
                 if (dep.getVersion() != null && !dep.getVersion().isEmpty()) {
-                    String key = dep.getGroupId() + ":" + dep.getArtifactId();
+                    String key = dep.getManagementKey();
                     String version = resolveProperties(dep.getVersion(), bomProject);
                     // Later BOMs override earlier ones (Maven behavior)
                     bomDependencies.put(key, new BomManagedDependency(version, bomArtifactId));
