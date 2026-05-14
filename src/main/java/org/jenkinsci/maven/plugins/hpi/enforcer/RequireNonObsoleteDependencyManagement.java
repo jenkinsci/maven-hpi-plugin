@@ -97,7 +97,7 @@ public class RequireNonObsoleteDependencyManagement extends AbstractEnforcerRule
     @Override
     public void execute() throws EnforcerRuleException {
         if (skip) {
-            getLog().info("[RequireNonObsoleteDependencyManagement] Skipping rule");
+            getLog().info("requireNonObsoleteDependencyManagement skipped");
             return;
         }
 
@@ -115,7 +115,7 @@ public class RequireNonObsoleteDependencyManagement extends AbstractEnforcerRule
             }
 
             if (!importedBoms.isEmpty()) {
-                getLog().info("[RequireNonObsoleteDependencyManagement] Found " + importedBoms.size()
+                getLog().debug("[RequireNonObsoleteDependencyManagement] Found " + importedBoms.size()
                         + " imported BOM(s)");
 
                 // Phase 2: Resolve BOM managed dependencies
@@ -130,7 +130,7 @@ public class RequireNonObsoleteDependencyManagement extends AbstractEnforcerRule
                                 bomResolverUtil.resolveProperties(getLog(), bomDep.getVersion(), project);
                         Map<String, BomResolverUtil.BomManagedDependency> resolved =
                                 bomResolverUtil.resolveBomManagedDependencies(getLog(), bomDep, project);
-                        getLog().info("[RequireNonObsoleteDependencyManagement] Resolved BOM: " + resolvedGroupId + ":"
+                        getLog().debug("[RequireNonObsoleteDependencyManagement] Resolved BOM: " + resolvedGroupId + ":"
                                 + resolvedArtifactId + ":" + resolvedVersion + " with " + resolved.size()
                                 + " managed dependencies");
                         // Later BOMs override earlier ones
@@ -322,7 +322,7 @@ public class RequireNonObsoleteDependencyManagement extends AbstractEnforcerRule
             throw new EnforcerRuleException(message.toString());
         }
 
-        getLog().info("[RequireNonObsoleteDependencyManagement] No obsolete overrides found");
+        getLog().debug("[RequireNonObsoleteDependencyManagement] No obsolete overrides found");
     }
 
     private record ObsoleteOverride(
