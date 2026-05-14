@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.jenkins-ci.plugins</groupId>
+    <artifactId>plugin</artifactId>
+    <version>5.2098.v4d48a_c4c68e7</version>
+    <relativePath />
+  </parent>
+  <groupId>org.jenkins-ci.tools.hpi.its</groupId>
+  <artifactId>bom-obsolete-override-property-only</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <packaging>hpi</packaging>
+  <name>Test Plugin - BOM Obsolete Override Property Only</name>
+  <properties>
+    <jenkins.version>2.479.3</jenkins.version>
+    <spotless.check.skip>false</spotless.check.skip>
+    <!-- Override with SAME version as parent plugin-pom - also a violation (unnecessary override) -->
+    <jenkins-test-harness.version>2537.v48fd29a_7070d</jenkins-test-harness.version>
+  </properties>
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>3.6.2</version>
+        <dependencies>
+          <dependency>
+            <groupId>org.jenkins-ci.tools</groupId>
+            <artifactId>maven-hpi-plugin</artifactId>
+            <version>@project.version@</version>
+          </dependency>
+        </dependencies>
+        <executions>
+          <execution>
+            <id>check-obsolete-overrides</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requireNonObsoleteDependencyManagement />
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>
