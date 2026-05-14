@@ -173,12 +173,12 @@ public class RequireNonObsoleteDependencyManagement extends AbstractEnforcerRule
                 continue;
             }
 
-            // Resolve property placeholders
-            String declaredVersion = bomResolverUtil.resolveProperties(dep.getVersion(), project);
-            String bomVersion = bomDep.version();
-
-            // Compare versions
             try {
+                // Resolve property placeholders
+                String declaredVersion = bomResolverUtil.resolveProperties(getLog(), dep.getVersion(), project);
+                String bomVersion = bomDep.version();
+
+                // Compare versions
                 ComparableVersion declared = new ComparableVersion(declaredVersion);
                 ComparableVersion bom = new ComparableVersion(bomVersion);
 
@@ -192,7 +192,7 @@ public class RequireNonObsoleteDependencyManagement extends AbstractEnforcerRule
                 }
             } catch (Exception e) {
                 getLog().warn("[RequireNonObsoleteDependencyManagement] Failed to compare versions for " + key
-                        + ": declared=" + declaredVersion + ", BOM=" + bomVersion + ": " + e.getMessage());
+                        + ": declared=" + dep.getVersion() + ", BOM=" + bomDep.version() + ": " + e.getMessage());
             }
         }
 
