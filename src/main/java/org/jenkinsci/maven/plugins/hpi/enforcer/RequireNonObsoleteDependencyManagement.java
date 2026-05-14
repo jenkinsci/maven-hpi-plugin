@@ -215,17 +215,28 @@ public class RequireNonObsoleteDependencyManagement extends AbstractEnforcerRule
                     continue;
                 }
 
+                // Resolve properties in declared value (e.g., ${jenkins.baseline}.3)
+                String resolvedDeclaredValue;
+                try {
+                    resolvedDeclaredValue = bomResolverUtil.resolveProperties(getLog(), declaredValue, project);
+                } catch (IllegalStateException e) {
+                    getLog().debug("[RequireNonObsoleteDependencyManagement] Could not resolve properties in "
+                            + propName + "=" + declaredValue + ", skipping comparison: " + e.getMessage());
+                    continue;
+                }
+
                 // Compare versions (flag if declared <= parent)
                 try {
-                    ComparableVersion declared = new ComparableVersion(declaredValue);
+                    ComparableVersion declared = new ComparableVersion(resolvedDeclaredValue);
                     ComparableVersion parent = new ComparableVersion(parentValue);
 
                     if (declared.compareTo(parent) <= 0) {
-                        propertyViolations.add(new ObsoletePropertyOverride(propName, declaredValue, parentValue));
+                        propertyViolations.add(
+                                new ObsoletePropertyOverride(propName, resolvedDeclaredValue, parentValue));
                     }
                 } catch (Exception e) {
                     getLog().debug("[RequireNonObsoleteDependencyManagement] Failed to compare property versions for "
-                            + propName + ": declared=" + declaredValue + ", parent=" + parentValue + ": "
+                            + propName + ": declared=" + resolvedDeclaredValue + ", parent=" + parentValue + ": "
                             + e.getMessage());
                 }
             }
