@@ -123,7 +123,7 @@ class BomResolverUtil {
             throw new IllegalStateException("Unresolved properties in BOM dependency version: " + value);
         }
 
-        logger.info("Resolved properties: " + value + " → " + resolved);
+        logger.debug("Resolved properties: " + value + " → " + resolved);
 
         return resolved;
     }
