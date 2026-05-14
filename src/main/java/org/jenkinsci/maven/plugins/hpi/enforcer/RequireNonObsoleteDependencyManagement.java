@@ -122,12 +122,16 @@ public class RequireNonObsoleteDependencyManagement extends AbstractEnforcerRule
                 Map<String, BomResolverUtil.BomManagedDependency> bomDependencies = new LinkedHashMap<>();
                 for (Dependency bomDep : importedBoms) {
                     try {
+                        String resolvedGroupId =
+                                bomResolverUtil.resolveProperties(getLog(), bomDep.getGroupId(), project);
+                        String resolvedArtifactId =
+                                bomResolverUtil.resolveProperties(getLog(), bomDep.getArtifactId(), project);
                         String resolvedVersion =
                                 bomResolverUtil.resolveProperties(getLog(), bomDep.getVersion(), project);
                         Map<String, BomResolverUtil.BomManagedDependency> resolved =
                                 bomResolverUtil.resolveBomManagedDependencies(getLog(), bomDep, project);
-                        getLog().info("[RequireNonObsoleteDependencyManagement] Resolved BOM: " + bomDep.getGroupId()
-                                + ":" + bomDep.getArtifactId() + ":" + resolvedVersion + " with " + resolved.size()
+                        getLog().info("[RequireNonObsoleteDependencyManagement] Resolved BOM: " + resolvedGroupId + ":"
+                                + resolvedArtifactId + ":" + resolvedVersion + " with " + resolved.size()
                                 + " managed dependencies");
                         // Later BOMs override earlier ones
                         bomDependencies.putAll(resolved);
