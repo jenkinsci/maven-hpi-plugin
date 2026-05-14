@@ -59,9 +59,10 @@ class BomResolverUtil {
         java.util.List<RemoteRepository> remoteRepositories = project.getRemoteProjectRepositories();
 
         // Resolve the BOM artifact (resolve properties in all coordinates)
+        String resolvedArtifactId = resolveProperties(logger, bomDep.getArtifactId(), project);
         Artifact bomArtifact = new DefaultArtifact(
                 resolveProperties(logger, bomDep.getGroupId(), project),
-                resolveProperties(logger, bomDep.getArtifactId(), project),
+                resolvedArtifactId,
                 bomDep.getClassifier(),
                 "pom",
                 resolveProperties(logger, bomDep.getVersion(), project));
@@ -86,13 +87,12 @@ class BomResolverUtil {
         Map<String, BomManagedDependency> bomDependencies = new LinkedHashMap<>();
         DependencyManagement bomDepMgmt = bomProject.getDependencyManagement();
         if (bomDepMgmt != null && bomDepMgmt.getDependencies() != null) {
-            String bomArtifactId = bomDep.getArtifactId();
             for (Dependency dep : bomDepMgmt.getDependencies()) {
                 if (dep.getVersion() != null && !dep.getVersion().isEmpty()) {
                     String key = dep.getManagementKey();
                     String version = resolveProperties(logger, dep.getVersion(), bomProject);
                     // Later BOMs override earlier ones (Maven behavior)
-                    bomDependencies.put(key, new BomManagedDependency(version, bomArtifactId));
+                    bomDependencies.put(key, new BomManagedDependency(version, resolvedArtifactId));
                 }
             }
         }
