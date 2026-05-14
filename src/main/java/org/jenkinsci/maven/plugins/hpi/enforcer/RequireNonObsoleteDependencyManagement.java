@@ -128,7 +128,7 @@ public class RequireNonObsoleteDependencyManagement extends AbstractEnforcerRule
         for (Dependency bomDep : importedBoms) {
             try {
                 Map<String, BomResolverUtil.BomManagedDependency> resolved =
-                        bomResolverUtil.resolveBomManagedDependencies(bomDep, project);
+                        bomResolverUtil.resolveBomManagedDependencies(getLog(), bomDep, project);
                 getLog().info("[RequireNonObsoleteDependencyManagement] Resolved BOM: " + bomDep.getGroupId() + ":"
                         + bomDep.getArtifactId() + ":" + bomDep.getVersion() + " with " + resolved.size()
                         + " managed dependencies");

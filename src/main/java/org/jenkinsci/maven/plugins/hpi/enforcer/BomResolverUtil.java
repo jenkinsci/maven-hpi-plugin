@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Objects;
 import javax.inject.Inject;
 import javax.inject.Named;
+import org.apache.maven.enforcer.rule.api.EnforcerLogger;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
@@ -49,7 +50,8 @@ class BomResolverUtil {
      * @throws ArtifactResolutionException if BOM cannot be resolved
      * @throws ProjectBuildingException if BOM POM cannot be built
      */
-    Map<String, BomManagedDependency> resolveBomManagedDependencies(Dependency bomDep, MavenProject project)
+    Map<String, BomManagedDependency> resolveBomManagedDependencies(
+            EnforcerLogger logger, Dependency bomDep, MavenProject project)
             throws ArtifactResolutionException, ProjectBuildingException {
 
         // Get repository session and repositories from the Maven session
@@ -58,11 +60,11 @@ class BomResolverUtil {
 
         // Resolve the BOM artifact (resolve properties in all coordinates)
         Artifact bomArtifact = new DefaultArtifact(
-                resolveProperties(bomDep.getGroupId(), project),
-                resolveProperties(bomDep.getArtifactId(), project),
+                resolveProperties(logger, bomDep.getGroupId(), project),
+                resolveProperties(logger, bomDep.getArtifactId(), project),
                 bomDep.getClassifier(),
                 "pom",
-                resolveProperties(bomDep.getVersion(), project));
+                resolveProperties(logger, bomDep.getVersion(), project));
 
         ArtifactRequest request = new ArtifactRequest();
         request.setArtifact(bomArtifact);
@@ -88,7 +90,7 @@ class BomResolverUtil {
             for (Dependency dep : bomDepMgmt.getDependencies()) {
                 if (dep.getVersion() != null && !dep.getVersion().isEmpty()) {
                     String key = dep.getManagementKey();
-                    String version = resolveProperties(dep.getVersion(), bomProject);
+                    String version = resolveProperties(logger, dep.getVersion(), bomProject);
                     // Later BOMs override earlier ones (Maven behavior)
                     bomDependencies.put(key, new BomManagedDependency(version, bomArtifactId));
                 }
@@ -98,17 +100,25 @@ class BomResolverUtil {
         return bomDependencies;
     }
 
-    String resolveProperties(String value, MavenProject project) {
+    String resolveProperties(EnforcerLogger logger, String value, MavenProject project) {
         if (value == null || !value.contains("${")) {
             return value;
         }
 
         String resolved = value;
+        // TODO this fails to resolve ${project.version}
         for (Map.Entry<Object, Object> entry : project.getProperties().entrySet()) {
             String key = String.valueOf(entry.getKey());
             String val = String.valueOf(entry.getValue());
             resolved = resolved.replace("${" + key + "}", val);
         }
+
+        if (resolved.contains("${")) {
+            throw new IllegalStateException("Unresolved properties in BOM dependency version: " + value);
+        }
+
+        logger.info("Resolved properties: " + value + " → " + resolved);
+
         return resolved;
     }
 
