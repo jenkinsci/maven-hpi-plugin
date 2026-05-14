@@ -111,9 +111,6 @@ class BomResolverUtil {
         resolved = resolved.replace("${project.version}", project.getVersion());
         resolved = resolved.replace("${project.groupId}", project.getGroupId());
         resolved = resolved.replace("${project.artifactId}", project.getArtifactId());
-        resolved = resolved.replace("${pom.version}", project.getVersion());
-        resolved = resolved.replace("${pom.groupId}", project.getGroupId());
-        resolved = resolved.replace("${pom.artifactId}", project.getArtifactId());
 
         // Resolve user-defined properties
         for (Map.Entry<Object, Object> entry : project.getProperties().entrySet()) {
