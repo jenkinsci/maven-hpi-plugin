@@ -63,7 +63,7 @@
             </goals>
             <configuration>
               <rules>
-                <requireNonObsoleteDependencyManagement />
+                <banObsoleteDependencyOverrides />
               </rules>
             </configuration>
           </execution>

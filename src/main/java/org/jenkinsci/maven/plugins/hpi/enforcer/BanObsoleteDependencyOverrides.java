@@ -16,11 +16,12 @@ import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.project.MavenProject;
 
 /**
- * Maven Enforcer rule that detects obsolete dependency version overrides in {@code <dependencyManagement>}.
+ * Maven Enforcer rule that bans obsolete dependency and property overrides.
  * <p>
  * This rule fails the build when {@code <dependencyManagement>} specifies versions for dependencies that are
- * older than or equal to versions provided by imported BOMs. This helps identify unnecessary overrides that
- * can be removed when updating BOM versions.
+ * older than or equal to versions provided by imported BOMs, or when {@code <properties>} override {@code *.version}
+ * properties with values older than or equal to those in the parent POM. This helps identify unnecessary overrides
+ * that can be removed when updating BOM versions or parent POMs.
  * </p>
  * <p>
  * Example usage in a POM:
@@ -35,7 +36,7 @@ import org.apache.maven.project.MavenProject;
  *           <goals><goal>enforce</goal></goals>
  *           <configuration>
  *             <rules>
- *               <requireNonObsoleteDependencyManagement/>
+ *               <banObsoleteDependencyOverrides/>
  *             </rules>
  *           </configuration>
  *         </execution>
@@ -45,8 +46,8 @@ import org.apache.maven.project.MavenProject;
  * </build>
  * }</pre>
  */
-@Named("requireNonObsoleteDependencyManagement")
-public class RequireNonObsoleteDependencyManagement extends AbstractEnforcerRule {
+@Named("banObsoleteDependencyOverrides")
+public class BanObsoleteDependencyOverrides extends AbstractEnforcerRule {
 
     private final MavenProject project;
     private final BomResolverUtil bomResolverUtil;
@@ -62,18 +63,18 @@ public class RequireNonObsoleteDependencyManagement extends AbstractEnforcerRule
      * <p>
      * Example:
      * <pre>{@code
-     * <requireNonObsoleteDependencyManagement>
+     * <banObsoleteDependencyOverrides>
      *   <ignorePatterns>
      *     <ignorePattern>junit:junit:jar</ignorePattern>
      *     <ignorePattern>org.mockito:mockito-core:jar</ignorePattern>
      *   </ignorePatterns>
-     * </requireNonObsoleteDependencyManagement>
+     * </banObsoleteDependencyOverrides>
      * }</pre>
      */
     private List<String> ignorePatterns;
 
     @Inject
-    public RequireNonObsoleteDependencyManagement(MavenProject project, BomResolverUtil bomResolverUtil) {
+    public BanObsoleteDependencyOverrides(MavenProject project, BomResolverUtil bomResolverUtil) {
         this.project = Objects.requireNonNull(project);
         this.bomResolverUtil = Objects.requireNonNull(bomResolverUtil);
     }
@@ -97,7 +98,7 @@ public class RequireNonObsoleteDependencyManagement extends AbstractEnforcerRule
     @Override
     public void execute() throws EnforcerRuleException {
         if (skip) {
-            getLog().info("requireNonObsoleteDependencyManagement skipped");
+            getLog().info("banObsoleteDependencyOverrides skipped");
             return;
         }
 
@@ -115,8 +116,7 @@ public class RequireNonObsoleteDependencyManagement extends AbstractEnforcerRule
             }
 
             if (!importedBoms.isEmpty()) {
-                getLog().debug("[RequireNonObsoleteDependencyManagement] Found " + importedBoms.size()
-                        + " imported BOM(s)");
+                getLog().debug("[BanObsoleteDependencyOverrides] Found " + importedBoms.size() + " imported BOM(s)");
 
                 // Phase 2: Resolve BOM managed dependencies
                 Map<String, BomResolverUtil.BomManagedDependency> bomDependencies = new LinkedHashMap<>();
@@ -130,13 +130,13 @@ public class RequireNonObsoleteDependencyManagement extends AbstractEnforcerRule
                                 bomResolverUtil.resolveProperties(getLog(), bomDep.getVersion(), project);
                         Map<String, BomResolverUtil.BomManagedDependency> resolved =
                                 bomResolverUtil.resolveBomManagedDependencies(getLog(), bomDep, project);
-                        getLog().debug("[RequireNonObsoleteDependencyManagement] Resolved BOM: " + resolvedGroupId + ":"
+                        getLog().debug("[BanObsoleteDependencyOverrides] Resolved BOM: " + resolvedGroupId + ":"
                                 + resolvedArtifactId + ":" + resolvedVersion + " with " + resolved.size()
                                 + " managed dependencies");
                         // Later BOMs override earlier ones
                         bomDependencies.putAll(resolved);
                     } catch (Exception e) {
-                        getLog().warn("[RequireNonObsoleteDependencyManagement] Failed to resolve BOM "
+                        getLog().warn("[BanObsoleteDependencyOverrides] Failed to resolve BOM "
                                 + bomDep.getGroupId() + ":" + bomDep.getArtifactId() + ":" + bomDep.getVersion()
                                 + ": " + e.getMessage());
                     }
@@ -159,7 +159,7 @@ public class RequireNonObsoleteDependencyManagement extends AbstractEnforcerRule
 
                         // Skip if this dependency is in the ignore list
                         if (ignorePatterns != null && ignorePatterns.contains(key)) {
-                            getLog().debug("[RequireNonObsoleteDependencyManagement] Skipping " + key
+                            getLog().debug("[BanObsoleteDependencyOverrides] Skipping " + key
                                     + " (matches ignorePatterns)");
                             continue;
                         }
@@ -188,7 +188,7 @@ public class RequireNonObsoleteDependencyManagement extends AbstractEnforcerRule
                                         bomDep.bomArtifactId()));
                             }
                         } catch (Exception e) {
-                            getLog().warn("[RequireNonObsoleteDependencyManagement] Failed to compare versions for "
+                            getLog().warn("[BanObsoleteDependencyOverrides] Failed to compare versions for "
                                     + key
                                     + ": declared=" + dep.getVersion() + ", BOM=" + bomDep.version() + ": "
                                     + e.getMessage());
@@ -224,8 +224,8 @@ public class RequireNonObsoleteDependencyManagement extends AbstractEnforcerRule
                 try {
                     resolvedDeclaredValue = bomResolverUtil.resolveProperties(getLog(), declaredValue, project);
                 } catch (IllegalStateException e) {
-                    getLog().debug("[RequireNonObsoleteDependencyManagement] Could not resolve properties in "
-                            + propName + "=" + declaredValue + ", skipping comparison: " + e.getMessage());
+                    getLog().debug("[BanObsoleteDependencyOverrides] Could not resolve properties in " + propName + "="
+                            + declaredValue + ", skipping comparison: " + e.getMessage());
                     continue;
                 }
 
@@ -239,7 +239,7 @@ public class RequireNonObsoleteDependencyManagement extends AbstractEnforcerRule
                                 new ObsoletePropertyOverride(propName, resolvedDeclaredValue, parentValue));
                     }
                 } catch (Exception e) {
-                    getLog().debug("[RequireNonObsoleteDependencyManagement] Failed to compare property versions for "
+                    getLog().debug("[BanObsoleteDependencyOverrides] Failed to compare property versions for "
                             + propName + ": declared=" + resolvedDeclaredValue + ", parent=" + parentValue + ": "
                             + e.getMessage());
                 }
@@ -315,14 +315,14 @@ public class RequireNonObsoleteDependencyManagement extends AbstractEnforcerRule
                     To fix this issue:
                       1. Remove the obsolete overrides from <dependencyManagement> and/or <properties>, OR
                       2. Update them to versions newer than what the BOM/parent provides, OR
-                      3. <requireNonObsoleteDependencyManagement.skip>true</requireNonObsoleteDependencyManagement.skip>
+                      3. <banObsoleteDependencyOverrides.skip>true</banObsoleteDependencyOverrides.skip>
 
                     See https://www.jenkins.io/doc/developer/plugin-development/dependency-management/ for more information.""");
 
             throw new EnforcerRuleException(message.toString());
         }
 
-        getLog().debug("[RequireNonObsoleteDependencyManagement] No obsolete overrides found");
+        getLog().debug("[BanObsoleteDependencyOverrides] No obsolete overrides found");
     }
 
     private record ObsoleteOverride(
