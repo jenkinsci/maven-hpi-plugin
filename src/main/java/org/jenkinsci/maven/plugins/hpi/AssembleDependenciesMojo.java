@@ -6,13 +6,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.maven.RepositoryUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.shared.dependency.graph.DependencyGraphBuilderException;
-import org.apache.maven.shared.dependency.graph.DependencyNode;
 import org.codehaus.plexus.util.FileUtils;
+import org.eclipse.aether.artifact.Artifact;
+import org.eclipse.aether.graph.Dependency;
+import org.eclipse.aether.graph.DependencyNode;
+import org.eclipse.aether.resolution.DependencyResolutionException;
 
 /**
  * Used to assemble transitive dependencies of plugins into one location.
@@ -57,20 +60,29 @@ public class AssembleDependenciesMojo extends AbstractDependencyGraphTraversingM
     private final Map<String, MavenArtifact> hpis = new HashMap<>();
 
     @Override
-    protected boolean accept(DependencyNode g) {
-        MavenArtifact a = wrap(g.getArtifact());
+    protected boolean accept(DependencyNode g, boolean isRoot) {
+        Artifact artifact = g.getArtifact();
+        Dependency dep = g.getDependency();
 
-        if (!parsedScopes.contains(a.getScope())) {
+        if (isRoot) {
+            return true;
+        }
+
+        if (dep == null) {
             return false;
         }
 
-        if (!includesOptional && a.isOptional()) {
-            return false; // cut off optional dependencies
+        if (!parsedScopes.contains(dep.getScope())) {
+            return false;
         }
 
+        if (!includesOptional && dep.isOptional()) {
+            return false;
+        }
+
+        MavenArtifact a = wrap(RepositoryUtils.toArtifact(artifact));
         if (!a.isPlugin(getLog())) {
-            // only traverse chains of direct plugin dependencies, unless it's from the root
-            return g.getParent() == null;
+            return false;
         }
 
         MavenArtifact v = hpis.get(a.getArtifactId());
@@ -93,7 +105,7 @@ public class AssembleDependenciesMojo extends AbstractDependencyGraphTraversingM
             }
 
             traverseProject();
-        } catch (DependencyGraphBuilderException e) {
+        } catch (DependencyResolutionException e) {
             throw new MojoExecutionException("Failed to list up dependencies", e);
         }
 
