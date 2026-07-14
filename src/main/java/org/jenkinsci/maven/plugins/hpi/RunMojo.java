@@ -18,8 +18,12 @@ import edu.umd.cs.findbugs.annotations.Nullable;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.util.VersionNumber;
 import io.jenkins.lib.support_log_formatter.SupportLogFormatter;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.net.URI;
@@ -455,11 +459,24 @@ public class RunMojo extends AbstractHpiMojo {
 
         ProcessBuilder pb = new ProcessBuilder(cmd);
         pb.directory(jenkinsHome);
-        pb.inheritIO();
         pb.environment().put("JENKINS_HOME", jenkinsHome.getAbsolutePath());
         try {
             Process proc = pb.start();
+
+            Thread stdoutThread = streamToLog(proc.getInputStream(), false);
+            Thread stderrThread = streamToLog(proc.getErrorStream(), true);
+            Thread stdinThread = pipeStdin(System.in, proc.getOutputStream());
+
+            stdoutThread.start();
+            stderrThread.start();
+            stdinThread.start();
+
             int exitCode = proc.waitFor();
+
+            stdoutThread.interrupt();
+            stderrThread.interrupt();
+            stdinThread.interrupt();
+
             if (exitCode != 0) {
                 throw new MojoExecutionException("Jenkins exited with code " + exitCode);
             }
@@ -781,5 +798,67 @@ public class RunMojo extends AbstractHpiMojo {
         }
 
         getLog().info("Wrote Jenkins init script for loggers: " + out);
+    }
+
+    /**
+     * Creates (but does not start) a daemon thread that reads lines from {@code stream} and forwards them to the Maven log. * When running under {@code mvnd} the subprocess cannot truly inherit the terminal, so we must drain the stream 
+     * explicitly to avoid output being silently dropped.
+     *
+     * @param stream  the subprocess output stream to drain
+     * @param isError {@code true} to log as WARN, {@code false} to log as INFO
+     * @return a daemon {@link Thread} ready to be started
+     */
+    Thread streamToLog(InputStream stream, boolean isError) {
+        Thread t = new Thread(
+                () -> {
+                    try (BufferedReader reader =
+                            new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
+                        String line;
+                        while ((line = reader.readLine()) != null) {
+                            if (isError) {
+                                getLog().warn(line);
+                            } else {
+                                getLog().info(line);
+                            }
+                        }
+                    } catch (IOException e) {
+                        if (!Thread.currentThread().isInterrupted()) {
+                            getLog().debug("Stream closed: " + e.getMessage());
+                        }
+                    }
+                },
+                isError ? "hpi-run-stderr" : "hpi-run-stdout");
+        t.setDaemon(true);
+        return t;
+    }
+
+    /**
+     * Creates (but does not start) a daemon thread that copies bytes from {@code in} to {@code out}. This allows Maven's 
+     * stdin to be forwarded to the Jenkins subprocess so that interactive prompts (e.g. "Hit enter to redeploy") still work
+     * when using {@code hpi:run}.
+     *
+     * @param in  the source stream (typically {@code System.in})
+     * @param out the sink stream (typically the subprocess's stdin)
+     * @return a daemon {@link Thread} ready to be started
+     */
+    Thread pipeStdin(InputStream in, OutputStream out) {
+        Thread t = new Thread(
+                () -> {
+                    try {
+                        byte[] buf = new byte[256];
+                        int n;
+                        while (!Thread.currentThread().isInterrupted() && (n = in.read(buf)) != -1) {
+                            out.write(buf, 0, n);
+                            out.flush();
+                        }
+                    } catch (IOException e) {
+                        if (!Thread.currentThread().isInterrupted()) {
+                            getLog().debug("Stdin pipe closed: " + e.getMessage());
+                        }
+                    }
+                },
+                "hpi-run-stdin");
+        t.setDaemon(true);
+        return t;
     }
 }
