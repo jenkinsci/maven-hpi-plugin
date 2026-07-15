@@ -801,7 +801,7 @@ public class RunMojo extends AbstractHpiMojo {
     }
 
     /**
-     * Creates (but does not start) a daemon thread that reads lines from {@code stream} and forwards them to the Maven log. * When running under {@code mvnd} the subprocess cannot truly inherit the terminal, so we must drain the stream 
+     * Creates (but does not start) a daemon thread that reads lines from {@code stream} and forwards them to the Maven log. * When running under {@code mvnd} the subprocess cannot truly inherit the terminal, so we must drain the stream
      * explicitly to avoid output being silently dropped.
      *
      * @param stream  the subprocess output stream to drain
@@ -833,7 +833,7 @@ public class RunMojo extends AbstractHpiMojo {
     }
 
     /**
-     * Creates (but does not start) a daemon thread that copies bytes from {@code in} to {@code out}. This allows Maven's 
+     * Creates (but does not start) a daemon thread that copies bytes from {@code in} to {@code out}. This allows Maven's
      * stdin to be forwarded to the Jenkins subprocess so that interactive prompts (e.g. "Hit enter to redeploy") still work
      * when using {@code hpi:run}.
      *
