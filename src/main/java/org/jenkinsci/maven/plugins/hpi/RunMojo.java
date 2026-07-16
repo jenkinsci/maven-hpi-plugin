@@ -97,7 +97,7 @@ public class RunMojo extends AbstractHpiMojo {
      * This controls what plugins are made available to the
      * running Jenkins.
      */
-    @Parameter(defaultValue = "test")
+    @Parameter(property = "maven.hpi.run.dependencyResolution", defaultValue = "test")
     protected String dependencyResolution;
 
     /**
