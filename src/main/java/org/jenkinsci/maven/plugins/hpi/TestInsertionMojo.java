@@ -65,6 +65,12 @@ public class TestInsertionMojo extends AbstractJenkinsMojo {
     private boolean requirePI;
 
     /**
+     * If true, verify that all the jelly scripts don't contain inline javascript.
+     */
+    @Parameter(property = "jelly.prohibitInlineJS", defaultValue = "true")
+    private boolean prohibitInlineJS;
+
+    /**
      * Optional string that represents "groupId:artifactId" of the Jenkins test harness.
      * If left unspecified, the default groupId/artifactId pair for the Jenkins test harness is looked for.
      *
@@ -138,7 +144,7 @@ public class TestInsertionMojo extends AbstractJenkinsMojo {
                 class %s extends org.jvnet.hudson.test.injected.InjectedTestBase {
 
                     %s() {
-                        super("%s", "%s", "%s", "%s", %b);
+                        super("%s", "%s", "%s", "%s", %b, %b);
                     }
                 }
                 """.formatted(
@@ -149,12 +155,12 @@ public class TestInsertionMojo extends AbstractJenkinsMojo {
                             project.getArtifactId(),
                             project.getVersion(),
                             escape(project.getBuild().getOutputDirectory()),
-                            requirePI);
+                            requirePI,
+                            prohibitInlineJS);
             Files.writeString(javaFile.toPath(), content);
         } catch (IOException e) {
             throw new MojoExecutionException("Failed to create injected tests", e);
         }
-
         project.addTestCompileSourceRoot(f.getAbsolutePath());
 
         try {
