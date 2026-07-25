@@ -1,11 +1,12 @@
 package org.jenkinsci.maven.plugins.hpi;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.ArtifactTypeRegistry;
-import org.eclipse.aether.collection.*;
+import org.eclipse.aether.collection.CollectRequest;
 import org.eclipse.aether.graph.Dependency;
 import org.eclipse.aether.graph.DependencyNode;
 import org.eclipse.aether.resolution.DependencyRequest;
