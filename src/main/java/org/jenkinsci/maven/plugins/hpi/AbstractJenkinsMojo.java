@@ -1,12 +1,17 @@
 package org.jenkinsci.maven.plugins.hpi;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.util.VersionNumber;
 import io.jenkins.lib.versionnumber.JavaSpecificationVersion;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
@@ -134,6 +139,44 @@ public abstract class AbstractJenkinsMojo extends AbstractMojo {
         }
         Artifact artifact = artifactFactory.createArtifact(groupId, artifactId, findJenkinsVersion(), null, "jar");
         return MavenArtifact.resolveArtifact(artifact, project, session, repositorySystem);
+    }
+
+    protected void setAddOpensProperty(Artifact artifact) throws MojoExecutionException {
+        String manifestEntry = getManifestEntry(wrap(artifact));
+        if (manifestEntry == null) {
+            getLog().warn("Add-Opens missing from MANIFEST.MF");
+            return;
+        }
+
+        String argLine = buildArgLine(manifestEntry);
+        getLog().info("Setting jenkins.addOpens to " + argLine);
+        project.getProperties().setProperty("jenkins.addOpens", argLine);
+    }
+
+    @NonNull
+    private static String buildArgLine(String manifestEntry) {
+        List<String> arguments = new ArrayList<>();
+        for (String module : manifestEntry.split("\\s+")) {
+            if (!module.isEmpty()) {
+                arguments.add("--add-opens");
+                arguments.add(module + "=ALL-UNNAMED");
+            }
+        }
+        return String.join(" ", arguments);
+    }
+
+    @CheckForNull
+    private static String getManifestEntry(MavenArtifact artifact) throws MojoExecutionException {
+        File war = artifact.getFile();
+        try (JarFile jarFile = new JarFile(war)) {
+            Manifest manifest = jarFile.getManifest();
+            if (manifest == null) {
+                throw new MojoExecutionException("No manifest found in " + war);
+            }
+            return manifest.getMainAttributes().getValue("Add-Opens");
+        } catch (IOException e) {
+            throw new MojoExecutionException("Failed to read MANIFEST.MF from " + war, e);
+        }
     }
 
     protected MavenArtifact wrap(Artifact a) {

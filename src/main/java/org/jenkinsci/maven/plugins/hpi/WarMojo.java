@@ -6,13 +6,11 @@ import java.util.Optional;
 import java.util.Set;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.MavenProjectHelper;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Zip;
 import org.apache.tools.ant.types.ZipFileSet;
@@ -27,13 +25,6 @@ import org.apache.tools.ant.types.ZipFileSet;
         defaultPhase = LifecyclePhase.PACKAGE,
         requiresDependencyResolution = ResolutionScope.RUNTIME)
 public class WarMojo extends RunMojo {
-    /**
-     * Optional string that represents "groupId:artifactId" of Jenkins war.
-     * If left unspecified, the default groupId/artifactId pair for Jenkins is looked for.
-     */
-    @Parameter
-    protected String jenkinsWarId;
-
     @Parameter
     protected File outputFile;
 
@@ -42,9 +33,6 @@ public class WarMojo extends RunMojo {
      */
     @Parameter(property = "addThisPluginToCustomWar", defaultValue = "false")
     private boolean addThisPluginToCustomWar = false;
-
-    @Component
-    protected MavenProjectHelper projectHelper;
 
     /**
      * Executes the WarMojo on the current project.

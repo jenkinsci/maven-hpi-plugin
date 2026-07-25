@@ -1,6 +1,5 @@
 package org.jenkinsci.maven.plugins.hpi;
 
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.File;
 import java.io.IOException;
@@ -8,10 +7,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.jar.JarFile;
-import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -51,21 +47,9 @@ public class TestRuntimeMojo extends AbstractJenkinsMojo {
             getLog().info("Tests are skipped.");
             return;
         }
-        setAddOpensProperty();
+        setAddOpensProperty(resolveJenkinsWar());
         setInsaneHookProperty();
         setJavaAgentProperty();
-    }
-
-    private void setAddOpensProperty() throws MojoExecutionException {
-        String manifestEntry = getManifestEntry(wrap(resolveJenkinsWar()));
-        if (manifestEntry == null) {
-            getLog().warn("Add-Opens missing from MANIFEST.MF");
-            return;
-        }
-
-        String argLine = buildArgLine(manifestEntry);
-        getLog().info("Setting jenkins.addOpens to " + argLine);
-        project.getProperties().setProperty("jenkins.addOpens", argLine);
     }
 
     @NonNull
@@ -73,32 +57,6 @@ public class TestRuntimeMojo extends AbstractJenkinsMojo {
         Artifact artifact =
                 artifactFactory.createArtifact("org.jenkins-ci.main", "jenkins-war", findJenkinsVersion(), null, "war");
         return MavenArtifact.resolveArtifact(artifact, project, session, repositorySystem);
-    }
-
-    @CheckForNull
-    private static String getManifestEntry(MavenArtifact artifact) throws MojoExecutionException {
-        File war = artifact.getFile();
-        try (JarFile jarFile = new JarFile(war)) {
-            Manifest manifest = jarFile.getManifest();
-            if (manifest == null) {
-                throw new MojoExecutionException("No manifest found in " + war);
-            }
-            return manifest.getMainAttributes().getValue("Add-Opens");
-        } catch (IOException e) {
-            throw new MojoExecutionException("Failed to read MANIFEST.MF from " + war, e);
-        }
-    }
-
-    @NonNull
-    private static String buildArgLine(String manifestEntry) {
-        List<String> arguments = new ArrayList<>();
-        for (String module : manifestEntry.split("\\s+")) {
-            if (!module.isEmpty()) {
-                arguments.add("--add-opens");
-                arguments.add(module + "=ALL-UNNAMED");
-            }
-        }
-        return String.join(" ", arguments);
     }
 
     private void setInsaneHookProperty() throws MojoExecutionException {
