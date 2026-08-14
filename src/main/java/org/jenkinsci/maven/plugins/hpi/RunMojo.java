@@ -25,18 +25,25 @@ import java.lang.management.RuntimeMXBean;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystemException;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 import javax.inject.Inject;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.artifact.Artifact;
@@ -50,6 +57,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.twdata.maven.mojoexecutor.MojoExecutor;
 
 /**
@@ -84,6 +92,30 @@ public class RunMojo extends AbstractHpiMojo {
      */
     @Parameter(property = "webAppFile")
     private File webAppFile;
+
+    /**
+     * An already exploded web application to serve, instead of letting Winstone extract the WAR.
+     *
+     * <p>
+     * This is meant for building Jenkins core itself, where the interesting web resources are build
+     * outputs that we want to keep serving from the source tree. When set, a shadow web root of
+     * symbolic links is assembled under {@code target/hpi-run-webroot}, {@link #webrootLinks} are
+     * applied on top of it, and the result is passed to Jenkins as {@code --explodedWar}.
+     * </p>
+     *
+     * @since TODO
+     */
+    @Parameter(property = "maven.hpi.explodedWar")
+    private File explodedWar;
+
+    /**
+     * Locations within the shadow web root that should resolve somewhere else, typically back into
+     * the source tree. Only used when {@link #explodedWar} is set.
+     *
+     * @since TODO
+     */
+    @Parameter
+    private List<WebrootLink> webrootLinks;
 
     /**
      * Path to {@code $JENKINS_HOME}. The launched Jenkins will use this directory as the workspace.
@@ -272,16 +304,19 @@ public class RunMojo extends AbstractHpiMojo {
                 .groupIdIs("org.jenkins-ci.main", "org.jvnet.hudson.main")
                 .artifactIdIsNot("remoting"); // remoting moved to its own release cycle
 
-        Artifact jenkinsWarArtifact =
-                MavenArtifact.resolveArtifact(getJenkinsWarArtifact(), project, session, repositorySystem);
-        setAddOpensProperty(jenkinsWarArtifact);
-
         if (webAppFile == null) {
+            // Resolving the Jenkins WAR is pointless, and from Jenkins core itself impossible, when we
+            // have already been told which WAR to run.
+            Artifact jenkinsWarArtifact =
+                    MavenArtifact.resolveArtifact(getJenkinsWarArtifact(), project, session, repositorySystem);
             webAppFile = jenkinsWarArtifact.getFile();
             if (webAppFile == null || !webAppFile.isFile()) {
                 throw new MojoExecutionException("Could not find " + webAppFile + " from " + jenkinsWarArtifact);
             }
+        } else if (!webAppFile.isFile()) {
+            throw new MojoExecutionException("Could not find " + webAppFile);
         }
+        setAddOpensProperty(webAppFile);
 
         // make sure all the relevant Jenkins artifacts have the same version
         for (Artifact a : jenkinsArtifacts) {
@@ -299,45 +334,10 @@ public class RunMojo extends AbstractHpiMojo {
             throw new MojoExecutionException("Failed to create directories for '" + pluginsDir + "'", e);
         }
 
-        generateHpl();
-
-        // copy other dependency Jenkins plugins
-        try {
-            for (MavenArtifact a : getProjectArtifacts()) {
-                if (!a.isPlugin(getLog())) {
-                    continue;
-                }
-
-                // find corresponding .hpi file
-                Artifact hpi =
-                        artifactFactory.createArtifact(a.getGroupId(), a.getArtifactId(), a.getVersion(), null, "hpi");
-                hpi = MavenArtifact.resolveArtifact(hpi, project, session, repositorySystem);
-
-                // check recursive dependency. this is a rare case that happens when we split out some things from the
-                // core into a plugin
-                if (hasSameGavAsProject(hpi)) {
-                    continue;
-                }
-
-                if (hpi.getFile().isDirectory()) {
-                    throw new UnsupportedOperationException(
-                            hpi.getFile() + " is a directory and not packaged yet. this isn't supported");
-                }
-
-                File upstreamHpl = pluginWorkspaceMap.read(hpi.getId());
-                String actualArtifactId = a.getActualArtifactId();
-                if (actualArtifactId == null) {
-                    throw new MojoExecutionException(
-                            "Failed to load actual artifactId from " + a + " ~ " + a.getFile());
-                }
-                if (upstreamHpl != null) {
-                    copyHpl(upstreamHpl, pluginsDir, actualArtifactId);
-                } else {
-                    copyPlugin(hpi.getFile(), pluginsDir, actualArtifactId);
-                }
-            }
-        } catch (IOException e) {
-            throw new MojoExecutionException("Unable to copy dependency plugin", e);
+        // Jenkins core has no plugin of its own to register, and none of its dependencies are plugins.
+        if ("hpi".equals(project.getPackaging())) {
+            generateHpl();
+            copyDependencyPlugins(pluginsDir);
         }
 
         if (System.getProperty("java.util.logging.config.file") == null) {
@@ -381,40 +381,25 @@ public class RunMojo extends AbstractHpiMojo {
             }
         }
 
-        for (Map.Entry<String, String> e : systemProperties.entrySet()) {
+        Map<String, String> effectiveSystemProperties = systemProperties != null ? systemProperties : Map.of();
+        for (Map.Entry<String, String> e : effectiveSystemProperties.entrySet()) {
             String key = e.getKey().trim();
             String val = e.getValue() == null ? "" : e.getValue();
             cmd.add("-D" + key + "=" + val);
-        }
-
-        for (Artifact a : project.getArtifacts()) {
-            if (a.getGroupId().equals("org.jenkins-ci.main")
-                    && a.getArtifactId().equals("jenkins-core")) {
-                File coreBasedir;
-                try {
-                    coreBasedir = pluginWorkspaceMap.read(a.getId());
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                if (coreBasedir != null) {
-                    String extraCP = new File(coreBasedir, "src/main/resources").toURI()
-                            + File.pathSeparator
-                            + new File(coreBasedir, "target/classes").toURI();
-                    cmd.add("-cp");
-                    cmd.add(extraCP);
-                }
-            }
         }
 
         cmd.add("-DJENKINS_HOME=" + jenkinsHome.getAbsolutePath());
         // enable view auto refreshing via stapler
         cmd.add("-Dstapler.jelly.noCache=true");
 
-        List<Resource> res = getProject().getBuild().getResources();
-        if (!res.isEmpty()) {
-            // pick up the first one and use it
-            Resource r = res.get(0);
-            cmd.add("-Dstapler.resourcePath=" + r.getDirectory());
+        // A later -D wins, so only derive this when the project has not configured it itself.
+        if (!effectiveSystemProperties.containsKey("stapler.resourcePath")) {
+            List<Resource> res = getProject().getBuild().getResources();
+            if (!res.isEmpty()) {
+                // pick up the first one and use it
+                Resource r = res.get(0);
+                cmd.add("-Dstapler.resourcePath=" + r.getDirectory());
+            }
         }
 
         session.getUserProperties().entrySet().stream()
@@ -432,6 +417,10 @@ public class RunMojo extends AbstractHpiMojo {
         cmd.add(webAppFile.getAbsolutePath());
 
         // Winstone options must come after the WAR path.
+        if (explodedWar != null) {
+            cmd.add("--explodedWar=" + buildShadowWebroot().getAbsolutePath());
+        }
+
         // Make the configured host/port effective.
         if (!effectiveHost.isEmpty()) {
             cmd.add("--httpListenAddress=" + effectiveHost);
@@ -447,9 +436,7 @@ public class RunMojo extends AbstractHpiMojo {
             cmd.add("--prefix=" + prefix);
         }
 
-        if (winstoneArgs != null) {
-            cmd.add(winstoneArgs);
-        }
+        addArgs(cmd, winstoneArgs);
 
         getLog().info("Launching Jenkins: " + String.join(" ", cmd));
 
@@ -465,6 +452,113 @@ public class RunMojo extends AbstractHpiMojo {
             }
         } catch (IOException | InterruptedException e) {
             throw new MojoExecutionException("Failed to launch Jenkins", e);
+        }
+    }
+
+    /**
+     * Assemble a web root of symbolic links into {@link #explodedWar}, with {@link #webrootLinks}
+     * redirecting individual locations somewhere else (typically back into the source tree, so that
+     * edits are served without repackaging).
+     *
+     * <p>
+     * Jetty installs a {@code SymlinkAllowedResourceAliasChecker} by default, so the links are
+     * followed when serving. If the platform will not let us create symbolic links at all — Windows
+     * without Developer Mode — we fall back to serving {@link #explodedWar} directly, which still
+     * runs, just without live resources.
+     * </p>
+     *
+     * @return the directory to serve
+     */
+    private File buildShadowWebroot() throws MojoExecutionException {
+        if (!new File(explodedWar, "WEB-INF/web.xml").isFile()) {
+            throw new MojoExecutionException(
+                    explodedWar + " is not an exploded web application: no WEB-INF/web.xml. Build the WAR first.");
+        }
+
+        List<WebrootLink> links = webrootLinks != null ? webrootLinks : List.of();
+        if (links.isEmpty()) {
+            return explodedWar;
+        }
+
+        Path shadow = new File(project.getBuild().getDirectory(), "hpi-run-webroot")
+                .toPath()
+                .toAbsolutePath()
+                .normalize();
+        try {
+            deleteRecursively(shadow);
+
+            // Any directory a link descends into has to be a real directory in the shadow web root,
+            // mirroring its siblings from the exploded WAR.
+            Set<Path> realDirs = new LinkedHashSet<>();
+            realDirs.add(shadow);
+            for (WebrootLink link : links) {
+                Path relative = resolveWithin(shadow, link.getPath());
+                for (Path parent = relative.getParent();
+                        parent != null && parent.startsWith(shadow);
+                        parent = parent.getParent()) {
+                    realDirs.add(parent);
+                }
+            }
+
+            for (Path dir : realDirs) {
+                Path source = explodedWar.toPath().resolve(shadow.relativize(dir));
+                Files.createDirectories(dir);
+                if (Files.isDirectory(source)) {
+                    try (Stream<Path> children = Files.list(source)) {
+                        for (Path child : children.toList()) {
+                            Path target = dir.resolve(source.relativize(child));
+                            if (!realDirs.contains(target)) {
+                                Files.createSymbolicLink(target, child);
+                            }
+                        }
+                    }
+                }
+            }
+
+            for (WebrootLink link : links) {
+                Path target = resolveWithin(shadow, link.getPath());
+                if (!link.getTarget().exists()) {
+                    getLog().warn("Skipping web root link " + link + ": the target does not exist");
+                    continue;
+                }
+                Files.deleteIfExists(target);
+                Files.createSymbolicLink(target, link.getTarget().toPath());
+                getLog().info("Serving /" + link.getPath() + " from " + link.getTarget());
+            }
+        } catch (UnsupportedOperationException | FileSystemException e) {
+            getLog().warn("Unable to create symbolic links under " + shadow + " (" + e.getMessage()
+                    + "); serving " + explodedWar + " instead. Changes to web resources will not be picked up "
+                    + "until the WAR is rebuilt.");
+            return explodedWar;
+        } catch (IOException e) {
+            throw new MojoExecutionException("Failed to assemble the web root in " + shadow, e);
+        }
+
+        return shadow.toFile();
+    }
+
+    /**
+     * Resolves a configured web root path, rejecting anything that would land outside the web root.
+     * Without this an absolute path, or a stray {@code ..}, would have us delete and replace a file
+     * elsewhere on disk.
+     */
+    private static Path resolveWithin(Path root, String path) throws MojoExecutionException {
+        Path resolved = root.resolve(path).normalize();
+        if (!resolved.startsWith(root) || resolved.equals(root)) {
+            throw new MojoExecutionException(
+                    "Web root link path must be relative and stay inside the web root, but was: " + path);
+        }
+        return resolved;
+    }
+
+    private static void deleteRecursively(Path path) throws IOException {
+        if (!Files.exists(path, LinkOption.NOFOLLOW_LINKS)) {
+            return;
+        }
+        try (Stream<Path> walk = Files.walk(path)) {
+            for (Path p : walk.sorted(Comparator.reverseOrder()).toList()) {
+                Files.deleteIfExists(p);
+            }
         }
     }
 
@@ -505,6 +599,49 @@ public class RunMojo extends AbstractHpiMojo {
         return getProject().getGroupId().equals(a.getGroupId())
                 && getProject().getArtifactId().equals(a.getArtifactId())
                 && getProject().getVersion().equals(a.getVersion());
+    }
+
+    /**
+     * Copy the plugins this project depends on into {@code $JENKINS_HOME/plugins}.
+     */
+    private void copyDependencyPlugins(File pluginsDir) throws MojoExecutionException {
+        try {
+            for (MavenArtifact a : getProjectArtifacts()) {
+                if (!a.isPlugin(getLog())) {
+                    continue;
+                }
+
+                // find corresponding .hpi file
+                Artifact hpi =
+                        artifactFactory.createArtifact(a.getGroupId(), a.getArtifactId(), a.getVersion(), null, "hpi");
+                hpi = MavenArtifact.resolveArtifact(hpi, project, session, repositorySystem);
+
+                // check recursive dependency. this is a rare case that happens when we split out some things from the
+                // core into a plugin
+                if (hasSameGavAsProject(hpi)) {
+                    continue;
+                }
+
+                if (hpi.getFile().isDirectory()) {
+                    throw new UnsupportedOperationException(
+                            hpi.getFile() + " is a directory and not packaged yet. this isn't supported");
+                }
+
+                File upstreamHpl = pluginWorkspaceMap.read(hpi.getId());
+                String actualArtifactId = a.getActualArtifactId();
+                if (actualArtifactId == null) {
+                    throw new MojoExecutionException(
+                            "Failed to load actual artifactId from " + a + " ~ " + a.getFile());
+                }
+                if (upstreamHpl != null) {
+                    copyHpl(upstreamHpl, pluginsDir, actualArtifactId);
+                } else {
+                    copyPlugin(hpi.getFile(), pluginsDir, actualArtifactId);
+                }
+            }
+        } catch (IOException e) {
+            throw new MojoExecutionException("Unable to copy dependency plugin", e);
+        }
     }
 
     private void copyPlugin(File src, File pluginsDir, String shortName) throws IOException {
@@ -649,10 +786,10 @@ public class RunMojo extends AbstractHpiMojo {
     }
 
     /**
-     * Adds a whitespace-separated string of arguments to the command list.
-     * This is intentionally simple since these properties are expected to be JVM args without quoting.
+     * Adds a whitespace-separated string of arguments to the command list, honouring shell-style
+     * quoting so that an argument may itself contain whitespace.
      */
-    private static void addArgs(List<String> cmd, String args) {
+    private static void addArgs(List<String> cmd, String args) throws MojoExecutionException {
         if (args == null) {
             return;
         }
@@ -661,28 +798,19 @@ public class RunMojo extends AbstractHpiMojo {
             return;
         }
 
-        // The test harness commonly provides unquoted, whitespace-separated JVM options.
-        // Some of these are 2-token options (e.g. "--add-opens java.base/java.io=ALL-UNNAMED").
-        // Preserve those as pairs so the value doesn't get treated as a main class.
-        String[] parts = trimmed.split("\\s+");
-        for (int i = 0; i < parts.length; i++) {
-            String p = parts[i];
-            if (p == null || p.isEmpty()) {
-                continue;
-            }
-
-            if ("--add-opens".equals(p) || "--add-exports".equals(p) || "--patch-module".equals(p)) {
+        // Split on whitespace but honour quoting, so that an option whose value contains a space
+        // (a Windows path in --logfile=..., say) survives as a single argument. Two-token options
+        // such as "--add-opens java.base/java.io=ALL-UNNAMED" come through as their two tokens.
+        String[] parts;
+        try {
+            parts = CommandLineUtils.translateCommandline(trimmed);
+        } catch (Exception e) {
+            throw new MojoExecutionException("Failed to parse arguments: " + trimmed, e);
+        }
+        for (String p : parts) {
+            if (p != null && !p.isEmpty()) {
                 cmd.add(p);
-                if (i + 1 < parts.length) {
-                    String v = parts[++i];
-                    if (v != null && !v.isEmpty()) {
-                        cmd.add(v);
-                    }
-                }
-                continue;
             }
-
-            cmd.add(p);
         }
     }
 

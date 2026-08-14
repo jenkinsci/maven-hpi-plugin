@@ -142,7 +142,11 @@ public abstract class AbstractJenkinsMojo extends AbstractMojo {
     }
 
     protected void setAddOpensProperty(Artifact artifact) throws MojoExecutionException {
-        String manifestEntry = getManifestEntry(wrap(artifact));
+        setAddOpensProperty(wrap(artifact).getFile());
+    }
+
+    protected void setAddOpensProperty(File war) throws MojoExecutionException {
+        String manifestEntry = getManifestEntry(war);
         if (manifestEntry == null) {
             getLog().warn("Add-Opens missing from MANIFEST.MF");
             return;
@@ -166,8 +170,7 @@ public abstract class AbstractJenkinsMojo extends AbstractMojo {
     }
 
     @CheckForNull
-    private static String getManifestEntry(MavenArtifact artifact) throws MojoExecutionException {
-        File war = artifact.getFile();
+    private static String getManifestEntry(File war) throws MojoExecutionException {
         try (JarFile jarFile = new JarFile(war)) {
             Manifest manifest = jarFile.getManifest();
             if (manifest == null) {
