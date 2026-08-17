@@ -26,14 +26,12 @@ public class ValidateMojo extends AbstractJenkinsMojo {
 
     private static final String SCM_GIT_GIT_URL_BAD = "scm:git:git://github.com/";
     private static final String SCM_GIT_HTTP_URL_BAD = "scm:git:" + HTTP_GITHUB_COM;
-    private static final String SCM_GIT_SSH_URL_BAD = "scm:git:ssh://git@github.com/";
 
     private static final String SCM_GIT_HTTPS_URL_GOOD = "scm:git:" + HTTPS_GITHUB_COM;
     private static final String SCM_GIT_SSH_URL_GOOD = "scm:git:git@github.com:";
 
     private static final String GIT_URLS_ARE_DEPRECATED = "git:// URLs are deprecated";
     private static final String HTTP_URLS_ARE_INSECURE = "http:// URLs are insecure";
-    private static final String SSH_URLS_DO_NOT_WORK_WELL_WITH_PCT = "ssh:// URLs do not work well with PCT";
 
     @Override
     public void execute() throws MojoExecutionException {
@@ -77,12 +75,6 @@ public class ValidateMojo extends AbstractJenkinsMojo {
             String connection = scm.getConnection();
             if (connection != null) {
                 check("connection", connection, SCM_GIT_GIT_URL_BAD, SCM_GIT_HTTPS_URL_GOOD, GIT_URLS_ARE_DEPRECATED);
-                check(
-                        "connection",
-                        connection,
-                        SCM_GIT_SSH_URL_BAD,
-                        SCM_GIT_HTTPS_URL_GOOD,
-                        SSH_URLS_DO_NOT_WORK_WELL_WITH_PCT);
                 check("connection", connection, SCM_GIT_HTTP_URL_BAD, SCM_GIT_HTTPS_URL_GOOD, HTTP_URLS_ARE_INSECURE);
             }
             String developerConnection = scm.getDeveloperConnection();
@@ -93,12 +85,6 @@ public class ValidateMojo extends AbstractJenkinsMojo {
                         SCM_GIT_GIT_URL_BAD,
                         SCM_GIT_SSH_URL_GOOD,
                         GIT_URLS_ARE_DEPRECATED);
-                check(
-                        "developerConnection",
-                        developerConnection,
-                        SCM_GIT_SSH_URL_BAD,
-                        SCM_GIT_SSH_URL_GOOD,
-                        SSH_URLS_DO_NOT_WORK_WELL_WITH_PCT);
                 check(
                         "developerConnection",
                         developerConnection,
