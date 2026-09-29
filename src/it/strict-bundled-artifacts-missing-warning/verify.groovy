@@ -1,9 +1,9 @@
 def expectedJars = [
-  'jackson-annotations-2.19.1.jar',
-  'jackson-core-2.19.1.jar',
-  'jackson-databind-2.19.1.jar',
-  'metrics-core-5.0.1.jar',
-  'metrics-json-5.0.1.jar',
+  'jackson-annotations-2.22.jar',
+  'jackson-core-2.22.2.jar',
+  'jackson-databind-2.22.2.jar',
+  'metrics-core-5.0.8.jar',
+  'metrics-json-5.0.8.jar',
   'strict-bundled-artifacts-missing-warning.jar'
 ];
 def actualJars = new File(basedir, "target/strict-bundled-artifacts-missing-warning/WEB-INF/lib/").list({ dir, file -> file.toString().endsWith(".jar") })
