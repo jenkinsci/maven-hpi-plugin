@@ -19,7 +19,7 @@
     <test>SampleTest</test>
     <maven.test.redirectTestOutputToFile>false</maven.test.redirectTestOutputToFile>
     <surefire.rerunFailingTestsCount>0</surefire.rerunFailingTestsCount>
-    <workflow-step-api-plugin.version>2.9</workflow-step-api-plugin.version>
+    <workflow-step-api-plugin.version>2.24</workflow-step-api-plugin.version>
     <spotless.check.skip>false</spotless.check.skip>
   </properties>
   <dependencies>
