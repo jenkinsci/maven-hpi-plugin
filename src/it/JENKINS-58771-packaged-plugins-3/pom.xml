@@ -42,7 +42,7 @@
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>google-oauth-plugin</artifactId>
-      <version>1.0.7</version>
+      <version>1.346.v712b_a_e0d1e60</version>
     </dependency>
   </dependencies>
 
