@@ -10,9 +10,9 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.shared.dependency.graph.DependencyGraphBuilderException;
-import org.apache.maven.shared.dependency.graph.DependencyNode;
 import org.codehaus.plexus.util.FileUtils;
+import org.eclipse.aether.collection.DependencyCollectionException;
+import org.eclipse.aether.graph.DependencyNode;
 
 /**
  * Used to assemble transitive dependencies of plugins into one location.
@@ -57,20 +57,28 @@ public class AssembleDependenciesMojo extends AbstractDependencyGraphTraversingM
     private final Map<String, MavenArtifact> hpis = new HashMap<>();
 
     @Override
-    protected boolean accept(DependencyNode g) {
-        MavenArtifact a = wrap(g.getArtifact());
+    protected boolean accept(DependencyNode g, boolean isRoot) {
+        org.eclipse.aether.artifact.Artifact aetherArtifact = g.getArtifact();
+        if (aetherArtifact == null) {
+            return false;
+        }
+
+        org.apache.maven.artifact.Artifact mavenArtifact = org.apache.maven.RepositoryUtils.toArtifact(aetherArtifact);
+        MavenArtifact a = wrap(mavenArtifact);
 
         if (!parsedScopes.contains(a.getScope())) {
             return false;
         }
 
-        if (!includesOptional && a.isOptional()) {
+        org.eclipse.aether.graph.Dependency dependency = g.getDependency();
+        boolean isOptional = dependency != null && dependency.isOptional();
+        if (!includesOptional && isOptional) {
             return false; // cut off optional dependencies
         }
 
         if (!a.isPlugin(getLog())) {
             // only traverse chains of direct plugin dependencies, unless it's from the root
-            return g.getParent() == null;
+            return isRoot;
         }
 
         MavenArtifact v = hpis.get(a.getArtifactId());
@@ -93,7 +101,7 @@ public class AssembleDependenciesMojo extends AbstractDependencyGraphTraversingM
             }
 
             traverseProject();
-        } catch (DependencyGraphBuilderException e) {
+        } catch (DependencyCollectionException e) {
             throw new MojoExecutionException("Failed to list up dependencies", e);
         }
 
